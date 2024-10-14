@@ -1,72 +1,48 @@
 package cz.cvut.fel.pm2.hrapp.employeemanagement.model;
 
+import cz.cvut.fel.pm2.hrapp.employeemanagement.model.enums.ContractType;
+import cz.cvut.fel.pm2.hrapp.employeemanagement.model.enums.WorkPercentage;
 import jakarta.persistence.*;
+import lombok.Data;
 
-import java.util.List;
+import java.math.BigDecimal;
 
 @Entity
+@Data
 public class Employee {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
-
-    private String firstName;
-    private String lastName;
-    private String email;
-    private String position;
+    private Long employeeId;
 
     @ManyToOne
-    @JoinColumn(name = "department_id")
+    @JoinColumn(name = "departmentId")
     private Department department;
 
+    @OneToOne
+    @JoinColumn(name = "userId")
+    private User user;
+
+    private String name;
+
+    @Embedded
+    private Address address;
+
+    @Enumerated(EnumType.STRING)
+    private ContractType contractType;
+
+    @Column(nullable = false)
+    private Integer contractualHours; // Total hours per week
+
+    @Enumerated(EnumType.STRING)
+    private WorkPercentage workPercentage; // Percentage of full-time work
+
+    private String accountNumber;
+
     @ManyToOne
-    @JoinColumn(name = "manager_id")
-    private Employee manager;
+    @JoinColumn(name = "supervisorId")
+    private Employee supervisor;
 
-    @OneToMany(mappedBy = "manager")
-    private List<Employee> subordinates;
-
-    public Employee() {
-    }
-
-    public Long getId() {
-        return id;
-    }
-
-    public void setId(Long id) {
-        this.id = id;
-    }
-
-    public String getFirstName() {
-        return firstName;
-    }
-
-    public void setFirstName(String firstName) {
-        this.firstName = firstName;
-    }
-
-    public String getLastName() {
-        return lastName;
-    }
-
-    public void setLastName(String lastName) {
-        this.lastName = lastName;
-    }
-
-    public String getEmail() {
-        return email;
-    }
-
-    public void setEmail(String email) {
-        this.email = email;
-    }
-
-    public String getPosition() {
-        return position;
-    }
-
-    public void setPosition(String position) {
-        this.position = position;
-    }
+    // The total amount of leave/vacation days the employee has available
+    private BigDecimal availableTimeOff;
 }
