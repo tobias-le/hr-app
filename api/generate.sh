@@ -1,0 +1,1 @@
+openapi-generator generate -i /Users/dmr4eg/Folders/Codes/CTU/5sem/pm2/hr-app/api/public.openapi.yaml -g spring -o tmp/gen/

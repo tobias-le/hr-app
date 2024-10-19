@@ -1,0 +1,1750 @@
+openapi: 3.0.3
+info:
+  description: "This is the API for an HR management system developed as part of a\
+    \ project. It handles employee management, time tracking, leave requests, and\
+    \ more."
+  title: HR System API
+  version: 1.0.0
+servers:
+- description: Production server
+  url: https://api.hr-system.com
+- description: Staging server
+  url: https://staging.api.hr-system.com
+- description: Local development server
+  url: http://localhost:3000
+paths:
+  /payslips:
+    get:
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/_payslips_get_200_response'
+          description: OK
+        "401":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Unauthorized access
+        "500":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Internal server error
+      summary: Get a list of all payslips
+      x-accepts:
+      - application/json
+    post:
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Payslip'
+        required: true
+      responses:
+        "201":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/_payslips_post_201_response'
+          description: Created
+        "400":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Bad Request
+        "401":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Unauthorized access
+        "500":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Internal server error
+      summary: Create a new payslip
+      x-content-type: application/json
+      x-accepts:
+      - application/json
+  /payslips/{payslipId}:
+    delete:
+      parameters:
+      - description: ID of the payslip
+        explode: false
+        in: path
+        name: payslipId
+        required: true
+        schema:
+          type: integer
+        style: simple
+      responses:
+        "204":
+          description: No Content
+        "401":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Unauthorized access
+        "404":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Resource not found
+        "500":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Internal server error
+      summary: Delete a specific payslip
+      x-accepts:
+      - application/json
+    get:
+      parameters:
+      - description: ID of the payslip
+        explode: false
+        in: path
+        name: payslipId
+        required: true
+        schema:
+          type: integer
+        style: simple
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/_payslips_get_200_response'
+          description: OK
+        "401":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Unauthorized access
+        "404":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Resource not found
+        "500":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Internal server error
+      summary: Get details of a specific payslip
+      x-accepts:
+      - application/json
+    put:
+      parameters:
+      - description: ID of the payslip
+        explode: false
+        in: path
+        name: payslipId
+        required: true
+        schema:
+          type: integer
+        style: simple
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Payslip'
+        required: true
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/_payslips_get_200_response'
+          description: OK
+        "400":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Bad Request
+        "401":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Unauthorized access
+        "404":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Resource not found
+        "500":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Internal server error
+      summary: Update an existing payslip
+      x-content-type: application/json
+      x-accepts:
+      - application/json
+  /timecells:
+    get:
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/_payslips_get_200_response'
+          description: OK
+        "401":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Unauthorized access
+        "500":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Internal server error
+      summary: Get a list of all time cells
+      x-accepts:
+      - application/json
+    post:
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TimeCell'
+        required: true
+      responses:
+        "201":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/_payslips_post_201_response'
+          description: Created
+        "400":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Bad Request
+        "401":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Unauthorized access
+        "500":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Internal server error
+      summary: Create a new time cell
+      x-content-type: application/json
+      x-accepts:
+      - application/json
+  /timecells/{timeCellId}:
+    delete:
+      parameters:
+      - description: ID of the time cell
+        explode: false
+        in: path
+        name: timeCellId
+        required: true
+        schema:
+          type: integer
+        style: simple
+      responses:
+        "204":
+          description: No Content
+        "401":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Unauthorized access
+        "404":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Resource not found
+        "500":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Internal server error
+      summary: Delete a specific time cell
+      x-accepts:
+      - application/json
+    get:
+      parameters:
+      - description: ID of the time cell
+        explode: false
+        in: path
+        name: timeCellId
+        required: true
+        schema:
+          type: integer
+        style: simple
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/_payslips_get_200_response'
+          description: OK
+        "401":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Unauthorized access
+        "404":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Resource not found
+        "500":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Internal server error
+      summary: Get details of a specific time cell
+      x-accepts:
+      - application/json
+    put:
+      parameters:
+      - description: ID of the time cell
+        explode: false
+        in: path
+        name: timeCellId
+        required: true
+        schema:
+          type: integer
+        style: simple
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TimeCell'
+        required: true
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/_payslips_get_200_response'
+          description: OK
+        "400":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Bad Request
+        "401":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Unauthorized access
+        "404":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Resource not found
+        "500":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Internal server error
+      summary: Update an existing time cell
+      x-content-type: application/json
+      x-accepts:
+      - application/json
+  /workhours:
+    get:
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/_payslips_get_200_response'
+          description: OK
+        "401":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Unauthorized access
+        "500":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Internal server error
+      summary: Get a list of all work hours
+      x-accepts:
+      - application/json
+    post:
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/WorkHours'
+        required: true
+      responses:
+        "201":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/_payslips_post_201_response'
+          description: Created
+        "400":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Bad Request
+        "401":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Unauthorized access
+        "500":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Internal server error
+      summary: Create a new work hours entry
+      x-content-type: application/json
+      x-accepts:
+      - application/json
+  /workhours/{workHoursId}:
+    delete:
+      parameters:
+      - description: ID of the work hours entry
+        explode: false
+        in: path
+        name: workHoursId
+        required: true
+        schema:
+          type: integer
+        style: simple
+      responses:
+        "204":
+          description: No Content
+        "401":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Unauthorized access
+        "404":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Resource not found
+        "500":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Internal server error
+      summary: Delete a specific work hours entry
+      x-accepts:
+      - application/json
+    get:
+      parameters:
+      - description: ID of the work hours entry
+        explode: false
+        in: path
+        name: workHoursId
+        required: true
+        schema:
+          type: integer
+        style: simple
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/_payslips_get_200_response'
+          description: OK
+        "401":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Unauthorized access
+        "404":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Resource not found
+        "500":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Internal server error
+      summary: Get details of a specific work hours entry
+      x-accepts:
+      - application/json
+    put:
+      parameters:
+      - description: ID of the work hours entry
+        explode: false
+        in: path
+        name: workHoursId
+        required: true
+        schema:
+          type: integer
+        style: simple
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/WorkHours'
+        required: true
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/_payslips_get_200_response'
+          description: OK
+        "400":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Bad Request
+        "401":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Unauthorized access
+        "404":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Resource not found
+        "500":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Internal server error
+      summary: Update an existing work hours entry
+      x-content-type: application/json
+      x-accepts:
+      - application/json
+  /leaverequests:
+    get:
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/_payslips_get_200_response'
+          description: OK
+        "401":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Unauthorized access
+        "500":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Internal server error
+      summary: Get a list of all leave requests
+      x-accepts:
+      - application/json
+    post:
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LeaveRequest'
+        required: true
+      responses:
+        "201":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/_payslips_post_201_response'
+          description: Created
+        "400":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Bad Request
+        "401":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Unauthorized access
+        "500":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Internal server error
+      summary: Create a new leave request
+      x-content-type: application/json
+      x-accepts:
+      - application/json
+  /leaverequests/{leaveId}:
+    delete:
+      parameters:
+      - description: ID of the leave request
+        explode: false
+        in: path
+        name: leaveId
+        required: true
+        schema:
+          type: integer
+        style: simple
+      responses:
+        "204":
+          description: No Content
+        "401":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Unauthorized access
+        "404":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Resource not found
+        "500":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Internal server error
+      summary: Delete a specific leave request
+      x-accepts:
+      - application/json
+    get:
+      parameters:
+      - description: ID of the leave request
+        explode: false
+        in: path
+        name: leaveId
+        required: true
+        schema:
+          type: integer
+        style: simple
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/_payslips_get_200_response'
+          description: OK
+        "401":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Unauthorized access
+        "404":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Resource not found
+        "500":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Internal server error
+      summary: Get details of a specific leave request
+      x-accepts:
+      - application/json
+    put:
+      parameters:
+      - description: ID of the leave request
+        explode: false
+        in: path
+        name: leaveId
+        required: true
+        schema:
+          type: integer
+        style: simple
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LeaveRequest'
+        required: true
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/_payslips_get_200_response'
+          description: OK
+        "400":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Bad Request
+        "401":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Unauthorized access
+        "404":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Resource not found
+        "500":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Internal server error
+      summary: Update an existing leave request
+      x-content-type: application/json
+      x-accepts:
+      - application/json
+  /overtimerequests:
+    get:
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/_payslips_get_200_response'
+          description: OK
+        "401":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Unauthorized access
+        "500":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Internal server error
+      summary: Get a list of all overtime requests
+      x-accepts:
+      - application/json
+    post:
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/OvertimeRequest'
+        required: true
+      responses:
+        "201":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/_payslips_post_201_response'
+          description: Created
+        "400":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Bad Request
+        "401":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Unauthorized access
+        "500":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Internal server error
+      summary: Create a new overtime request
+      x-content-type: application/json
+      x-accepts:
+      - application/json
+  /overtimerequests/{overtimeId}:
+    delete:
+      parameters:
+      - description: ID of the overtime request
+        explode: false
+        in: path
+        name: overtimeId
+        required: true
+        schema:
+          type: integer
+        style: simple
+      responses:
+        "204":
+          description: No Content
+        "401":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Unauthorized access
+        "404":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Resource not found
+        "500":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Internal server error
+      summary: Delete a specific overtime request
+      x-accepts:
+      - application/json
+    get:
+      parameters:
+      - description: ID of the overtime request
+        explode: false
+        in: path
+        name: overtimeId
+        required: true
+        schema:
+          type: integer
+        style: simple
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/_payslips_get_200_response'
+          description: OK
+        "401":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Unauthorized access
+        "404":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Resource not found
+        "500":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Internal server error
+      summary: Get details of a specific overtime request
+      x-accepts:
+      - application/json
+    put:
+      parameters:
+      - description: ID of the overtime request
+        explode: false
+        in: path
+        name: overtimeId
+        required: true
+        schema:
+          type: integer
+        style: simple
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/OvertimeRequest'
+        required: true
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/_payslips_get_200_response'
+          description: OK
+        "400":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Bad Request
+        "401":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Unauthorized access
+        "404":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Resource not found
+        "500":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Internal server error
+      summary: Update an existing overtime request
+      x-content-type: application/json
+      x-accepts:
+      - application/json
+  /timeoffrequests:
+    get:
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/_payslips_get_200_response'
+          description: OK
+        "401":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Unauthorized access
+        "500":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Internal server error
+      summary: Get a list of all time off requests
+      x-accepts:
+      - application/json
+    post:
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TimeOffRequest'
+        required: true
+      responses:
+        "201":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/_payslips_post_201_response'
+          description: Created
+        "400":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Bad Request
+        "401":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Unauthorized access
+        "500":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Internal server error
+      summary: Create a new time off request
+      x-content-type: application/json
+      x-accepts:
+      - application/json
+  /timeoffrequests/{timeOffId}:
+    delete:
+      parameters:
+      - description: ID of the time off request
+        explode: false
+        in: path
+        name: timeOffId
+        required: true
+        schema:
+          type: integer
+        style: simple
+      responses:
+        "204":
+          description: No Content
+        "401":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Bad Request
+        "404":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Resource not found
+        "500":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Internal server error
+      summary: Delete a specific time off request
+      x-accepts:
+      - application/json
+    get:
+      parameters:
+      - description: ID of the time off request
+        explode: false
+        in: path
+        name: timeOffId
+        required: true
+        schema:
+          type: integer
+        style: simple
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/_payslips_get_200_response'
+          description: OK
+        "401":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Unauthorized access
+        "404":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Resource not found
+        "500":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Internal server error
+      summary: Get details of a specific time off request
+      x-accepts:
+      - application/json
+    put:
+      parameters:
+      - description: ID of the time off request
+        explode: false
+        in: path
+        name: timeOffId
+        required: true
+        schema:
+          type: integer
+        style: simple
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TimeOffRequest'
+        required: true
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/_payslips_get_200_response'
+          description: OK
+        "400":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Bad Request
+        "401":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Unauthorized access
+        "404":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Resource not found
+        "500":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Internal server error
+      summary: Update an existing time off request
+      x-content-type: application/json
+      x-accepts:
+      - application/json
+components:
+  headers:
+    Set-JWT:
+      explode: false
+      schema:
+        description: JWT token
+        example: jwt=tokenValue; Path=/; HttpOnly; Secure
+        type: string
+      style: simple
+    Clear-JWT:
+      explode: false
+      schema:
+        description: JWT token clear
+        example: "jwt=; Expires=Thu, 01 Jan 1970 00:00:00 GMT; Path=/;"
+        type: string
+      style: simple
+    HomeRedirect:
+      explode: false
+      schema:
+        description: Home redirect
+        example: /
+        type: string
+      style: simple
+    LoginRedirect:
+      explode: false
+      schema:
+        description: Login redirect
+        example: /auth/login
+        type: string
+      style: simple
+  responses:
+    AuthorizationSuccess:
+      description: OK
+      headers:
+        Set-Cookie:
+          $ref: '#/components/headers/Set-JWT'
+        Location:
+          $ref: '#/components/headers/HomeRedirect'
+    UnauthorizationSuccess:
+      description: OK
+      headers:
+        Set-Cookie:
+          $ref: '#/components/headers/Clear-JWT'
+    Success200:
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/_payslips_get_200_response'
+      description: OK
+    Created201:
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/_payslips_post_201_response'
+      description: Created
+    NoContent204:
+      description: No Content
+    BadRequest400:
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+      description: Bad Request
+    Unauthorized401:
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+      description: Unauthorized access
+    NotFound404:
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+      description: Resource not found
+    InternalServerError500:
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+      description: Internal server error
+  schemas:
+    Person:
+      properties:
+        name:
+          description: The person's full name
+          format: full-name
+          type: string
+        homeAddress:
+          $ref: '#/components/schemas/HomeAddress'
+        email:
+          description: The person's email address
+          format: email
+          type: string
+      type: object
+    EmployeeBase:
+      allOf:
+      - $ref: '#/components/schemas/Person'
+      - properties:
+          employeeId:
+            description: The ID of the employee
+            type: integer
+          department:
+            $ref: '#/components/schemas/Department'
+          user:
+            $ref: '#/components/schemas/User'
+          contractType:
+            $ref: '#/components/schemas/ContractType'
+          workPercentage:
+            $ref: '#/components/schemas/WorkPercentage'
+          supervisor:
+            $ref: '#/components/schemas/Employee'
+          contractualHours:
+            description: Total hours per week
+            type: integer
+        type: object
+    Employee:
+      allOf:
+      - $ref: '#/components/schemas/EmployeeBase'
+      example:
+        workPercentage: FULL_TIME
+        contractualHours: 5
+        contractType: FULL_TIME
+        name: name
+        employeeId: 6
+        department:
+          departmentName: departmentName
+          departmentId: 1
+        user:
+          password: password
+          role: EMPLOYEE
+          userId: 5
+          username: username
+        email: email
+        supervisor: null
+        homeAddress:
+          country: country
+          city: city
+          street: street
+          postalCode: postalCode
+    Payslip:
+      example:
+        totalWorkedHours: 2.302136
+        totalSalary: 9.301444
+        dateGenerated: 2000-01-23
+        payslipId: 0
+        totalBonusHours: 7.0614014
+        employee:
+          workPercentage: FULL_TIME
+          contractualHours: 5
+          contractType: FULL_TIME
+          name: name
+          employeeId: 6
+          department:
+            departmentName: departmentName
+            departmentId: 1
+          user:
+            password: password
+            role: EMPLOYEE
+            userId: 5
+            username: username
+          email: email
+          supervisor: null
+          homeAddress:
+            country: country
+            city: city
+            street: street
+            postalCode: postalCode
+        generatedBy:
+          password: password
+          role: EMPLOYEE
+          userId: 5
+          username: username
+      properties:
+        payslipId:
+          description: The unique identifier for the payslip
+          type: integer
+        employee:
+          $ref: '#/components/schemas/Employee'
+        generatedBy:
+          $ref: '#/components/schemas/User'
+        totalWorkedHours:
+          description: Total worked hours
+          format: float
+          type: number
+        totalBonusHours:
+          description: Total bonus hours
+          format: float
+          type: number
+        totalSalary:
+          description: Total salary
+          format: float
+          type: number
+        dateGenerated:
+          description: Date the payslip was generated
+          format: date
+          type: string
+      type: object
+    TimeCell:
+      example:
+        endTimeDate: 2000-01-23
+        timeOffType: Paid
+        startTimeDate: 2000-01-23
+        employee:
+          workPercentage: FULL_TIME
+          contractualHours: 5
+          contractType: FULL_TIME
+          name: name
+          employeeId: 6
+          department:
+            departmentName: departmentName
+            departmentId: 1
+          user:
+            password: password
+            role: EMPLOYEE
+            userId: 5
+            username: username
+          email: email
+          supervisor: null
+          homeAddress:
+            country: country
+            city: city
+            street: street
+            postalCode: postalCode
+        timeCellId: 0
+        supervisor:
+          workPercentage: FULL_TIME
+          contractualHours: 5
+          contractType: FULL_TIME
+          name: name
+          employeeId: 6
+          department:
+            departmentName: departmentName
+            departmentId: 1
+          user:
+            password: password
+            role: EMPLOYEE
+            userId: 5
+            username: username
+          email: email
+          supervisor: null
+          homeAddress:
+            country: country
+            city: city
+            street: street
+            postalCode: postalCode
+        status: Pending
+      properties:
+        timeCellId:
+          description: The unique identifier for the time cell
+          type: integer
+        employee:
+          $ref: '#/components/schemas/Employee'
+        supervisor:
+          $ref: '#/components/schemas/Employee'
+        status:
+          description: The status of the time cell
+          enum:
+          - Pending
+          - Approved
+          - Denied
+          type: string
+        timeOffType:
+          description: The type of time off
+          enum:
+          - Paid
+          - Unpaid
+          - Medical
+          - None
+          type: string
+        startTimeDate:
+          description: The start date and time of the time cell
+          format: date
+          type: string
+        endTimeDate:
+          description: The end date and time of the time cell
+          format: date
+          type: string
+      type: object
+    WorkHours:
+      example:
+        workHoursId: 0
+        timeCell:
+          endTimeDate: 2000-01-23
+          timeOffType: Paid
+          startTimeDate: 2000-01-23
+          employee:
+            workPercentage: FULL_TIME
+            contractualHours: 5
+            contractType: FULL_TIME
+            name: name
+            employeeId: 6
+            department:
+              departmentName: departmentName
+              departmentId: 1
+            user:
+              password: password
+              role: EMPLOYEE
+              userId: 5
+              username: username
+            email: email
+            supervisor: null
+            homeAddress:
+              country: country
+              city: city
+              street: street
+              postalCode: postalCode
+          timeCellId: 0
+          supervisor:
+            workPercentage: FULL_TIME
+            contractualHours: 5
+            contractType: FULL_TIME
+            name: name
+            employeeId: 6
+            department:
+              departmentName: departmentName
+              departmentId: 1
+            user:
+              password: password
+              role: EMPLOYEE
+              userId: 5
+              username: username
+            email: email
+            supervisor: null
+            homeAddress:
+              country: country
+              city: city
+              street: street
+              postalCode: postalCode
+          status: Pending
+        title: title
+        hoursWorked: 6.0274563
+      properties:
+        workHoursId:
+          description: The unique identifier for the work hours entry
+          type: integer
+        timeCell:
+          $ref: '#/components/schemas/TimeCell'
+        title:
+          description: The title or description of the work done
+          type: string
+        hoursWorked:
+          description: The number of hours worked
+          format: float
+          type: number
+      type: object
+    LeaveRequest:
+      example:
+        reason: reason
+        timeCell:
+          endTimeDate: 2000-01-23
+          timeOffType: Paid
+          startTimeDate: 2000-01-23
+          employee:
+            workPercentage: FULL_TIME
+            contractualHours: 5
+            contractType: FULL_TIME
+            name: name
+            employeeId: 6
+            department:
+              departmentName: departmentName
+              departmentId: 1
+            user:
+              password: password
+              role: EMPLOYEE
+              userId: 5
+              username: username
+            email: email
+            supervisor: null
+            homeAddress:
+              country: country
+              city: city
+              street: street
+              postalCode: postalCode
+          timeCellId: 0
+          supervisor:
+            workPercentage: FULL_TIME
+            contractualHours: 5
+            contractType: FULL_TIME
+            name: name
+            employeeId: 6
+            department:
+              departmentName: departmentName
+              departmentId: 1
+            user:
+              password: password
+              role: EMPLOYEE
+              userId: 5
+              username: username
+            email: email
+            supervisor: null
+            homeAddress:
+              country: country
+              city: city
+              street: street
+              postalCode: postalCode
+          status: Pending
+        leaveId: 0
+      properties:
+        leaveId:
+          description: The unique identifier for the leave request
+          type: integer
+        timeCell:
+          $ref: '#/components/schemas/TimeCell'
+        reason:
+          description: The reason for the leave request
+          type: string
+      type: object
+    OvertimeRequest:
+      example:
+        overtimeId: 0
+        hoursRequested: 6.0274563
+        timeCell:
+          endTimeDate: 2000-01-23
+          timeOffType: Paid
+          startTimeDate: 2000-01-23
+          employee:
+            workPercentage: FULL_TIME
+            contractualHours: 5
+            contractType: FULL_TIME
+            name: name
+            employeeId: 6
+            department:
+              departmentName: departmentName
+              departmentId: 1
+            user:
+              password: password
+              role: EMPLOYEE
+              userId: 5
+              username: username
+            email: email
+            supervisor: null
+            homeAddress:
+              country: country
+              city: city
+              street: street
+              postalCode: postalCode
+          timeCellId: 0
+          supervisor:
+            workPercentage: FULL_TIME
+            contractualHours: 5
+            contractType: FULL_TIME
+            name: name
+            employeeId: 6
+            department:
+              departmentName: departmentName
+              departmentId: 1
+            user:
+              password: password
+              role: EMPLOYEE
+              userId: 5
+              username: username
+            email: email
+            supervisor: null
+            homeAddress:
+              country: country
+              city: city
+              street: street
+              postalCode: postalCode
+          status: Pending
+      properties:
+        overtimeId:
+          description: The unique identifier for the overtime request
+          type: integer
+        timeCell:
+          $ref: '#/components/schemas/TimeCell'
+        hoursRequested:
+          description: The number of overtime hours requested
+          format: float
+          type: number
+      type: object
+    TimeOffRequest:
+      example:
+        reason: reason
+        timeCell:
+          endTimeDate: 2000-01-23
+          timeOffType: Paid
+          startTimeDate: 2000-01-23
+          employee:
+            workPercentage: FULL_TIME
+            contractualHours: 5
+            contractType: FULL_TIME
+            name: name
+            employeeId: 6
+            department:
+              departmentName: departmentName
+              departmentId: 1
+            user:
+              password: password
+              role: EMPLOYEE
+              userId: 5
+              username: username
+            email: email
+            supervisor: null
+            homeAddress:
+              country: country
+              city: city
+              street: street
+              postalCode: postalCode
+          timeCellId: 0
+          supervisor:
+            workPercentage: FULL_TIME
+            contractualHours: 5
+            contractType: FULL_TIME
+            name: name
+            employeeId: 6
+            department:
+              departmentName: departmentName
+              departmentId: 1
+            user:
+              password: password
+              role: EMPLOYEE
+              userId: 5
+              username: username
+            email: email
+            supervisor: null
+            homeAddress:
+              country: country
+              city: city
+              street: street
+              postalCode: postalCode
+          status: Pending
+        timeOffId: 0
+      properties:
+        timeOffId:
+          description: The unique identifier for the time off request
+          type: integer
+        timeCell:
+          $ref: '#/components/schemas/TimeCell'
+        reason:
+          description: The reason for the time off request
+          type: string
+      type: object
+    Department:
+      example:
+        departmentName: departmentName
+        departmentId: 1
+      properties:
+        departmentId:
+          type: integer
+        departmentName:
+          description: The name of the department
+          type: string
+      type: object
+    User:
+      example:
+        password: password
+        role: EMPLOYEE
+        userId: 5
+        username: username
+      properties:
+        userId:
+          type: integer
+        username:
+          description: The username of the employee
+          type: string
+        password:
+          type: string
+        role:
+          $ref: '#/components/schemas/UserRole'
+      type: object
+    HomeAddress:
+      example:
+        country: country
+        city: city
+        street: street
+        postalCode: postalCode
+      properties:
+        street:
+          type: string
+        city:
+          type: string
+        postalCode:
+          type: string
+        country:
+          type: string
+      type: object
+    ContractType:
+      enum:
+      - FULL_TIME
+      - PART_TIME
+      - CONTRACT
+      type: string
+    WorkPercentage:
+      enum:
+      - FULL_TIME
+      - PART_TIME
+      type: string
+    UserRole:
+      enum:
+      - EMPLOYEE
+      - MANAGER
+      - HR
+      type: string
+    Timestamp:
+      description: Timestamp of the message
+      example: 1627846382000
+      format: int64
+      type: integer
+    Error:
+      description: Error object
+      example:
+        message: Error message
+      properties:
+        message:
+          description: Error message
+          example: Error message
+          type: string
+      type: object
+    _payslips_get_200_response:
+      example:
+        message: Success
+      properties:
+        message:
+          example: Success
+          type: string
+      type: object
+    _payslips_post_201_response:
+      example:
+        message: Resource created successfully
+      properties:
+        message:
+          example: Resource created successfully
+          type: string
+      type: object
+  securitySchemes:
+    bearerAuth:
+      bearerFormat: JWT
+      description: JWT token
+      scheme: bearer
+      type: http
