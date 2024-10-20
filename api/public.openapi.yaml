@@ -1,0 +1,1313 @@
+openapi: 3.0.3
+info:
+  title: HR System API
+  description: This is the API for an HR management system developed as part of a project. It handles employee management, time tracking, leave requests, and more.
+  version: 1.0.0
+servers:
+  - url: https://api.hr-system.com
+    description: Production server
+  - url: https://staging.api.hr-system.com
+    description: Staging server
+  - url: http://localhost:3000
+    description: Local development server
+
+components:
+  securitySchemes:
+    bearerAuth:
+      description: JWT token
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
+  schemas:
+    Person:
+      type: object
+      properties:
+        name:
+          type: string
+          format: full-name
+          description: The person's full name
+        homeAddress:
+          $ref: '#/components/schemas/HomeAddress'
+        email:
+          type: string
+          format: email
+          description: The person's email address
+
+    EmployeeBase:
+      allOf:
+        - $ref: '#/components/schemas/Person'
+        - type: object
+          properties:
+            employeeId:
+              type: integer
+              description: The ID of the employee
+            department:
+              $ref: '#/components/schemas/Department'
+            user:
+              $ref: '#/components/schemas/User'
+            contractType:
+              $ref: '#/components/schemas/ContractType'
+            workPercentage:
+              $ref: '#/components/schemas/WorkPercentage'
+            supervisor:
+              $ref: '#/components/schemas/Employee'
+            contractualHours:
+              type: integer
+              description: Total hours per week
+
+    Employee:
+      allOf:
+        - $ref: '#/components/schemas/EmployeeBase'
+
+    Payslip:
+      type: object
+      properties:
+        payslipId:
+          type: integer
+          description: The unique identifier for the payslip
+        employee:
+          $ref: '#/components/schemas/Employee'
+        generatedBy:
+          $ref: '#/components/schemas/User'
+        totalWorkedHours:
+          type: number
+          format: float
+          description: Total worked hours
+        totalBonusHours:
+          type: number
+          format: float
+          description: Total bonus hours
+        totalSalary:
+          type: number
+          format: float
+          description: Total salary
+        dateGenerated:
+          type: string
+          format: date
+          description: Date the payslip was generated
+
+    TimeCell:
+      type: object
+      properties:
+        timeCellId:
+          type: integer
+          description: The unique identifier for the time cell
+        employee:
+          $ref: '#/components/schemas/Employee'
+        supervisor:
+          $ref: '#/components/schemas/Employee'
+        status:
+          type: string
+          enum:
+            - Pending
+            - Approved
+            - Denied
+          description: The status of the time cell
+        timeOffType:
+          type: string
+          enum:
+            - Paid
+            - Unpaid
+            - Medical
+            - None
+          description: The type of time off
+        startTimeDate:
+          type: string
+          format: date
+          description: The start date and time of the time cell
+        endTimeDate:
+          type: string
+          format: date
+          description: The end date and time of the time cell
+
+    WorkHours:
+      type: object
+      properties:
+        workHoursId:
+          type: integer
+          description: The unique identifier for the work hours entry
+        timeCell:
+          $ref: '#/components/schemas/TimeCell'
+        title:
+          type: string
+          description: The title or description of the work done
+        hoursWorked:
+          type: number
+          format: float
+          description: The number of hours worked
+
+    LeaveRequest:
+      type: object
+      properties:
+        leaveId:
+          type: integer
+          description: The unique identifier for the leave request
+        timeCell:
+          $ref: '#/components/schemas/TimeCell'
+        reason:
+          type: string
+          description: The reason for the leave request
+
+    OvertimeRequest:
+      type: object
+      properties:
+        overtimeId:
+          type: integer
+          description: The unique identifier for the overtime request
+        timeCell:
+          $ref: '#/components/schemas/TimeCell'
+        hoursRequested:
+          type: number
+          format: float
+          description: The number of overtime hours requested
+
+    TimeOffRequest:
+      type: object
+      properties:
+        timeOffId:
+          type: integer
+          description: The unique identifier for the time off request
+        timeCell:
+          $ref: '#/components/schemas/TimeCell'
+        reason:
+          type: string
+          description: The reason for the time off request
+
+    Department:
+      type: object
+      properties:
+        departmentId:
+          type: integer
+        departmentName:
+          type: string
+          description: The name of the department
+
+    User:
+      type: object
+      properties:
+        userId:
+          type: integer
+        username:
+          type: string
+          description: The username of the employee
+        password:
+          type: string
+        role:
+          $ref: '#/components/schemas/UserRole'
+
+    HomeAddress:
+      type: object
+      properties:
+        street:
+          type: string
+        city:
+          type: string
+        postalCode:
+          type: string
+        country:
+          type: string
+
+    ContractType:
+      type: string
+      enum:
+        - FULL_TIME
+        - PART_TIME
+        - CONTRACT
+
+    WorkPercentage:
+      type: string
+      enum:
+        - FULL_TIME
+        - PART_TIME
+
+    UserRole:
+      type: string
+      enum:
+        - EMPLOYEE
+        - MANAGER
+        - HR
+
+    Timestamp:
+      description: Timestamp of the message
+      type: integer
+      format: int64
+      example: 1627846382000
+
+    Error:
+      type: object
+      description: Error object
+      example: { "message": "Error message" }
+      properties:
+        message:
+          description: Error message
+          example: "Error message"
+          type: string
+
+  headers:
+    Set-JWT:
+      schema:
+        type: string
+        description: JWT token
+        example: "jwt=tokenValue; Path=/; HttpOnly; Secure"
+    Clear-JWT:
+      schema:
+        type: string
+        description: JWT token clear
+        example: "jwt=; Expires=Thu, 01 Jan 1970 00:00:00 GMT; Path=/;"
+    HomeRedirect:
+      schema:
+        type: string
+        description: Home redirect
+        example: /
+    LoginRedirect:
+      schema:
+        type: string
+        description: Login redirect
+        example: /auth/login
+
+  responses:
+    AuthorizationSuccess:
+      description: OK
+      headers:
+        Set-Cookie:
+          $ref: "#/components/headers/Set-JWT"
+        Location:
+          $ref: "#/components/headers/HomeRedirect"
+
+    UnauthorizationSuccess:
+      description: OK
+      headers:
+        Set-Cookie:
+          $ref: "#/components/headers/Clear-JWT"
+
+    Success200:
+      description: OK
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              message:
+                type: string
+                example: Success
+
+    Created201:
+      description: Created
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              message:
+                type: string
+                example: Resource created successfully
+
+    NoContent204:
+      description: No Content
+
+    BadRequest400:
+      description: Bad Request
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/Error"
+
+    Unauthorized401:
+      description: Unauthorized access
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/Error"
+
+    NotFound404:
+      description: Resource not found
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/Error"
+
+    InternalServerError500:
+      description: Internal server error
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/Error"
+
+paths:
+  /payslips:
+    get:
+      summary: Get a list of all payslips
+      responses:
+        '200':
+          $ref: '#/components/responses/Success200'
+        '401':
+          $ref: '#/components/responses/Unauthorized401'
+        '500':
+          $ref: '#/components/responses/InternalServerError500'
+    post:
+      summary: Create a new payslip
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Payslip'
+      responses:
+        '201':
+          $ref: '#/components/responses/Created201'
+        '400':
+          $ref: '#/components/responses/BadRequest400'
+        '401':
+          $ref: '#/components/responses/Unauthorized401'
+        '500':
+          $ref: '#/components/responses/InternalServerError500'
+
+  /payslips/{payslipId}:
+    get:
+      summary: Get details of a specific payslip
+      parameters:
+        - in: path
+          name: payslipId
+          schema:
+            type: integer
+          required: true
+          description: ID of the payslip
+      responses:
+        '200':
+          $ref: '#/components/responses/Success200'
+        '401':
+          $ref: '#/components/responses/Unauthorized401'
+        '404':
+          $ref: '#/components/responses/NotFound404'
+        '500':
+          $ref: '#/components/responses/InternalServerError500'
+    put:
+      summary: Update an existing payslip
+      parameters:
+        - in: path
+          name: payslipId
+          schema:
+            type: integer
+          required: true
+          description: ID of the payslip
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Payslip'
+      responses:
+        '200':
+          $ref: '#/components/responses/Success200'
+        '400':
+          $ref: '#/components/responses/BadRequest400'
+        '401':
+          $ref: '#/components/responses/Unauthorized401'
+        '404':
+          $ref: '#/components/responses/NotFound404'
+        '500':
+          $ref: '#/components/responses/InternalServerError500'
+    delete:
+      summary: Delete a specific payslip
+      parameters:
+        - in: path
+          name: payslipId
+          schema:
+            type: integer
+          required: true
+          description: ID of the payslip
+      responses:
+        '204':
+          $ref: '#/components/responses/NoContent204'
+        '401':
+          $ref: '#/components/responses/Unauthorized401'
+        '404':
+          $ref: '#/components/responses/NotFound404'
+        '500':
+          $ref: '#/components/responses/InternalServerError500'
+
+  /timecells:
+    get:
+      summary: Get a list of all time cells
+      responses:
+        '200':
+          $ref: '#/components/responses/Success200'
+        '401':
+          $ref: '#/components/responses/Unauthorized401'
+        '500':
+          $ref: '#/components/responses/InternalServerError500'
+    post:
+      summary: Create a new time cell
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TimeCell'
+      responses:
+        '201':
+          $ref: '#/components/responses/Created201'
+        '400':
+          $ref: '#/components/responses/BadRequest400'
+        '401':
+          $ref: '#/components/responses/Unauthorized401'
+        '500':
+          $ref: '#/components/responses/InternalServerError500'
+
+  /timecells/{timeCellId}:
+    get:
+      summary: Get details of a specific time cell
+      parameters:
+        - in: path
+          name: timeCellId
+          schema:
+            type: integer
+          required: true
+          description: ID of the time cell
+      responses:
+        '200':
+          $ref: '#/components/responses/Success200'
+        '401':
+          $ref: '#/components/responses/Unauthorized401'
+        '404':
+          $ref: '#/components/responses/NotFound404'
+        '500':
+          $ref: '#/components/responses/InternalServerError500'
+    put:
+      summary: Update an existing time cell
+      parameters:
+        - in: path
+          name: timeCellId
+          schema:
+            type: integer
+          required: true
+          description: ID of the time cell
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TimeCell'
+      responses:
+        '200':
+          $ref: '#/components/responses/Success200'
+        '400':
+          $ref: '#/components/responses/BadRequest400'
+        '401':
+          $ref: '#/components/responses/Unauthorized401'
+        '404':
+          $ref: '#/components/responses/NotFound404'
+        '500':
+          $ref: '#/components/responses/InternalServerError500'
+    delete:
+      summary: Delete a specific time cell
+      parameters:
+        - in: path
+          name: timeCellId
+          schema:
+            type: integer
+          required: true
+          description: ID of the time cell
+      responses:
+        '204':
+          $ref: '#/components/responses/NoContent204'
+        '401':
+          $ref: '#/components/responses/Unauthorized401'
+        '404':
+          $ref: '#/components/responses/NotFound404'
+        '500':
+          $ref: '#/components/responses/InternalServerError500'
+
+  /workhours:
+    get:
+      summary: Get a list of all work hours
+      responses:
+        '200':
+          $ref: '#/components/responses/Success200'
+        '401':
+          $ref: '#/components/responses/Unauthorized401'
+        '500':
+          $ref: '#/components/responses/InternalServerError500'
+    post:
+      summary: Create a new work hours entry
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/WorkHours'
+      responses:
+        '201':
+          $ref: '#/components/responses/Created201'
+        '400':
+          $ref: '#/components/responses/BadRequest400'
+        '401':
+          $ref: '#/components/responses/Unauthorized401'
+        '500':
+          $ref: '#/components/responses/InternalServerError500'
+
+  /workhours/{workHoursId}:
+    get:
+      summary: Get details of a specific work hours entry
+      parameters:
+        - in: path
+          name: workHoursId
+          schema:
+            type: integer
+          required: true
+          description: ID of the work hours entry
+      responses:
+        '200':
+          $ref: '#/components/responses/Success200'
+        '401':
+          $ref: '#/components/responses/Unauthorized401'
+        '404':
+          $ref: '#/components/responses/NotFound404'
+        '500':
+          $ref: '#/components/responses/InternalServerError500'
+    put:
+      summary: Update an existing work hours entry
+      parameters:
+        - in: path
+          name: workHoursId
+          schema:
+            type: integer
+          required: true
+          description: ID of the work hours entry
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/WorkHours'
+      responses:
+        '200':
+          $ref: '#/components/responses/Success200'
+        '400':
+          $ref: '#/components/responses/BadRequest400'
+        '401':
+          $ref: '#/components/responses/Unauthorized401'
+        '404':
+          $ref: '#/components/responses/NotFound404'
+        '500':
+          $ref: '#/components/responses/InternalServerError500'
+    delete:
+      summary: Delete a specific work hours entry
+      parameters:
+        - in: path
+          name: workHoursId
+          schema:
+            type: integer
+          required: true
+          description: ID of the work hours entry
+      responses:
+        '204':
+          $ref: '#/components/responses/NoContent204'
+        '401':
+          $ref: '#/components/responses/Unauthorized401'
+        '404':
+          $ref: '#/components/responses/NotFound404'
+        '500':
+          $ref: '#/components/responses/InternalServerError500'
+
+  /leaverequests:
+    get:
+      summary: Get a list of all leave requests
+      responses:
+        '200':
+          $ref: '#/components/responses/Success200'
+        '401':
+          $ref: '#/components/responses/Unauthorized401'
+        '500':
+          $ref: '#/components/responses/InternalServerError500'
+    post:
+      summary: Create a new leave request
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LeaveRequest'
+      responses:
+        '201':
+          $ref: '#/components/responses/Created201'
+        '400':
+          $ref: '#/components/responses/BadRequest400'
+        '401':
+          $ref: '#/components/responses/Unauthorized401'
+        '500':
+          $ref: '#/components/responses/InternalServerError500'
+
+  /leaverequests/{leaveId}:
+    get:
+      summary: Get details of a specific leave request
+      parameters:
+        - in: path
+          name: leaveId
+          schema:
+            type: integer
+          required: true
+          description: ID of the leave request
+      responses:
+        '200':
+          $ref: '#/components/responses/Success200'
+        '401':
+          $ref: '#/components/responses/Unauthorized401'
+        '404':
+          $ref: '#/components/responses/NotFound404'
+        '500':
+          $ref: '#/components/responses/InternalServerError500'
+    put:
+      summary: Update an existing leave request
+      parameters:
+        - in: path
+          name: leaveId
+          schema:
+            type: integer
+          required: true
+          description: ID of the leave request
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LeaveRequest'
+      responses:
+        '200':
+          $ref: '#/components/responses/Success200'
+        '400':
+          $ref: '#/components/responses/BadRequest400'
+        '401':
+          $ref: '#/components/responses/Unauthorized401'
+        '404':
+          $ref: '#/components/responses/NotFound404'
+        '500':
+          $ref: '#/components/responses/InternalServerError500'
+    delete:
+      summary: Delete a specific leave request
+      parameters:
+        - in: path
+          name: leaveId
+          schema:
+            type: integer
+          required: true
+          description: ID of the leave request
+      responses:
+        '204':
+          $ref: '#/components/responses/NoContent204'
+        '401':
+          $ref: '#/components/responses/Unauthorized401'
+        '404':
+          $ref: '#/components/responses/NotFound404'
+        '500':
+          $ref: '#/components/responses/InternalServerError500'
+
+  /overtimerequests:
+    get:
+      summary: Get a list of all overtime requests
+      responses:
+        '200':
+          $ref: '#/components/responses/Success200'
+        '401':
+          $ref: '#/components/responses/Unauthorized401'
+        '500':
+          $ref: '#/components/responses/InternalServerError500'
+    post:
+      summary: Create a new overtime request
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/OvertimeRequest'
+      responses:
+        '201':
+          $ref: '#/components/responses/Created201'
+        '400':
+          $ref: '#/components/responses/BadRequest400'
+        '401':
+          $ref: '#/components/responses/Unauthorized401'
+        '500':
+          $ref: '#/components/responses/InternalServerError500'
+
+  /overtimerequests/{overtimeId}:
+    get:
+      summary: Get details of a specific overtime request
+      parameters:
+        - in: path
+          name: overtimeId
+          schema:
+            type: integer
+          required: true
+          description: ID of the overtime request
+      responses:
+        '200':
+          $ref: '#/components/responses/Success200'
+        '401':
+          $ref: '#/components/responses/Unauthorized401'
+        '404':
+          $ref: '#/components/responses/NotFound404'
+        '500':
+          $ref: '#/components/responses/InternalServerError500'
+    put:
+      summary: Update an existing overtime request
+      parameters:
+        - in: path
+          name: overtimeId
+          schema:
+            type: integer
+          required: true
+          description: ID of the overtime request
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/OvertimeRequest'
+      responses:
+        '200':
+          $ref: '#/components/responses/Success200'
+        '400':
+          $ref: '#/components/responses/BadRequest400'
+        '401':
+          $ref: '#/components/responses/Unauthorized401'
+        '404':
+          $ref: '#/components/responses/NotFound404'
+        '500':
+          $ref: '#/components/responses/InternalServerError500'
+    delete:
+      summary: Delete a specific overtime request
+      parameters:
+        - in: path
+          name: overtimeId
+          schema:
+            type: integer
+          required: true
+          description: ID of the overtime request
+      responses:
+        '204':
+          $ref: '#/components/responses/NoContent204'
+        '401':
+          $ref: '#/components/responses/Unauthorized401'
+        '404':
+          $ref: '#/components/responses/NotFound404'
+        '500':
+          $ref: '#/components/responses/InternalServerError500'
+
+  /timeoffrequests:
+    get:
+      summary: Get a list of all time off requests
+      responses:
+        '200':
+          $ref: '#/components/responses/Success200'
+        '401':
+          $ref: '#/components/responses/Unauthorized401'
+        '500':
+          $ref: '#/components/responses/InternalServerError500'
+    post:
+      summary: Create a new time off request
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TimeOffRequest'
+      responses:
+        '201':
+          $ref: '#/components/responses/Created201'
+        '400':
+          $ref: '#/components/responses/BadRequest400'
+        '401':
+          $ref: '#/components/responses/Unauthorized401'
+        '500':
+          $ref: '#/components/responses/InternalServerError500'
+
+  /timeoffrequests/{timeOffId}:
+    get:
+      summary: Get details of a specific time off request
+      parameters:
+        - in: path
+          name: timeOffId
+          schema:
+            type: integer
+          required: true
+          description: ID of the time off request
+      responses:
+        '200':
+          $ref: '#/components/responses/Success200'
+        '401':
+          $ref: '#/components/responses/Unauthorized401'
+        '404':
+          $ref: '#/components/responses/NotFound404'
+        '500':
+          $ref: '#/components/responses/InternalServerError500'
+    put:
+      summary: Update an existing time off request
+      parameters:
+        - in: path
+          name: timeOffId
+          schema:
+            type: integer
+          required: true
+          description: ID of the time off request
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TimeOffRequest'
+      responses:
+        '200':
+          $ref: '#/components/responses/Success200'
+        '400':
+          $ref: '#/components/responses/BadRequest400'
+        '401':
+          $ref: '#/components/responses/Unauthorized401'
+        '404':
+          $ref: '#/components/responses/NotFound404'
+        '500':
+          $ref: '#/components/responses/InternalServerError500'
+    delete:
+      summary: Delete a specific time off request
+      parameters:
+        - in: path
+          name: timeOffId
+          schema:
+            type: integer
+          required: true
+          description: ID of the time off request
+      responses:
+        '204':
+          $ref: '#/components/responses/NoContent204'
+        '401':
+          $ref: '#/components/responses/BadRequest400'
+        '404':
+          $ref: '#/components/responses/NotFound404'
+        '500':
+          $ref: '#/components/responses/InternalServerError500'
+
+  /employees:
+    get:
+      summary: Get a list of all employees
+      parameters:
+        - in: query
+          name: departmentId
+          schema:
+            type: integer
+          description: Filter employees by department ID
+        - in: query
+          name: role
+          schema:
+            type: string
+            description: Filter employees by role (e.g., EMPLOYEE, MANAGER, HR)
+        - in: header
+          name: Authorization
+          schema:
+            type: string
+          required: true
+          description: Bearer token for authorization
+      responses:
+        '200':
+          $ref: '#/components/responses/Success200'
+        '401':
+          $ref: '#/components/responses/Unauthorized401'
+        '500':
+          $ref: '#/components/responses/InternalServerError500'
+    post:
+      summary: Create a new employee
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Employee'
+      parameters:
+        - in: header
+          name: Authorization
+          schema:
+            type: string
+          required: true
+          description: Bearer token for authorization
+      responses:
+        '201':
+          $ref: '#/components/responses/Created201'
+        '400':
+          $ref: '#/components/responses/BadRequest400'
+        '401':
+          $ref: '#/components/responses/Unauthorized401'
+        '500':
+          $ref: '#/components/responses/InternalServerError500'
+
+  /employees/{employeeId}:
+    get:
+      summary: Get details of a specific employee
+      parameters:
+        - in: path
+          name: employeeId
+          schema:
+            type: integer
+          required: true
+          description: ID of the employee
+        - in: header
+          name: Authorization
+          schema:
+            type: string
+          required: true
+          description: Bearer token for authorization
+      responses:
+        '200':
+          $ref: '#/components/responses/Success200'
+        '401':
+          $ref: '#/components/responses/Unauthorized401'
+        '404':
+          $ref: '#/components/responses/NotFound404'
+        '500':
+          $ref: '#/components/responses/InternalServerError500'
+    put:
+      summary: Update an existing employee
+      parameters:
+        - in: path
+          name: employeeId
+          schema:
+            type: integer
+          required: true
+          description: ID of the employee
+        - in: header
+          name: Authorization
+          schema:
+            type: string
+          required: true
+          description: Bearer token for authorization
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Employee'
+      responses:
+        '200':
+          $ref: '#/components/responses/Success200'
+        '400':
+          $ref: '#/components/responses/BadRequest400'
+        '401':
+          $ref: '#/components/responses/Unauthorized401'
+        '404':
+          $ref: '#/components/responses/NotFound404'
+        '500':
+          $ref: '#/components/responses/InternalServerError500'
+    delete:
+      summary: Delete a specific employee
+      parameters:
+        - in: path
+          name: employeeId
+          schema:
+            type: integer
+          required: true
+          description: ID of the employee
+        - in: header
+          name: Authorization
+          schema:
+            type: string
+          required: true
+          description: Bearer token for authorization
+      responses:
+        '204':
+          $ref: '#/components/responses/NoContent204'
+        '401':
+          $ref: '#/components/responses/Unauthorized401'
+        '404':
+          $ref: '#/components/responses/NotFound404'
+        '500':
+          $ref: '#/components/responses/InternalServerError500'
+
+  /employees/{employeeId}/supervisor:
+    get:
+      summary: Get supervisor details for a specific employee
+      parameters:
+        - in: path
+          name: employeeId
+          schema:
+            type: integer
+          required: true
+          description: ID of the employee
+        - in: header
+          name: Authorization
+          schema:
+            type: string
+          required: true
+          description: Bearer token for authorization
+      responses:
+        '200':
+          description: Supervisor details
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Employee'
+        '401':
+          $ref: '#/components/responses/Unauthorized401'
+        '404':
+          $ref: '#/components/responses/NotFound404'
+        '500':
+          $ref: '#/components/responses/InternalServerError500'
+
+  /employees/{employeeId}/subordinates:
+    get:
+      summary: Get a list of all subordinates for a specific supervisor
+      parameters:
+        - in: path
+          name: employeeId
+          schema:
+            type: integer
+          required: true
+          description: ID of the supervisor
+        - in: header
+          name: Authorization
+          schema:
+            type: string
+          required: true
+          description: Bearer token for authorization
+      responses:
+        '200':
+          description: List of subordinates
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Employee'
+        '401':
+          $ref: '#/components/responses/Unauthorized401'
+        '404':
+          $ref: '#/components/responses/NotFound404'
+        '500':
+          $ref: '#/components/responses/InternalServerError500'
+          
+  /departments:
+    get:
+      summary: Get a list of all departments
+      parameters:
+        - in: header
+          name: Authorization
+          schema:
+            type: string
+          required: true
+          description: Bearer token for authorization
+      responses:
+        '200':
+          $ref: '#/components/responses/Success200'
+        '401':
+          $ref: '#/components/responses/Unauthorized401'
+        '500':
+          $ref: '#/components/responses/InternalServerError500'
+    post:
+      summary: Create a new department
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Department'
+      parameters:
+        - in: header
+          name: Authorization
+          schema:
+            type: string
+          required: true
+          description: Bearer token for authorization
+      responses:
+        '201':
+          $ref: '#/components/responses/Created201'
+        '400':
+          $ref: '#/components/responses/BadRequest400'
+        '401':
+          $ref: '#/components/responses/Unauthorized401'
+        '500':
+          $ref: '#/components/responses/InternalServerError500'
+
+  /departments/{departmentId}:
+    get:
+      summary: Get details of a specific department
+      parameters:
+        - in: path
+          name: departmentId
+          schema:
+            type: integer
+          required: true
+          description: ID of the department
+        - in: header
+          name: Authorization
+          schema:
+            type: string
+          required: true
+          description: Bearer token for authorization
+      responses:
+        '200':
+          $ref: '#/components/responses/Success200'
+        '401':
+          $ref: '#/components/responses/Unauthorized401'
+        '404':
+          $ref: '#/components/responses/NotFound404'
+        '500':
+          $ref: '#/components/responses/InternalServerError500'
+    put:
+      summary: Update an existing department
+      parameters:
+        - in: path
+          name: departmentId
+          schema:
+            type: integer
+          required: true
+          description: ID of the department
+        - in: header
+          name: Authorization
+          schema:
+            type: string
+          required: true
+          description: Bearer token for authorization
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Department'
+      responses:
+        '200':
+          $ref: '#/components/responses/Success200'
+        '400':
+          $ref: '#/components/responses/BadRequest400'
+        '401':
+          $ref: '#/components/responses/Unauthorized401'
+        '404':
+          $ref: '#/components/responses/NotFound404'
+        '500':
+          $ref: '#/components/responses/InternalServerError500'
+    delete:
+      summary: Delete a specific department
+      parameters:
+        - in: path
+          name: departmentId
+          schema:
+            type: integer
+          required: true
+          description: ID of the department
+        - in: header
+          name: Authorization
+          schema:
+            type: string
+          required: true
+          description: Bearer token for authorization
+      responses:
+        '204':
+          $ref: '#/components/responses/NoContent204'
+        '401':
+          $ref: '#/components/responses/Unauthorized401'
+        '404':
+          $ref: '#/components/responses/NotFound404'
+        '500':
+          $ref: '#/components/responses/InternalServerError500'
+
+  /departments/{departmentId}/employees:
+    get:
+      summary: Get a list of all employees in a specific department
+      parameters:
+        - in: path
+          name: departmentId
+          schema:
+            type: integer
+          required: true
+          description: ID of the department
+        - in: header
+          name: Authorization
+          schema:
+            type: string
+          required: true
+          description: Bearer token for authorization
+      responses:
+        '200':
+          description: List of employees in the department
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Employee'
+        '401':
+          $ref: '#/components/responses/Unauthorized401'
+        '404':
+          $ref: '#/components/responses/NotFound404'
+        '500':
+          $ref: '#/components/responses/InternalServerError500'
+
+    post:
+      summary: Add an employee to a department
+      parameters:
+        - in: path
+          name: departmentId
+          schema:
+            type: integer
+          required: true
+          description: ID of the department
+        - in: header
+          name: Authorization
+          schema:
+            type: string
+          required: true
+          description: Bearer token for authorization
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                employeeId:
+                  type: integer
+                  description: The ID of the employee to add
+      responses:
+        '201':
+          description: Employee added to the department
+        '400':
+          $ref: '#/components/responses/BadRequest400'
+        '401':
+          $ref: '#/components/responses/Unauthorized401'
+        '404':
+          $ref: '#/components/responses/NotFound404'
+        '500':
+          $ref: '#/components/responses/InternalServerError500'
+
+  /departments/{departmentId}/employees/{employeeId}:
+    delete:
+      summary: Remove an employee from a department
+      parameters:
+        - in: path
+          name: departmentId
+          schema:
+            type: integer
+          required: true
+          description: ID of the department
+        - in: path
+          name: employeeId
+          schema:
+            type: integer
+          required: true
+          description: ID of the employee to be removed
+        - in: header
+          name: Authorization
+          schema:
+            type: string
+          required: true
+          description: Bearer token for authorization
+      responses:
+        '204':
+          description: Employee removed from the department
+        '400':
+          $ref: '#/components/responses/BadRequest400'
+        '401':
+          $ref: '#/components/responses/Unauthorized401'
+        '404':
+          $ref: '#/components/responses/NotFound404'
+        '500':
+          $ref: '#/components/responses/InternalServerError500'
+
+
