@@ -1,0 +1,1 @@
+openapi-generator generate -i /api/public.openapi.yaml -g spring -o tmp/gen/
