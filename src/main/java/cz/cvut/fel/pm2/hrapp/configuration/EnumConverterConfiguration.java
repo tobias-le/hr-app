@@ -1,9 +1,9 @@
 package cz.cvut.fel.pm2.hrapp.configuration;
 
 
-import cz.cvut.fel.pm2.hrapp.model.enums.ContractType;
-import cz.cvut.fel.pm2.hrapp.model.enums.UserRole;
-import cz.cvut.fel.pm2.hrapp.model.enums.WorkPercentage;
+import cz.cvut.fel.pm2.hrapp.employeemanagement.model.enums.ContractType;
+import cz.cvut.fel.pm2.hrapp.employeemanagement.model.enums.UserRole;
+import cz.cvut.fel.pm2.hrapp.employeemanagement.model.enums.WorkPercentage;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.convert.converter.Converter;
