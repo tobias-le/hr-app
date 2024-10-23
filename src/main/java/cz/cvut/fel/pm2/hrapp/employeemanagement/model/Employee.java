@@ -1,5 +1,6 @@
 package cz.cvut.fel.pm2.hrapp.employeemanagement.model;
 
+import cz.cvut.fel.pm2.hrapp.employeemanagement.dto.EmployeeDto;
 import cz.cvut.fel.pm2.hrapp.employeemanagement.model.enums.ContractType;
 import cz.cvut.fel.pm2.hrapp.employeemanagement.model.enums.WorkPercentage;
 import jakarta.persistence.*;
@@ -45,4 +46,21 @@ public class Employee {
 
     // The total amount of leave/vacation days the employee has available
     private BigDecimal availableTimeOff;
+
+    public EmployeeDto toDto() {
+        EmployeeDto dto = new EmployeeDto();
+        dto.setDepartmentName(department.getDepartmentName());
+        dto.setName(name);
+        dto.setStreet(address.getStreet());
+        dto.setCity(address.getCity());
+        dto.setPostalCode(address.getPostalCode());
+        dto.setCountry(address.getCountry());
+        dto.setContractType(contractType.name());
+        dto.setContractualHours(contractualHours);
+        dto.setWorkPercentage(workPercentage);
+        dto.setAccountNumber(accountNumber);
+        dto.setSupervisorName(supervisor.getName());
+        dto.setAvailableTimeOff(availableTimeOff);
+        return dto;
+    }
 }
