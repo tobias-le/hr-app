@@ -1,51 +1,37 @@
-# Ignore operating system files
-*.DS_Store
-/src/.DS_Store
-Thumbs.db
-
-# Ignore node_modules directory (for Node.js projects)
-node_modules/
-
-# Ignore log files
-*.log
-
-# Ignore build directories
-/dist/
-/build/
-
-# Ignore environment variables files
-.env
-
-# Ignore compiled Python files
-__pycache__/
-*.py[cod]
-
-# Ignore IDE settings
-.vscode/
-.idea/
-*.suo
-*.ntvs*
-*.njsproj
-*.sln
-
-# Ignore macOS files
-.DS_Store
-
-# Ignore temporary files
-*.tmp
-*.bak
-*.swp
-
-# Ignore Ansible-generated files
-*.retry
-
-# Ignore Kubernetes config files
-.kube/
-*.kubeconfig
-
-# Ignore Terraform state files
-*.tfstate
-*.tfstate.backup
-
-api/tmp
+HELP.md
 target/
+!.mvn/wrapper/maven-wrapper.jar
+!**/src/main/**/target/
+!**/src/test/**/target/
+
+### STS ###
+.apt_generated
+.classpath
+.factorypath
+.project
+.settings
+.springBeans
+.sts4-cache
+
+### IntelliJ IDEA ###
+.idea
+*.iws
+*.iml
+*.ipr
+*.mvn
+*mvnw
+*mvnw.cmd
+*.gitattributes
+
+### NetBeans ###
+/nbproject/private/
+/nbbuild/
+/dist/
+/nbdist/
+/.nb-gradle/
+build/
+!**/src/main/**/build/
+!**/src/test/**/build/
+
+### VS Code ###
+.vscode/
