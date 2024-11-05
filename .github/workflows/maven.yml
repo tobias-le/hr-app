@@ -58,6 +58,12 @@ jobs:
           reporter: java-junit
           fail-on-error: false
 
+      - name: Surefire Report
+        if: always()
+        uses: ScaCap/action-surefire-report@v1.8.0
+        with:
+          path: target/surefire-reports/*.xml
+
   # Code Coverage job
   code_coverage:
     runs-on: ubuntu-latest
