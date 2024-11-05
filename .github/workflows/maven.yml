@@ -55,7 +55,7 @@ jobs:
         with:
           name: Java Tests
           path: target/surefire-reports/*.xml
-          reporter: junit
+          reporter: java-junit
           fail-on-error: false
 
   # Code Coverage job
