@@ -14,4 +14,13 @@ public enum EmploymentStatus {
         this.expectedHoursPerDay = expectedHoursPerDay;
     }
 
+    public static EmploymentStatus fromString(String text) {
+        for (EmploymentStatus b : EmploymentStatus.values()) {
+            if (b.name().equalsIgnoreCase(text)) {
+                return b;
+            }
+        }
+        return null;
+    }
+
 }

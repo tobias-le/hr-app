@@ -12,10 +12,7 @@ import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -48,5 +45,12 @@ public class EmployeeController {
         // Return a new Page<EmployeeDto> based on the mapped list and pageable information
         var result =  new PageImpl<>(employeeDtoList, pageable, employeePage.getTotalElements());
         return ResponseEntity.ok(result);
+    }
+
+    @PutMapping("/{id}")
+    @Operation(summary = "Update employee", description = "Update employee by id")
+    public ResponseEntity<EmployeeDto> updateEmployee(@PathVariable Long id, @RequestBody EmployeeDto employeeDto) {
+        Employee updatedEmployee = employeeService.updateEmployee(id, employeeDto);
+        return ResponseEntity.ok(MapperUtils.toDto(updatedEmployee));
     }
 }
