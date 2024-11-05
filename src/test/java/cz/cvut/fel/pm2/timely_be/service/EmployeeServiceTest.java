@@ -69,4 +69,9 @@ public class EmployeeServiceTest {
         assertEquals(employeeDto.getJobTitle(), result.getJobTitle());
         assertEquals(employeeDto.getPhoneNumber(), result.getPhoneNumber());
     }
+
+    @Test
+    void intentionallyFailingTest() {
+        fail("This test is supposed to fail");
+    }
 }
