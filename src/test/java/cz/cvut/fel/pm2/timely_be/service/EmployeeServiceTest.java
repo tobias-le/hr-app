@@ -13,6 +13,7 @@ import java.util.Arrays;
 import static cz.cvut.fel.pm2.timely_be.enums.EmploymentStatus.FULL_TIME;
 import static cz.cvut.fel.pm2.timely_be.enums.EmploymentStatus.PART_TIME;
 import static cz.cvut.fel.pm2.timely_be.utils.TestUtils.createEmployee;
+import static cz.cvut.fel.pm2.timely_be.utils.TestUtils.createEmployeeDto;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.when;
@@ -46,5 +47,26 @@ public class EmployeeServiceTest {
         assertNotNull(result);
         assertEquals(2, result.getTotalElements());
         assertEquals(employees, result.getContent());
+    }
+
+    @Test
+    public void testUpdateEmployee() {
+        // Given
+        var employee = createEmployee(FULL_TIME);
+        var employeeDto = createEmployeeDto(PART_TIME);
+
+        when(employeeRepository.findById(anyLong())).thenReturn(java.util.Optional.of(employee));
+        when(employeeRepository.save(any())).thenReturn(employee);
+
+        // When
+        var result = employeeService.updateEmployee(1L, employeeDto);
+
+        // Then
+        assertNotNull(result);
+        assertEquals(employeeDto.getName(), result.getName());
+        assertEquals(employeeDto.getEmail(), result.getEmail());
+        assertEquals(PART_TIME, result.getEmploymentStatus());
+        assertEquals(employeeDto.getJobTitle(), result.getJobTitle());
+        assertEquals(employeeDto.getPhoneNumber(), result.getPhoneNumber());
     }
 }
