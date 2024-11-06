@@ -44,6 +44,10 @@ public class LeaveService {
         return leaveRepository.findAll();
     }
 
+    public String getReasonById(Long id) {
+        return leaveRepository.findReasonById(id);
+    }
+
     public List<Leave> getPendingLeaveRequestsByEmployeeId(Long employeeId) {
         return leaveRepository.findPendingLeaveRequestsByEmployeeId(employeeId);
     }

@@ -14,4 +14,5 @@ public class LeaveDto {
     private LocalDate endDate;
     private LeaveStatus leaveStatus;
     private Integer leaveAmount;
+    private String reason;
 }

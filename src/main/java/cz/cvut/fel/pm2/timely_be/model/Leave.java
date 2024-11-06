@@ -36,4 +36,7 @@ public class Leave {
     @Enumerated(EnumType.STRING)
     @Column(name = "leave_status", nullable = false)
     private LeaveStatus status;
+
+    @Column(name="reason", nullable = false)
+    private String reason;
 }

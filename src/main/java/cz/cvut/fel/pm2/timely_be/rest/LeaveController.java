@@ -67,6 +67,17 @@ public class LeaveController {
         }
     }
 
+    @GetMapping("/{employeeId}/reason")
+    @Operation(summary = "Get reason for leave request", description = "Retrieves the reason for a specific leave request by its ID.")
+    public ResponseEntity<?> getLeaveReasonById(@PathVariable Long employeeId) {
+        try {
+            String reason = leaveService.getReasonById(employeeId);
+            return Optional.ofNullable(reason).map(ResponseEntity::ok).orElse(ResponseEntity.status(HttpStatus.NOT_FOUND).body("Leave request ID not found"));
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Error retrieving reason for leave request");
+        }
+    }
+
     @GetMapping("/{employeeId}/pending")
     @Operation(summary = "Get pending leave requests by employee ID", description = "Retrieves a list of pending leave requests for a specific employee by their ID.")
     public ResponseEntity<?> getPendingLeaveRequestsByEmployeeId(@PathVariable Long employeeId) {

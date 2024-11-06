@@ -20,4 +20,7 @@ public interface LeaveRepository extends JpaRepository<Leave, Long> {
 
     @Query("SELECT l FROM Leave l WHERE l.employeeId = :employeeId")
     List<Leave> findLeaveRequestsByEmployeeId(Long employeeId);
+
+    @Query("SELECT l.reason FROM Leave l WHERE l.id = :id")
+    String findReasonById(Long id);
 }
