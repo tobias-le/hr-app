@@ -2,6 +2,7 @@ package cz.cvut.fel.pm2.timely_be.model;
 
 import jakarta.persistence.*;
 import lombok.Data;
+import lombok.NonNull;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -26,6 +27,7 @@ public class Team {
     @OneToMany(mappedBy = "team")  // `mappedBy` points to `team` in Employee
     private List<Employee> members;
 
+    @NonNull
     public List<Employee> getMembers() {
         if (members == null) {
             members = new ArrayList<>();

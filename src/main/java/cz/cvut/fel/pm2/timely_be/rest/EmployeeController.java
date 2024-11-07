@@ -40,7 +40,7 @@ public class EmployeeController {
 
         // Convert Employee entities to EmployeeDto using EmployeeMapper
         List<EmployeeDto> employeeDtoList = employeePage.getContent().stream()
-                .map(MapperUtils::toDto)
+                .map(MapperUtils::toEmployeeDto)
                 .collect(Collectors.toList());
 
         // Return a new Page<EmployeeDto> based on the mapped list and pageable information
@@ -52,14 +52,14 @@ public class EmployeeController {
     @Operation(summary = "Update employee", description = "Update employee by id")
     public ResponseEntity<EmployeeDto> updateEmployee(@PathVariable Long id, @RequestBody EmployeeDto employeeDto) {
         Employee updatedEmployee = employeeService.updateEmployee(id, employeeDto);
-        return ResponseEntity.ok(MapperUtils.toDto(updatedEmployee));
+        return ResponseEntity.ok(MapperUtils.toEmployeeDto(updatedEmployee));
     }
 
     @GetMapping("/{id}")
     @Operation(summary = "Get employee by id", description = "Get employee by id")
     public ResponseEntity<EmployeeDto> getEmployee(@PathVariable Long id) {
         Employee employee = employeeService.getEmployee(id);
-        return ResponseEntity.ok(MapperUtils.toDto(employee));
+        return ResponseEntity.ok(MapperUtils.toEmployeeDto(employee));
     }
 
     @GetMapping("/withId")

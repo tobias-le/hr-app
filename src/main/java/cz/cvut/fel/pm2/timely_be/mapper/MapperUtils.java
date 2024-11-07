@@ -12,8 +12,9 @@ import cz.cvut.fel.pm2.timely_be.model.Team;
 import java.util.stream.Collectors;
 
 public class MapperUtils {
-    public static EmployeeDto toDto(Employee employee) {
+    public static EmployeeDto toEmployeeDto(Employee employee) {
         EmployeeDto employeeDto = new EmployeeDto();
+        employeeDto.setId(employee.getEmployeeId());
         employeeDto.setName(employee.getName());
         employeeDto.setJobTitle(employee.getJobTitle());
         employeeDto.setEmploymentStatus(employee.getEmploymentStatus().name());
@@ -23,7 +24,7 @@ public class MapperUtils {
         return employeeDto;
     }
 
-    public static TeamDTO toDto(Team team) {
+    public static TeamDTO toTeamDto(Team team) {
         TeamDTO teamDTO = new TeamDTO();
         teamDTO.setTeamId(team.getId());
         teamDTO.setName(team.getName());
@@ -32,7 +33,7 @@ public class MapperUtils {
         return teamDTO;
     }
 
-    public static AttendanceRecordDto toDto(AttendanceRecord attendance) {
+    public static AttendanceRecordDto toAttendanceRecordDto(AttendanceRecord attendance) {
         AttendanceRecordDto attendanceRecordDto = new AttendanceRecordDto();
         attendanceRecordDto.setMember(attendance.getMember().getName());
         attendanceRecordDto.setDate(attendance.getDate());

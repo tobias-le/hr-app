@@ -45,7 +45,7 @@ public class AttendanceService {
         return attendanceRecordRepository
                 .findByTeamIdAndDateBetween(teamId, startOfWeek, today)
                 .stream()
-                .map(MapperUtils::toDto)
+                .map(MapperUtils::toAttendanceRecordDto)
                 .collect(Collectors.toList());
     }
 
@@ -54,7 +54,7 @@ public class AttendanceService {
         return attendanceRecordRepository
                 .findByMember(member)
                 .stream()
-                .map(MapperUtils::toDto)
+                .map(MapperUtils::toAttendanceRecordDto)
                 .collect(Collectors.toList());
     }
 
@@ -62,7 +62,7 @@ public class AttendanceService {
     public Optional<AttendanceRecordDto> getAttendanceRecordById(Long attendanceId) {
         return attendanceRecordRepository
                 .findById(attendanceId)
-                .map(MapperUtils::toDto);
+                .map(MapperUtils::toAttendanceRecordDto);
     }
 
     public AttendanceSummaryDTO getCurrentWeekAttendancePerformance(Long teamId) {
@@ -101,6 +101,7 @@ public class AttendanceService {
         int totalDaysInRange = (int) (Duration.between(startOfWeek.atStartOfDay(), endOfWeek.atStartOfDay()).toDays()) + 1;
         double averageHoursPerDay = (double) totalHours / 5;
         double attendanceRate;
+        assert team != null;
         if (!team.getMembers().isEmpty()) {
             attendanceRate = totalDaysPresent / (double) (team.getMembers().size() * totalDaysInRange) * 100;
         } else {
