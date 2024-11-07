@@ -2,14 +2,23 @@ package cz.cvut.fel.pm2.timely_be.rest;
 
 import cz.cvut.fel.pm2.timely_be.dto.AttendanceRecordDto;
 import cz.cvut.fel.pm2.timely_be.dto.AttendanceSummaryDTO;
+import cz.cvut.fel.pm2.timely_be.mapper.MapperUtils;
+import cz.cvut.fel.pm2.timely_be.model.AttendanceRecord;
 import cz.cvut.fel.pm2.timely_be.model.Employee;
+import cz.cvut.fel.pm2.timely_be.model.Project;
 import cz.cvut.fel.pm2.timely_be.service.AttendanceService;
+import cz.cvut.fel.pm2.timely_be.service.EmployeeService;
+import cz.cvut.fel.pm2.timely_be.service.ProjectService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import cz.cvut.fel.pm2.timely_be.repository.AttendanceRecordRepository;
 
+import java.net.URI;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
 
 @RestController
@@ -18,10 +27,19 @@ import java.util.List;
 public class AttendanceController {
 
     private final AttendanceService attendanceService;
+    private final EmployeeService employeeService;
+    private final ProjectService projectService;
+    private final AttendanceRecordRepository attendanceRecordRepository;
 
     @Autowired
-    public AttendanceController(AttendanceService attendanceService) {
+    public AttendanceController(AttendanceService attendanceService,
+                                EmployeeService employeeService,
+                                ProjectService projectService,
+                                AttendanceRecordRepository attendanceRecordRepository) {
         this.attendanceService = attendanceService;
+        this.employeeService = employeeService;
+        this.projectService = projectService;
+        this.attendanceRecordRepository = attendanceRecordRepository;
     }
 
     @GetMapping("/{id}")
@@ -53,5 +71,29 @@ public class AttendanceController {
         // Call the service method to get the current week's attendance performance
         var attendancePerformance = attendanceService.getCurrentWeekAttendancePerformance(teamId);
         return ResponseEntity.ok(attendancePerformance);
+    }
+
+    @PostMapping
+    @Operation(summary = "Add attendance record", description = "Adds a new attendance record")
+    public ResponseEntity<AttendanceRecordDto> addAttendanceRecord(@RequestBody AttendanceRecordDto attendanceRecordDto) {
+        try {
+            Employee member = employeeService.getEmployee(attendanceRecordDto.getMemberId());
+            Project project = projectService.getProjectById(attendanceRecordDto.getProjectId());
+
+            AttendanceRecord attendanceRecord = new AttendanceRecord();
+            attendanceRecord.setMember(member);
+            attendanceRecord.setDate(attendanceRecordDto.getDate() != null ? attendanceRecordDto.getDate() : LocalDate.now());
+            attendanceRecord.setClockInTime(attendanceRecordDto.getClockInTime() != null ? attendanceRecordDto.getClockInTime() : LocalDateTime.now());
+            attendanceRecord.setClockOutTime(attendanceRecordDto.getClockOutTime());
+            attendanceRecord.setProject(project);
+
+            AttendanceRecord savedRecord = attendanceRecordRepository.save(attendanceRecord);
+
+            AttendanceRecordDto savedRecordDto = MapperUtils.toAttendanceRecordDto(savedRecord);
+            return ResponseEntity.created(URI.create("/api/attendance/" + savedRecord.getAttendanceId())).body(savedRecordDto); //201 created
+
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.badRequest().build(); //return only 400 Bad Request
+        }
     }
 }
