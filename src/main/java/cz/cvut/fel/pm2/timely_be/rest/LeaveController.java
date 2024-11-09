@@ -3,8 +3,10 @@ package cz.cvut.fel.pm2.timely_be.rest;
 import cz.cvut.fel.pm2.timely_be.dto.LeaveDto;
 import cz.cvut.fel.pm2.timely_be.enums.LeaveStatus;
 import cz.cvut.fel.pm2.timely_be.enums.LeaveType;
+import cz.cvut.fel.pm2.timely_be.model.Employee;
 import cz.cvut.fel.pm2.timely_be.model.EmployeeLeaveBalance;
 import cz.cvut.fel.pm2.timely_be.model.Leave;
+import cz.cvut.fel.pm2.timely_be.service.EmployeeService;
 import cz.cvut.fel.pm2.timely_be.service.LeaveService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -27,6 +29,9 @@ public class LeaveController {
     @Autowired
     private LeaveService leaveService;
 
+    @Autowired
+    private EmployeeService employeeService;
+
     @PostMapping
     @Operation(summary = "Create a new leave request", description = "Creates a new leave request for an employee with the specified details.")
     public ResponseEntity<?> createLeaveRequest(@RequestBody @Valid LeaveDto leaveDto) {
@@ -38,6 +43,7 @@ public class LeaveController {
             leave.setEndDate(leaveDto.getEndDate());
             leave.setStatus(LeaveStatus.PENDING);
             leave.setLeaveAmount(leaveDto.getLeaveAmount());
+            leave.setReason(leaveDto.getReason());              //nesetoval se field a vyhazvala se vyjimka
             Leave createdLeave = leaveService.createLeaveRequest(leave);
             return ResponseEntity.status(HttpStatus.CREATED).body(createdLeave);
         } catch (Exception e) {
@@ -60,8 +66,9 @@ public class LeaveController {
     @Operation(summary = "Get leave requests by employee ID", description = "Retrieves a list of leave requests for a specific employee by their ID.")
     public ResponseEntity<?> getLeaveRequestsByEmployeeId(@PathVariable Long employeeId) {
         try {
+            Optional<Employee> employee = employeeService.getEmployeeById(employeeId);
             List<Leave> leaveRequests = leaveService.getLeaveRequestsByEmployeeId(employeeId);
-            return leaveRequests.isEmpty() ? ResponseEntity.status(HttpStatus.NOT_FOUND).body("Employee ID not found") : ResponseEntity.ok(leaveRequests);
+            return employee.isEmpty() ? ResponseEntity.status(HttpStatus.NOT_FOUND).body("Employee ID not found") : ResponseEntity.ok(leaveRequests);      //co když pouze employee nemá requesty??
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Error retrieving leave requests by employee ID");
         }
