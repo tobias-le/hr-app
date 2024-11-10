@@ -35,4 +35,15 @@ public class Employee {
     @ManyToOne
     @JoinColumn(name = "team_id")
     private Team team;
+
+    public void setPhoneNumber(String phoneNumber) {
+        if (phoneNumber == null || phoneNumber.isEmpty()) {
+            throw new IllegalArgumentException("Phone number cannot be empty");
+        }
+
+        if (!phoneNumber.matches("\\d{9}")) {
+            throw new IllegalArgumentException("Phone number must be 9 digits long");
+        }
+        this.phoneNumber = phoneNumber;
+    }
 }

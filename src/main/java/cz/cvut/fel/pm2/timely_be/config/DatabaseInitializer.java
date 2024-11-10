@@ -46,7 +46,7 @@ public class DatabaseInitializer {
             employee1.setJobTitle("Software Developer");
             employee1.setEmploymentStatus(EmploymentStatus.FULL_TIME);
             employee1.setEmail("john.doe@example.com");
-            employee1.setPhoneNumber("123-456-7890");
+            employee1.setPhoneNumber("123456789");
             employee1.setCurrentProjects(List.of(project1, project2));
 
             Employee employee2 = new Employee();
@@ -54,7 +54,7 @@ public class DatabaseInitializer {
             employee2.setJobTitle("Project Manager");
             employee2.setEmploymentStatus(EmploymentStatus.PART_TIME);
             employee2.setEmail("jane.smith@example.com");
-            employee2.setPhoneNumber("098-765-4321");
+            employee2.setPhoneNumber("123456789");
             employee2.setCurrentProjects(List.of(project3, project4));
 
             Employee employee3 = new Employee();
@@ -62,7 +62,7 @@ public class DatabaseInitializer {
             employee3.setJobTitle("UX Designer");
             employee3.setEmploymentStatus(EmploymentStatus.CONTRACT);
             employee3.setEmail("alice.johnson@example.com");
-            employee3.setPhoneNumber("555-123-4567");
+            employee3.setPhoneNumber("123456789");
             employee3.setCurrentProjects(List.of(project5));
 
             // Save employees to the database
