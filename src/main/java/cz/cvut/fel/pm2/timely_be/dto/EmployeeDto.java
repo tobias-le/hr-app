@@ -6,6 +6,7 @@ import java.util.List;
 
 @Data
 public class EmployeeDto {
+    private Long id;
     private String name;
     private String jobTitle;
     private String employmentStatus;

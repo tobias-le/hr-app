@@ -1,6 +1,7 @@
 package cz.cvut.fel.pm2.timely_be.rest;
 
 import cz.cvut.fel.pm2.timely_be.dto.EmployeeDto;
+import cz.cvut.fel.pm2.timely_be.dto.EmployeeNameWithIdDto;
 import cz.cvut.fel.pm2.timely_be.mapper.MapperUtils;
 import cz.cvut.fel.pm2.timely_be.model.Employee;
 import cz.cvut.fel.pm2.timely_be.service.EmployeeService;
@@ -12,10 +13,7 @@ import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -42,11 +40,36 @@ public class EmployeeController {
 
         // Convert Employee entities to EmployeeDto using EmployeeMapper
         List<EmployeeDto> employeeDtoList = employeePage.getContent().stream()
-                .map(MapperUtils::toDto)
+                .map(MapperUtils::toEmployeeDto)
                 .collect(Collectors.toList());
 
         // Return a new Page<EmployeeDto> based on the mapped list and pageable information
         var result =  new PageImpl<>(employeeDtoList, pageable, employeePage.getTotalElements());
         return ResponseEntity.ok(result);
     }
+
+    @PutMapping("/{id}")
+    @Operation(summary = "Update employee", description = "Update employee by id")
+    public ResponseEntity<EmployeeDto> updateEmployee(@PathVariable Long id, @RequestBody EmployeeDto employeeDto) {
+        Employee updatedEmployee = employeeService.updateEmployee(id, employeeDto);
+        return ResponseEntity.ok(MapperUtils.toEmployeeDto(updatedEmployee));
+    }
+
+    @GetMapping("/{id}")
+    @Operation(summary = "Get employee by id", description = "Get employee by id")
+    public ResponseEntity<EmployeeDto> getEmployee(@PathVariable Long id) {
+        Employee employee = employeeService.getEmployee(id);
+        return ResponseEntity.ok(MapperUtils.toEmployeeDto(employee));
+    }
+
+    @GetMapping("/withId")
+    @Operation(summary = "Get employee names with ids", description = "Get employee names with ids")
+    public ResponseEntity<List<EmployeeNameWithIdDto>> getEmployeeNamesWithIds() {
+        var employees = employeeService.getAllEmployees();
+        var employeeDtos = employees.stream()
+                .map(MapperUtils::toEmployeeNameWithIdDto)
+                .collect(Collectors.toList());
+        return ResponseEntity.ok(employeeDtos);
+    }
+
 }

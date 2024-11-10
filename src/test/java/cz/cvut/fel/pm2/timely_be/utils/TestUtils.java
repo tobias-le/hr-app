@@ -1,5 +1,6 @@
 package cz.cvut.fel.pm2.timely_be.utils;
 
+import cz.cvut.fel.pm2.timely_be.dto.EmployeeDto;
 import cz.cvut.fel.pm2.timely_be.enums.EmploymentStatus;
 import cz.cvut.fel.pm2.timely_be.model.AttendanceRecord;
 import cz.cvut.fel.pm2.timely_be.model.Employee;
@@ -62,5 +63,15 @@ public class TestUtils {
         attendanceRecord.setClockInTime(LocalDateTime.of(LocalDate.now(), LocalTime.of(8, 0)));
         attendanceRecord.setClockOutTime(LocalDateTime.of(LocalDate.now(), LocalTime.of(16, 0)));
         return attendanceRecord;
+    }
+
+    public static EmployeeDto createEmployeeDto(EmploymentStatus employmentStatus) {
+        EmployeeDto employeeDto = new EmployeeDto();
+        employeeDto.setName("Employee");
+        employeeDto.setJobTitle("Job Title");
+        employeeDto.setEmail("random"+ getRandomId() + "@example.com");
+        employeeDto.setPhoneNumber("123456789");
+        employeeDto.setEmploymentStatus(employmentStatus.toString());
+        return employeeDto;
     }
 }
