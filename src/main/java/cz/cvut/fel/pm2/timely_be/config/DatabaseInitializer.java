@@ -1,14 +1,10 @@
 package cz.cvut.fel.pm2.timely_be.config;
 
-import cz.cvut.fel.pm2.timely_be.model.Employee;
-import cz.cvut.fel.pm2.timely_be.model.Project;
-import cz.cvut.fel.pm2.timely_be.model.Team;
-import cz.cvut.fel.pm2.timely_be.model.AttendanceRecord;
+import cz.cvut.fel.pm2.timely_be.enums.LeaveStatus;
+import cz.cvut.fel.pm2.timely_be.enums.LeaveType;
+import cz.cvut.fel.pm2.timely_be.model.*;
 import cz.cvut.fel.pm2.timely_be.enums.EmploymentStatus;
-import cz.cvut.fel.pm2.timely_be.repository.EmployeeRepository;
-import cz.cvut.fel.pm2.timely_be.repository.ProjectRepository;
-import cz.cvut.fel.pm2.timely_be.repository.TeamRepository;
-import cz.cvut.fel.pm2.timely_be.repository.AttendanceRecordRepository;
+import cz.cvut.fel.pm2.timely_be.repository.*;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -24,11 +20,11 @@ public class DatabaseInitializer {
 
     @Bean
     CommandLineRunner initEmployeeDatabase(EmployeeRepository employeeRepository, TeamRepository teamRepository
-    , AttendanceRecordRepository attendanceRecordRepository, ProjectRepository projectRepository) {
-        return args -> resetDatabaseToBaseState(employeeRepository, teamRepository, attendanceRecordRepository, projectRepository);
+            , AttendanceRecordRepository attendanceRecordRepository, ProjectRepository projectRepository, LeaveRepository leaveRepository, EmployeeLeaveBalanceRepository leaveBalanceRepository) {
+        return args -> resetDatabaseToBaseState(employeeRepository, teamRepository, attendanceRecordRepository, projectRepository, leaveRepository, leaveBalanceRepository);
     }
 
-    public static void resetDatabaseToBaseState(EmployeeRepository employeeRepository, TeamRepository teamRepository, AttendanceRecordRepository attendanceRecordRepository, ProjectRepository projectRepository) {
+    public static void resetDatabaseToBaseState(EmployeeRepository employeeRepository, TeamRepository teamRepository, AttendanceRecordRepository attendanceRecordRepository, ProjectRepository projectRepository, LeaveRepository leaveRepository, EmployeeLeaveBalanceRepository leaveBalanceRepository) {
         Project project1 = new Project();
         project1.setName("Project Alpha");
         Project project2 = new Project();
@@ -116,5 +112,34 @@ public class DatabaseInitializer {
         record3.setProject(project3);
         // Save attendance records to the database
         attendanceRecordRepository.saveAll(Arrays.asList(record1, record2, record3));
+
+        //give testing employees their balances
+        EmployeeLeaveBalance balance1 = new EmployeeLeaveBalance();
+        balance1.setPersonalDaysLeft(10);
+        balance1.setVacationDaysLeft(20);
+        balance1.setSickDaysLeft(2);
+        balance1.setEmployeeId(employees.get(0).getEmployeeId());
+        EmployeeLeaveBalance balance2 = new EmployeeLeaveBalance();
+        balance2.setPersonalDaysLeft(10);
+        balance2.setVacationDaysLeft(20);
+        balance2.setSickDaysLeft(2);
+        balance2.setEmployeeId(employees.get(1).getEmployeeId());
+        EmployeeLeaveBalance balance3 = new EmployeeLeaveBalance();
+        balance3.setPersonalDaysLeft(10);
+        balance3.setVacationDaysLeft(20);
+        balance3.setSickDaysLeft(2);
+        balance3.setEmployeeId(employees.get(2).getEmployeeId());
+        leaveBalanceRepository.saveAll(List.of(balance1, balance2, balance3));
+
+        //give the first employee some new request
+        Leave leave = new Leave();
+        leave.setReason("Bali");
+        leave.setEmployeeId(employees.get(0).getEmployeeId());
+        leave.setLeaveAmount(8);
+        leave.setStartDate(LocalDate.of(2024,11,15));
+        leave.setEndDate(LocalDate.of(2024,11,16));
+        leave.setLeaveType(LeaveType.PERSONAL_LEAVE);
+        leave.setStatus(LeaveStatus.PENDING);
+        leaveRepository.save(leave);
     }
 }

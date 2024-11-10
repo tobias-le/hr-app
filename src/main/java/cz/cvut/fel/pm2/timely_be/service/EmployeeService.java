@@ -7,9 +7,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
-
 import java.util.List;
-
 import static cz.cvut.fel.pm2.timely_be.enums.EmploymentStatus.fromString;
 
 @Service
