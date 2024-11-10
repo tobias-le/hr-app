@@ -31,7 +31,8 @@ public class AttendanceService {
     private final EmployeeRepository employeeRepository;
 
     @Autowired
-    public AttendanceService(AttendanceRecordRepository attendanceRecordRepository, TeamRepository teamRepository, EmployeeRepository employeeRepository) {
+    public AttendanceService(AttendanceRecordRepository attendanceRecordRepository, TeamRepository teamRepository,
+                             EmployeeRepository employeeRepository) {
         this.attendanceRecordRepository = attendanceRecordRepository;
         this.teamRepository = teamRepository;
         this.employeeRepository = employeeRepository;
@@ -125,6 +126,24 @@ public class AttendanceService {
                 .map(EmploymentStatus::getExpectedHoursPerDay)
                 .map(hours -> hours * 5)
                 .reduce(Long::sum).orElse(0L);
+    }
+
+    public AttendanceRecord createAttendanceRecord(AttendanceRecordDto attendanceRecordDto) {
+        var attendanceRecord = new AttendanceRecord();
+        var employee = employeeRepository.findById(attendanceRecordDto.getMemberId()).orElseThrow();
+        var projects = employee.getCurrentProjects();
+        attendanceRecord.setMember(employee);
+
+        attendanceRecord.setProject(
+                projects.stream()
+                        .filter(project -> project.getName().equals(attendanceRecordDto.getProject()))
+                        .findFirst()
+                        .orElseThrow()
+        );
+        attendanceRecord.setDate(attendanceRecordDto.getDate());
+        attendanceRecord.setClockInTime(attendanceRecordDto.getClockInTime());
+        attendanceRecord.setClockOutTime(attendanceRecordDto.getClockOutTime());
+        return attendanceRecordRepository.save(attendanceRecord);
     }
 
     private LocalDate getStartOfWeek() {

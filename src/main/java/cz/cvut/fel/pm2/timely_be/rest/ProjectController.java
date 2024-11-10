@@ -41,4 +41,10 @@ public class ProjectController {
     public ResponseEntity<Iterable<Project>> getAllProjects() {
         return ResponseEntity.ok(projectService.getAllProjects());
     }
+
+    @GetMapping("/{employeeId}")
+    @Operation(summary = "Get projects by employee ID", description = "Returns a list of projects for the given employee")
+    public ResponseEntity<Iterable<Project>> getProjectsByEmployeeId(Long employeeId) {
+        return ResponseEntity.ok(projectService.getProjectsByEmployeeId(employeeId));
+    }
 }

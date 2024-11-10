@@ -12,6 +12,9 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
+import static cz.cvut.fel.pm2.timely_be.mapper.MapperUtils.toAttendanceRecordDto;
+import static org.springframework.web.servlet.support.ServletUriComponentsBuilder.fromCurrentRequest;
+
 @RestController
 @RequestMapping("/api/attendance")
 @Tag(name = "Attendance", description = "The Attendance API")
@@ -53,5 +56,17 @@ public class AttendanceController {
         // Call the service method to get the current week's attendance performance
         var attendancePerformance = attendanceService.getCurrentWeekAttendancePerformance(teamId);
         return ResponseEntity.ok(attendancePerformance);
+    }
+
+    @PostMapping
+    @Operation(summary = "Create a new attendance record")
+    public ResponseEntity<AttendanceRecordDto> createAttendanceRecord(@RequestBody AttendanceRecordDto attendanceRecordDto) {
+        var attendanceRecord = attendanceService.createAttendanceRecord(attendanceRecordDto);
+        return ResponseEntity.created(
+                fromCurrentRequest()
+                        .path("/{id}")
+                        .buildAndExpand(attendanceRecord.getAttendanceId())
+                        .toUri()
+        ).body(toAttendanceRecordDto(attendanceRecord));
     }
 }
