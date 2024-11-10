@@ -12,6 +12,4 @@ public class AttendanceRecordDto {
     private LocalDateTime clockInTime;
     private LocalDateTime clockOutTime;
     private String project;
-    private Long memberId;
-    private Long projectId;
 }
