@@ -28,4 +28,6 @@ public class AttendanceRecord {
 
     @ManyToOne
     private Project project;
+
+    private String description;
 }

@@ -7,9 +7,12 @@ import java.time.LocalDateTime;
 
 @Data
 public class AttendanceRecordDto {
+    private Long attendanceId;
+    private Long memberId;
     private String member;
     private LocalDate date;
     private LocalDateTime clockInTime;
     private LocalDateTime clockOutTime;
     private String project;
+    private String description;
 }

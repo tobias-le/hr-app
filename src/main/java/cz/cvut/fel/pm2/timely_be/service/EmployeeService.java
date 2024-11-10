@@ -8,6 +8,8 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
+
 import static cz.cvut.fel.pm2.timely_be.enums.EmploymentStatus.fromString;
 
 @Service
@@ -23,6 +25,14 @@ public class EmployeeService {
         return employeeRepository.findByTeamId(pageable, teamId);
     }
 
+    /**
+     * this method only exists for the sake of testing, will be deleted later
+     * @return list of all employees
+     */
+    public List<Employee> getAllEmployees() {
+        return employeeRepository.findAll();
+    }
+
     public Employee updateEmployee(Long id, EmployeeDto employeeDto) {
         var employee = employeeRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("Employee not found"));
@@ -34,5 +44,10 @@ public class EmployeeService {
         employee.setPhoneNumber(employeeDto.getPhoneNumber());
 
         return employeeRepository.save(employee);
+    }
+
+    public Employee getEmployee(Long id) {
+        return employeeRepository.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("Employee not found"));
     }
 }

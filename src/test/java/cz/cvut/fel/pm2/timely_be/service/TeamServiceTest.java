@@ -43,7 +43,7 @@ public class TeamServiceTest {
         assertNotNull(result);
         assertEquals(2, result.size());
 
-        var expectedDtos = Arrays.asList(MapperUtils.toDto(team1), MapperUtils.toDto(team2));
+        var expectedDtos = Arrays.asList(MapperUtils.toTeamDto(team1), MapperUtils.toTeamDto(team2));
         assertEquals(expectedDtos, result);
     }
 }

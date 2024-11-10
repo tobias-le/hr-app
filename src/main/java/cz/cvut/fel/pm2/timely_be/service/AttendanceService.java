@@ -31,7 +31,8 @@ public class AttendanceService {
     private final EmployeeRepository employeeRepository;
 
     @Autowired
-    public AttendanceService(AttendanceRecordRepository attendanceRecordRepository, TeamRepository teamRepository, EmployeeRepository employeeRepository) {
+    public AttendanceService(AttendanceRecordRepository attendanceRecordRepository, TeamRepository teamRepository,
+                             EmployeeRepository employeeRepository) {
         this.attendanceRecordRepository = attendanceRecordRepository;
         this.teamRepository = teamRepository;
         this.employeeRepository = employeeRepository;
@@ -45,7 +46,7 @@ public class AttendanceService {
         return attendanceRecordRepository
                 .findByTeamIdAndDateBetween(teamId, startOfWeek, today)
                 .stream()
-                .map(MapperUtils::toDto)
+                .map(MapperUtils::toAttendanceRecordDto)
                 .collect(Collectors.toList());
     }
 
@@ -54,7 +55,7 @@ public class AttendanceService {
         return attendanceRecordRepository
                 .findByMember(member)
                 .stream()
-                .map(MapperUtils::toDto)
+                .map(MapperUtils::toAttendanceRecordDto)
                 .collect(Collectors.toList());
     }
 
@@ -62,7 +63,7 @@ public class AttendanceService {
     public Optional<AttendanceRecordDto> getAttendanceRecordById(Long attendanceId) {
         return attendanceRecordRepository
                 .findById(attendanceId)
-                .map(MapperUtils::toDto);
+                .map(MapperUtils::toAttendanceRecordDto);
     }
 
     public AttendanceSummaryDTO getCurrentWeekAttendancePerformance(Long teamId) {
@@ -101,6 +102,7 @@ public class AttendanceService {
         int totalDaysInRange = (int) (Duration.between(startOfWeek.atStartOfDay(), endOfWeek.atStartOfDay()).toDays()) + 1;
         double averageHoursPerDay = (double) totalHours / 5;
         double attendanceRate;
+        assert team != null;
         if (!team.getMembers().isEmpty()) {
             attendanceRate = totalDaysPresent / (double) (team.getMembers().size() * totalDaysInRange) * 100;
         } else {
@@ -124,6 +126,36 @@ public class AttendanceService {
                 .map(EmploymentStatus::getExpectedHoursPerDay)
                 .map(hours -> hours * 5)
                 .reduce(Long::sum).orElse(0L);
+    }
+
+    public AttendanceRecord createAttendanceRecord(AttendanceRecordDto attendanceRecordDto) {
+        var attendanceRecord = new AttendanceRecord();
+        return getAttendanceRecord(attendanceRecordDto, attendanceRecord);
+    }
+
+    public AttendanceRecord updateAttendanceRecordById(Long id, AttendanceRecordDto attendanceRecordDto) {
+        var attendanceRecord = attendanceRecordRepository.findById(id).orElseThrow();
+        return getAttendanceRecord(attendanceRecordDto, attendanceRecord);
+    }
+
+    private AttendanceRecord getAttendanceRecord(AttendanceRecordDto attendanceRecordDto, AttendanceRecord attendanceRecord) {
+        var employee = employeeRepository.findById(attendanceRecordDto.getMemberId()).orElseThrow();
+        var projects = employee.getCurrentProjects();
+        attendanceRecord.setMember(employee);
+        attendanceRecord.setProject(
+                projects.stream()
+                        .filter(project -> project.getName().equals(attendanceRecordDto.getProject()))
+                        .findFirst()
+                        .orElseThrow()
+        );
+        attendanceRecord.setDate(attendanceRecordDto.getDate());
+        attendanceRecord.setClockInTime(attendanceRecordDto.getClockInTime());
+        attendanceRecord.setClockOutTime(attendanceRecordDto.getClockOutTime());
+        return attendanceRecordRepository.save(attendanceRecord);
+    }
+
+    public void deleteAttendanceRecordById(Long id) {
+        attendanceRecordRepository.deleteById(id);
     }
 
     private LocalDate getStartOfWeek() {

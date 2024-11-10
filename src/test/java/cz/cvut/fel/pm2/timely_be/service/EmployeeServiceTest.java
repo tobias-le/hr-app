@@ -9,6 +9,8 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.data.domain.*;
 
 import java.util.Arrays;
+import java.util.List;
+import java.util.Optional;
 
 import static cz.cvut.fel.pm2.timely_be.enums.EmploymentStatus.FULL_TIME;
 import static cz.cvut.fel.pm2.timely_be.enums.EmploymentStatus.PART_TIME;
@@ -55,7 +57,7 @@ public class EmployeeServiceTest {
         var employee = createEmployee(FULL_TIME);
         var employeeDto = createEmployeeDto(PART_TIME);
 
-        when(employeeRepository.findById(anyLong())).thenReturn(java.util.Optional.of(employee));
+        when(employeeRepository.findById(anyLong())).thenReturn(Optional.of(employee));
         when(employeeRepository.save(any())).thenReturn(employee);
 
         // When
@@ -68,5 +70,50 @@ public class EmployeeServiceTest {
         assertEquals(PART_TIME, result.getEmploymentStatus());
         assertEquals(employeeDto.getJobTitle(), result.getJobTitle());
         assertEquals(employeeDto.getPhoneNumber(), result.getPhoneNumber());
+    }
+
+    @Test
+    public void testGetAllEmployees() {
+        // Given
+        var employee1 = createEmployee(FULL_TIME);
+        var employee2 = createEmployee(PART_TIME);
+        var employees = List.of(employee1, employee2);
+
+        when(employeeRepository.findAll()).thenReturn(employees);
+
+        // When
+        var result = employeeService.getAllEmployees();
+
+        // Then
+        assertNotNull(result);
+        assertEquals(2, result.size());
+        assertEquals(employees, result);
+    }
+
+    @Test
+    public void testGetEmployee() {
+        // Given
+        var employee = createEmployee(FULL_TIME);
+
+        when(employeeRepository.findById(anyLong())).thenReturn(Optional.of(employee));
+
+        // When
+        var result = employeeService.getEmployee(1L);
+
+        // Then
+        assertNotNull(result);
+        assertEquals(employee.getEmployeeId(), result.getEmployeeId());
+        assertEquals(employee.getName(), result.getName());
+        assertEquals(employee.getEmail(), result.getEmail());
+        assertEquals(employee.getEmploymentStatus(), result.getEmploymentStatus());
+    }
+
+    @Test
+    public void testGetEmployee_NotFound() {
+        // Given
+        when(employeeRepository.findById(anyLong())).thenReturn(Optional.empty());
+
+        // When & Then
+        assertThrows(IllegalArgumentException.class, () -> employeeService.getEmployee(1L));
     }
 }

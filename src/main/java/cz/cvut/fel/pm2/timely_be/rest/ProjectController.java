@@ -6,15 +6,14 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 import static org.springframework.web.servlet.support.ServletUriComponentsBuilder.fromCurrentRequest;
 
 @RestController
-@RequestMapping("/projects")
+@RequestMapping("/api/projects")
 @Tag(name = "Project", description = "The Project API")
 public class ProjectController {
     private final ProjectService projectService;
@@ -40,5 +39,11 @@ public class ProjectController {
     @Operation(summary = "Get all projects", description = "Returns a list of all projects")
     public ResponseEntity<Iterable<Project>> getAllProjects() {
         return ResponseEntity.ok(projectService.getAllProjects());
+    }
+
+    @GetMapping("/{employeeId}")
+    @Operation(summary = "Get projects by employee ID", description = "Returns a list of projects for the given employee")
+    public ResponseEntity<List<Project>> getProjectsByEmployeeId(@PathVariable Long employeeId) {
+        return ResponseEntity.ok(projectService.getProjectsByEmployeeId(employeeId));
     }
 }
