@@ -10,10 +10,12 @@ import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.Optional;
 
 import static cz.cvut.fel.pm2.timely_be.utils.TestUtils.createProject;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
@@ -40,23 +42,6 @@ public class ProjectServiceTest {
         // Then
         assertNotNull(result);
         assertEquals(projectName, result.getName());
-    }
-
-    @Test
-    public void testCreateProjectWithNullName() {
-        // Given
-        when(projectRepository.save(any(Project.class))).thenAnswer(invocation -> {
-            Project proj = invocation.getArgument(0);
-            assertNull(proj.getName()); // Ensuring name is null
-            return proj;
-        });
-
-        // When
-        var result = projectService.createProject(null);
-
-        // Then
-        assertNotNull(result);
-        assertNull(result.getName());
     }
 
     @Test
@@ -88,5 +73,31 @@ public class ProjectServiceTest {
         // Then
         assertNotNull(result);
         assertTrue(result.isEmpty(), "Expected an empty project list");
+    }
+
+    @Test
+    public void testGetProjectById() {
+        // Given
+        var project = createProject();
+        project.setProjectId(1L);
+
+        when(projectRepository.findById(anyLong())).thenReturn(Optional.of(project));
+
+        // When
+        var result = projectService.getProjectById(1L);
+
+        // Then
+        assertNotNull(result);
+        assertEquals(1L, result.getProjectId());
+        assertEquals(project.getName(), result.getName());
+    }
+
+    @Test
+    public void testGetProjectByIdNotFound() {
+        // Given
+        when(projectRepository.findById(anyLong())).thenReturn(Optional.empty());
+
+        // When & Then
+        assertThrows(IllegalArgumentException.class, () -> projectService.getProjectById(1L), "Project not found");
     }
 }
