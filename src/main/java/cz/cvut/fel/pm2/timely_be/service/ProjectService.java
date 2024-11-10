@@ -29,7 +29,7 @@ public class ProjectService {
         return projectRepository.findAll();
     }
 
-    public Iterable<Project> getProjectsByEmployeeId(Long employeeId) {
+    public List<Project> getProjectsByEmployeeId(Long employeeId) {
         var employee = employeeRepository.findById(employeeId).orElseThrow(() -> new IllegalArgumentException("Employee not found"));
         return employee.getCurrentProjects();
     }

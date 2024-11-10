@@ -69,4 +69,18 @@ public class AttendanceController {
                         .toUri()
         ).body(toAttendanceRecordDto(attendanceRecord));
     }
+
+    @DeleteMapping("/{id}")
+    @Operation(summary = "Delete an attendance record by ID")
+    public ResponseEntity<Void> deleteAttendanceRecordById(@PathVariable Long id) {
+        attendanceService.deleteAttendanceRecordById(id);
+        return ResponseEntity.noContent().build();
+    }
+
+    @PutMapping("/{id}")
+    @Operation(summary = "Update an attendance record by ID")
+    public ResponseEntity<AttendanceRecordDto> updateAttendanceRecordById(@PathVariable Long id, @RequestBody AttendanceRecordDto attendanceRecordDto) {
+        var attendanceRecord = attendanceService.updateAttendanceRecordById(id, attendanceRecordDto);
+        return ResponseEntity.ok(toAttendanceRecordDto(attendanceRecord));
+    }
 }

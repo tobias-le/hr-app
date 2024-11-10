@@ -35,11 +35,13 @@ public class MapperUtils {
 
     public static AttendanceRecordDto toAttendanceRecordDto(AttendanceRecord attendance) {
         AttendanceRecordDto attendanceRecordDto = new AttendanceRecordDto();
+        attendanceRecordDto.setAttendanceId(attendance.getAttendanceId());
         attendanceRecordDto.setMember(attendance.getMember().getName());
         attendanceRecordDto.setDate(attendance.getDate());
         attendanceRecordDto.setClockInTime(attendance.getClockInTime());
         attendanceRecordDto.setClockOutTime(attendance.getClockOutTime());
         attendanceRecordDto.setProject(attendance.getProject().getName());
+        attendanceRecordDto.setDescription(attendance.getDescription());
         return attendanceRecordDto;
     }
 
