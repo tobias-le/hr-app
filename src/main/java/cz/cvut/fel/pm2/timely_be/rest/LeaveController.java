@@ -66,9 +66,11 @@ public class LeaveController {
     @Operation(summary = "Get leave requests by employee ID", description = "Retrieves a list of leave requests for a specific employee by their ID.")
     public ResponseEntity<?> getLeaveRequestsByEmployeeId(@PathVariable Long employeeId) {
         try {
-            Optional<Employee> employee = employeeService.getEmployeeById(employeeId);
+            Employee employee = employeeService.getEmployee(employeeId);
             List<Leave> leaveRequests = leaveService.getLeaveRequestsByEmployeeId(employeeId);
-            return employee.isEmpty() ? ResponseEntity.status(HttpStatus.NOT_FOUND).body("Employee ID not found") : ResponseEntity.ok(leaveRequests);      //co když pouze employee nemá requesty??
+            return ResponseEntity.ok(leaveRequests);
+        } catch (IllegalArgumentException e) {
+          return ResponseEntity.notFound().build();
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Error retrieving leave requests by employee ID");
         }
