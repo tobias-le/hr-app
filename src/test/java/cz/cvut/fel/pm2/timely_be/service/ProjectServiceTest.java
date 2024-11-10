@@ -9,6 +9,7 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.util.Arrays;
+import java.util.Collections;
 
 import static cz.cvut.fel.pm2.timely_be.utils.TestUtils.createProject;
 import static org.junit.jupiter.api.Assertions.*;
@@ -42,6 +43,23 @@ public class ProjectServiceTest {
     }
 
     @Test
+    public void testCreateProjectWithNullName() {
+        // Given
+        when(projectRepository.save(any(Project.class))).thenAnswer(invocation -> {
+            Project proj = invocation.getArgument(0);
+            assertNull(proj.getName()); // Ensuring name is null
+            return proj;
+        });
+
+        // When
+        var result = projectService.createProject(null);
+
+        // Then
+        assertNotNull(result);
+        assertNull(result.getName());
+    }
+
+    @Test
     public void testGetAllProjects() {
         // Given
         var project1 = createProject();
@@ -57,5 +75,18 @@ public class ProjectServiceTest {
         assertNotNull(result);
         assertEquals(2, result.size());
         assertEquals(projects, result);
+    }
+
+    @Test
+    public void testGetAllProjectsWhenEmpty() {
+        // Given
+        when(projectRepository.findAll()).thenReturn(Collections.emptyList());
+
+        // When
+        var result = projectService.getAllProjects();
+
+        // Then
+        assertNotNull(result);
+        assertTrue(result.isEmpty(), "Expected an empty project list");
     }
 }
