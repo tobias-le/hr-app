@@ -27,6 +27,7 @@ public class EmployeeService {
 
     public Optional<Employee> getEmployeeById(Long employeeId) {
         return employeeRepository.findById(employeeId);
+    }
     /**
      * this method only exists for the sake of testing, will be deleted later
      * @return list of all employees
