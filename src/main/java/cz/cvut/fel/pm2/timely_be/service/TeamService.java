@@ -17,6 +17,6 @@ public class TeamService {
     }
 
     public List<TeamDTO> getAllTeams() {
-        return teamRepository.findAll().stream().map(MapperUtils::toDto).collect(Collectors.toList());
+        return teamRepository.findAll().stream().map(MapperUtils::toTeamDto).collect(Collectors.toList());
     }
 }
