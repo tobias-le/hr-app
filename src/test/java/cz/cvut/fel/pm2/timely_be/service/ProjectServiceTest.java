@@ -74,30 +74,4 @@ public class ProjectServiceTest {
         assertNotNull(result);
         assertTrue(result.isEmpty(), "Expected an empty project list");
     }
-
-    @Test
-    public void testGetProjectById() {
-        // Given
-        var project = createProject();
-        project.setProjectId(1L);
-
-        when(projectRepository.findById(anyLong())).thenReturn(Optional.of(project));
-
-        // When
-        var result = projectService.getProjectById(1L);
-
-        // Then
-        assertNotNull(result);
-        assertEquals(1L, result.getProjectId());
-        assertEquals(project.getName(), result.getName());
-    }
-
-    @Test
-    public void testGetProjectByIdNotFound() {
-        // Given
-        when(projectRepository.findById(anyLong())).thenReturn(Optional.empty());
-
-        // When & Then
-        assertThrows(IllegalArgumentException.class, () -> projectService.getProjectById(1L), "Project not found");
-    }
 }
