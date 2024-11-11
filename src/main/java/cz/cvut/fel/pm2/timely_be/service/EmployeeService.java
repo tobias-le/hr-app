@@ -41,6 +41,12 @@ public class EmployeeService {
         employee.setJobTitle(employeeDto.getJobTitle());
         employee.setPhoneNumber(employeeDto.getPhoneNumber());
 
+        employee.setAnnualSalary(employeeDto.getAnnualSalary());
+        employee.setAnnualLearningBudget(employeeDto.getAnnualLearningBudget());
+        employee.setAnnualBusinessPerformanceBonusMax(employeeDto.getAnnualBusinessPerformanceBonusMax());
+        employee.setAnnualPersonalPerformanceBonusMax(employeeDto.getAnnualPersonalPerformanceBonusMax());
+
+
         return employeeRepository.save(employee);
     }
 
