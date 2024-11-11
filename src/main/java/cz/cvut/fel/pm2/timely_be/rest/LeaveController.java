@@ -62,7 +62,57 @@ public class LeaveController {
         }
     }
 
-    @GetMapping("/{employeeId}")
+    @GetMapping("/pending")
+    public ResponseEntity<List<Leave>> getPendingRequests() {
+        List<Leave> pendingRequests = leaveService.getPendingRequests();
+        return ResponseEntity.ok(pendingRequests);
+    }
+
+    @PatchMapping("/request/{id}/{action}")
+    public ResponseEntity<Leave> updateLeaveStatus(@PathVariable Long id, @PathVariable String action) {
+        Leave leave;
+        if ("approve".equalsIgnoreCase(action)) {
+            leave = leaveService.approveLeaveRequest(id);
+        } else if ("reject".equalsIgnoreCase(action)) {
+            leave = leaveService.rejectLeaveRequest(id);
+        } else {
+            return ResponseEntity.badRequest().body(null);
+        }
+        return ResponseEntity.ok(leave);
+    }
+
+    @PatchMapping("/request/{id}/approve")
+    public ResponseEntity<Leave> approveLeaveRequestById(@PathVariable Long id) {
+        try {
+            Leave approvedLeave = leaveService.approveLeaveRequest(id);
+            return approvedLeave != null ? ResponseEntity.ok(approvedLeave) : ResponseEntity.status(HttpStatus.NOT_FOUND).body(null);
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
+        }
+    }
+
+    @PatchMapping("/request/{id}/reject")
+    public ResponseEntity<Leave> rejectLeaveRequestById(@PathVariable Long id) {
+        try {
+            Leave rejectedLeave = leaveService.rejectLeaveRequest(id);
+            return rejectedLeave != null ? ResponseEntity.ok(rejectedLeave) : ResponseEntity.status(HttpStatus.NOT_FOUND).body(null);
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
+        }
+    }
+
+    @GetMapping("/request/{id}")
+    @Operation(summary = "Get leave request by its ID", description = "Retrieves leave request by its ID.")
+    public ResponseEntity<?> getLeaveRequestById(@PathVariable Long id) {
+        try {
+            Leave leaveRequest = leaveService.getLeaveRequestById(id);
+            return leaveRequest != null ? ResponseEntity.ok(leaveRequest) : ResponseEntity.status(HttpStatus.NOT_FOUND).body("Leave request ID not found");
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Error retrieving leave request by ID");
+        }
+    }
+
+    @GetMapping("/requests/{employeeId}")
     @Operation(summary = "Get leave requests by employee ID", description = "Retrieves a list of leave requests for a specific employee by their ID.")
     public ResponseEntity<?> getLeaveRequestsByEmployeeId(@PathVariable Long employeeId) {
         try {
@@ -78,7 +128,7 @@ public class LeaveController {
 
     @GetMapping("/{employeeId}/reason")
     @Operation(summary = "Get reason for leave request", description = "Retrieves the reason for a specific leave request by its ID.")
-    public ResponseEntity<?> getLeaveReasonById(@PathVariable Long employeeId) {
+    public ResponseEntity<?> getLeaveReasonByEmployeeId(@PathVariable Long employeeId) {
         try {
             String reason = leaveService.getReasonById(employeeId);
             return Optional.ofNullable(reason).map(ResponseEntity::ok).orElse(ResponseEntity.status(HttpStatus.NOT_FOUND).body("Leave request ID not found"));
