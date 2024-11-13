@@ -1,7 +1,9 @@
 package cz.cvut.fel.pm2.timely_be.model;
 
 import jakarta.persistence.*;
+import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 import lombok.NonNull;
 
 import java.util.ArrayList;
@@ -12,6 +14,8 @@ import static jakarta.persistence.GenerationType.IDENTITY;
 @Entity
 @Table(name = "teams")
 @Data
+@AllArgsConstructor
+@NoArgsConstructor
 public class Team {
 
     @Id
@@ -36,5 +40,12 @@ public class Team {
             members = new ArrayList<>();
         }
         return members;
+    }
+
+    public void addMember(Employee employee) {
+        if (this.members == null) {
+            this.members = new ArrayList<>();
+        }
+        this.members.add(employee);
     }
 }

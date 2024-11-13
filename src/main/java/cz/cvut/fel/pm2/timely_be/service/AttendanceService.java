@@ -3,6 +3,7 @@ package cz.cvut.fel.pm2.timely_be.service;
 import cz.cvut.fel.pm2.timely_be.dto.AttendanceRecordDto;
 import cz.cvut.fel.pm2.timely_be.dto.AttendanceSummaryDTO;
 import cz.cvut.fel.pm2.timely_be.enums.EmploymentType;
+import cz.cvut.fel.pm2.timely_be.enums.RequestStatus;
 import cz.cvut.fel.pm2.timely_be.mapper.MapperUtils;
 import cz.cvut.fel.pm2.timely_be.model.AttendanceRecord;
 import cz.cvut.fel.pm2.timely_be.model.Employee;
@@ -39,13 +40,12 @@ public class AttendanceService {
         this.projectRepository = projectRepository;
     }
 
-    public List<AttendanceRecordDto> getAttendanceRecordsByTeamSinceStartOfWeek(Long teamId) {
+    public List<AttendanceRecordDto> getAttendanceRecordsByProjectSinceStartOfWeek(Long projectId) {
         LocalDate startOfWeek = getStartOfWeek();
         LocalDate today = getToday();
 
-        // Fetch attendance records for the team from the start of the week until today
         return attendanceRecordRepository
-                .findByTeamIdAndDateBetween(teamId, startOfWeek, today)
+                .findByProjectIdAndDateBetween(projectId, startOfWeek, today)
                 .stream()
                 .map(MapperUtils::toAttendanceRecordDto)
                 .collect(Collectors.toList());
@@ -165,6 +165,7 @@ public class AttendanceService {
         attendanceRecord.setDate(attendanceRecordDto.getDate());
         attendanceRecord.setClockInTime(attendanceRecordDto.getClockInTime());
         attendanceRecord.setClockOutTime(attendanceRecordDto.getClockOutTime());
+        attendanceRecord.setStatus(RequestStatus.requestStatusFromString(attendanceRecordDto.getStatus()));
         return attendanceRecordRepository.save(attendanceRecord);
     }
 

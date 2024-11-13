@@ -61,7 +61,7 @@ public class AttendanceServiceTest {
                 .thenReturn(records);
 
         // When
-        var result = attendanceService.getAttendanceRecordsByTeamSinceStartOfWeek(employee.getTeam().getId());
+        var result = attendanceService.getAttendanceRecordsByProjectSinceStartOfWeek(employee.getTeam().getId());
 
         // Then
         assertNotNull(result);

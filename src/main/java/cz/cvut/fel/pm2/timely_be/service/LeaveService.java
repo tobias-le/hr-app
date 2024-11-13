@@ -1,6 +1,6 @@
 package cz.cvut.fel.pm2.timely_be.service;
 
-import cz.cvut.fel.pm2.timely_be.enums.LeaveStatus;
+import cz.cvut.fel.pm2.timely_be.enums.RequestStatus;
 import cz.cvut.fel.pm2.timely_be.enums.LeaveType;
 import cz.cvut.fel.pm2.timely_be.model.EmployeeLeaveBalance;
 import cz.cvut.fel.pm2.timely_be.model.Leave;
@@ -10,7 +10,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
-import java.util.Optional;
 
 @Service
 public class LeaveService {
@@ -36,7 +35,7 @@ public class LeaveService {
     }
 
     public Leave createLeaveRequest(Leave leave) {
-        leave.setStatus(LeaveStatus.PENDING);
+        leave.setStatus(RequestStatus.PENDING);
         return leaveRepository.save(leave);
     }
 
@@ -56,7 +55,7 @@ public class LeaveService {
         return leaveRepository.findByLeaveType(leaveType);
     }
 
-    public List<Leave> getLeaveRequestsByStatus(LeaveStatus status) {
+    public List<Leave> getLeaveRequestsByStatus(RequestStatus status) {
         return leaveRepository.findByLeaveStatus(status);
     }
 

@@ -1,7 +1,7 @@
 package cz.cvut.fel.pm2.timely_be.rest;
 
 import cz.cvut.fel.pm2.timely_be.dto.LeaveDto;
-import cz.cvut.fel.pm2.timely_be.enums.LeaveStatus;
+import cz.cvut.fel.pm2.timely_be.enums.RequestStatus;
 import cz.cvut.fel.pm2.timely_be.enums.LeaveType;
 import cz.cvut.fel.pm2.timely_be.model.Employee;
 import cz.cvut.fel.pm2.timely_be.model.EmployeeLeaveBalance;
@@ -41,7 +41,7 @@ public class LeaveController {
             leave.setLeaveType(leaveDto.getLeaveType());
             leave.setStartDate(leaveDto.getStartDate());
             leave.setEndDate(leaveDto.getEndDate());
-            leave.setStatus(LeaveStatus.PENDING);
+            leave.setStatus(RequestStatus.PENDING);
             leave.setLeaveAmount(leaveDto.getLeaveAmount());
             leave.setReason(leaveDto.getReason());              //nesetoval se field a vyhazvala se vyjimka
             Leave createdLeave = leaveService.createLeaveRequest(leave);
@@ -155,7 +155,7 @@ public class LeaveController {
 
     @GetMapping("/statuses/{status}")
     @Operation(summary = "Get leave requests by status", description = "Retrieves a list of leave requests filtered by a specific leave status.")
-    public ResponseEntity<?> getLeaveRequestsByStatus(@PathVariable LeaveStatus status) {
+    public ResponseEntity<?> getLeaveRequestsByStatus(@PathVariable RequestStatus status) {
         try {
             List<Leave> leaveRequests = leaveService.getLeaveRequestsByStatus(status);
             return leaveRequests.isEmpty() ? ResponseEntity.status(HttpStatus.NOT_FOUND).body("No leave requests found for specified status") : ResponseEntity.ok(leaveRequests);

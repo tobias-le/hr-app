@@ -46,7 +46,7 @@ public class AttendanceController {
     @GetMapping("/project/{projectId}")
     @Operation(summary = "Get attendance records for a project for past work week")
     public ResponseEntity<List<AttendanceRecordDto>> getAttendanceRecordsByProjectSinceStartOfWeek(@PathVariable Long projectId) {
-        var attendanceRecordsByTeam = attendanceService.getAttendanceRecordsByTeamSinceStartOfWeek(projectId);
+        var attendanceRecordsByTeam = attendanceService.getAttendanceRecordsByProjectSinceStartOfWeek(projectId);
         return ResponseEntity.ok(attendanceRecordsByTeam);
     }
 
