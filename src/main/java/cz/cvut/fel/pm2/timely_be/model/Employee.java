@@ -46,4 +46,7 @@ public class Employee {
         }
         this.phoneNumber = phoneNumber;
     }
+
+    @ManyToMany
+    private List<Learning> finishedLearnings;
 }
