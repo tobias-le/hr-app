@@ -11,7 +11,7 @@ import java.util.List;
 
 import static jakarta.persistence.GenerationType.IDENTITY;
 
-@Entity
+@Entity(name = "teams")
 @Table(name = "teams")
 @Data
 @AllArgsConstructor

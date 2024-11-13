@@ -26,8 +26,16 @@ public class MapperUtils {
         TeamDTO teamDTO = new TeamDTO();
         teamDTO.setTeamId(team.getId());
         teamDTO.setName(team.getName());
-        teamDTO.setManager(team.getManager().getName());
-        teamDTO.setMembers(team.getMembers().stream().map(Employee::getName).collect(Collectors.toList()));
+        teamDTO.setManagerName(team.getManager().getName());
+        teamDTO.setManagerId(team.getManager().getEmployeeId());
+        if (Hibernate.isInitialized(team.getMembers())) {
+            teamDTO.setMembers(
+                    team.getMembers()
+                            .stream()
+                            .map(MapperUtils::toEmployeeDto)
+                            .toList()
+            );
+        }
         return teamDTO;
     }
 
