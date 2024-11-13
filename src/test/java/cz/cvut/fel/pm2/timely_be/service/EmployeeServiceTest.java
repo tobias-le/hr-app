@@ -1,5 +1,6 @@
 package cz.cvut.fel.pm2.timely_be.service;
 
+import cz.cvut.fel.pm2.timely_be.dto.EmployeeNameWithIdDto;
 import cz.cvut.fel.pm2.timely_be.repository.EmployeeRepository;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -115,5 +116,65 @@ public class EmployeeServiceTest {
 
         // When & Then
         assertThrows(IllegalArgumentException.class, () -> employeeService.getEmployee(1L));
+    }
+
+    @Test
+    public void testGetEmployeeNamesWithIds() {
+        // Given
+        var employee1 = createEmployee(FULL_TIME);
+        var employee2 = createEmployee(PART_TIME);
+        var expectedDtos = Arrays.asList(
+            new EmployeeNameWithIdDto(employee1.getEmployeeId(), employee1.getName()),
+            new EmployeeNameWithIdDto(employee2.getEmployeeId(), employee2.getName())
+        );
+
+        when(employeeRepository.findAllEmployeeNamesWithIds()).thenReturn(expectedDtos);
+
+        // When
+        var result = employeeService.getAllEmployeeNamesWithIds();
+
+        // Then
+        assertNotNull(result);
+        assertEquals(2, result.size());
+        assertEquals(expectedDtos, result);
+    }
+
+    @Test
+    public void testAutocompleteEmployees() {
+        // Given
+        String searchPattern = "joh";
+        List<Long> excludeIds = List.of(3L);
+        var employee1 = new EmployeeNameWithIdDto(1L, "John Doe");
+        var employee2 = new EmployeeNameWithIdDto(2L, "Johnny Smith");
+        var expectedResults = Arrays.asList(employee1, employee2);
+
+        when(employeeRepository.findEmployeesByNameContaining(eq(searchPattern), eq(excludeIds), any(Pageable.class)))
+                .thenReturn(expectedResults);
+
+        // When
+        var result = employeeService.autocompleteEmployees(searchPattern, excludeIds);
+
+        // Then
+        assertNotNull(result);
+        assertEquals(2, result.size());
+        assertEquals(expectedResults, result);
+    }
+
+    @Test
+    public void testAutocompleteEmployees_EmptyQuery() {
+        // When
+        var result = employeeService.autocompleteEmployees("", List.of());
+
+        // Then
+        assertTrue(result.isEmpty());
+    }
+
+    @Test
+    public void testAutocompleteEmployees_NullQuery() {
+        // When
+        var result = employeeService.autocompleteEmployees(null, List.of());
+
+        // Then
+        assertTrue(result.isEmpty());
     }
 }

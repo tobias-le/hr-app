@@ -2,6 +2,7 @@ package cz.cvut.fel.pm2.timely_be.model;
 
 import jakarta.persistence.*;
 import lombok.Data;
+import lombok.ToString;
 
 import java.util.List;
 
@@ -9,6 +10,7 @@ import static jakarta.persistence.GenerationType.IDENTITY;
 
 @Entity(name = "projects")
 @Data
+@ToString(exclude = {"members", "manager"})
 public class Project {
     @Id
     @GeneratedValue(strategy = IDENTITY)
@@ -16,10 +18,13 @@ public class Project {
 
     private String name;
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "manager_id", referencedColumnName = "employeeId")
     private Employee manager;
 
-    @ManyToMany(mappedBy = "currentProjects")
+    @ManyToMany(mappedBy = "currentProjects", fetch = FetchType.LAZY)
     private List<Employee> members;
+
+    @Column(nullable = false)
+    private boolean deleted = false;
 }

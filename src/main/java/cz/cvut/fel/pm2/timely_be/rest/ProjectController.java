@@ -20,6 +20,7 @@ import static org.springframework.web.servlet.support.ServletUriComponentsBuilde
 @RequestMapping("/api/projects")
 @Tag(name = "Project", description = "The Project API")
 public class ProjectController {
+
     private final ProjectService projectService;
 
     @Autowired
@@ -28,9 +29,9 @@ public class ProjectController {
     }
 
     @PostMapping
-    @Operation(summary = "Create a new project", description = "Creates a new project with the given name")
-    public ResponseEntity<ProjectDto> createProject(String projectName) {
-        Project project = projectService.createProject(projectName);
+    @Operation(summary = "Create a new project", description = "Creates a new project with the given data")
+    public ResponseEntity<ProjectDto> createProject(@RequestBody ProjectDto projectDto) {
+        Project project = projectService.createProject(projectDto);
         return ResponseEntity.created(
                 fromCurrentRequest()
                         .path("/{id}")
@@ -39,19 +40,39 @@ public class ProjectController {
         ).body(toProjectDto(project));
     }
 
-    @GetMapping
-    @Operation(summary = "Get all projects", description = "Returns a list of all projects")
-    public ResponseEntity<Iterable<ProjectDto>> getAllProjects() {
-        return ResponseEntity.ok(
-                projectService
-                        .getAllProjects()
-                        .stream()
-                        .map(MapperUtils::toProjectDto)
-                        .collect(Collectors.toList())
-        );
+    @PutMapping("/{projectId}")
+    @Operation(summary = "Update a project", description = "Updates an existing project with new data")
+    public ResponseEntity<ProjectDto> updateProject(@PathVariable Long projectId, @RequestBody ProjectDto projectDto) {
+        Project updatedProject = projectService.updateProject(projectId, projectDto);
+        return ResponseEntity.created(
+                fromCurrentRequest()
+                        .path("/{id}")
+                        .buildAndExpand(updatedProject.getProjectId())
+                        .toUri()
+        ).body(toProjectDto(updatedProject));
     }
 
-    @GetMapping("/{employeeId}")
+    @DeleteMapping("/{projectId}")
+    @Operation(summary = "Delete a project", description = "Deletes a project by its ID")
+    public ResponseEntity<Void> deleteProject(@PathVariable Long projectId) {
+        projectService.deleteProject(projectId);
+        return ResponseEntity.noContent().build();
+    }
+
+    @GetMapping
+    @Operation(summary = "Get all projects", description = "Returns a list of all projects without member details")
+    public ResponseEntity<List<ProjectDto>> getAllProjects() {
+        return ResponseEntity.ok(projectService.getAllProjects());
+    }
+
+    @GetMapping("/{projectId}")
+    @Operation(summary = "Get project details", description = "Returns project details including members")
+    public ResponseEntity<ProjectDto> getProject(@PathVariable Long projectId) {
+        Project project = projectService.getProjectWithMembers(projectId);
+        return ResponseEntity.ok(MapperUtils.toProjectDto(project));
+    }
+
+    @GetMapping("/by-employee/{employeeId}")
     @Operation(summary = "Get projects by employee ID", description = "Returns a list of projects for the given employee")
     public ResponseEntity<List<ProjectDto>> getProjectsByEmployeeId(@PathVariable Long employeeId) {
         return ResponseEntity.ok(
@@ -59,7 +80,13 @@ public class ProjectController {
                         .getProjectsByEmployeeId(employeeId)
                         .stream()
                         .map(MapperUtils::toProjectDto)
-                        .toList()
+                        .collect(Collectors.toList())
         );
+    }
+
+    @GetMapping("/{projectId}/details")
+    @Operation(summary = "Get detailed project information", description = "Returns project details including all members")
+    public ResponseEntity<ProjectDto> getProjectDetails(@PathVariable Long projectId) {
+        return ResponseEntity.ok(projectService.getProjectDetails(projectId));
     }
 }

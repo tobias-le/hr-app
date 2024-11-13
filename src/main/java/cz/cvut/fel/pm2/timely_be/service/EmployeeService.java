@@ -1,13 +1,16 @@
 package cz.cvut.fel.pm2.timely_be.service;
 
 import cz.cvut.fel.pm2.timely_be.dto.EmployeeDto;
+import cz.cvut.fel.pm2.timely_be.dto.EmployeeNameWithIdDto;
 import cz.cvut.fel.pm2.timely_be.model.Employee;
 import cz.cvut.fel.pm2.timely_be.repository.EmployeeRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import java.util.List;
+import java.util.Collections;
 import static cz.cvut.fel.pm2.timely_be.enums.EmploymentType.fromString;
 
 @Service
@@ -35,6 +38,11 @@ public class EmployeeService {
         return employeeRepository.findAll();
     }
 
+    public Page<Employee> getAllEmployeesPage() {
+        var pageable = PageRequest.of(0, (int) employeeRepository.count());
+        return employeeRepository.findAll(pageable);
+    }
+
     public Employee updateEmployee(Long id, EmployeeDto employeeDto) {
         var employee = employeeRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("Employee not found"));
@@ -51,5 +59,19 @@ public class EmployeeService {
     public Employee getEmployee(Long id) {
         return employeeRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("Employee not found"));
+    }
+
+    public List<EmployeeNameWithIdDto> getAllEmployeeNamesWithIds() {
+        return employeeRepository.findAllEmployeeNamesWithIds();
+    }
+
+    public List<EmployeeNameWithIdDto> autocompleteEmployees(String namePattern, List<Long> excludeIds) {
+        if (namePattern == null || namePattern.trim().isEmpty()) {
+            return Collections.emptyList();
+        }
+        if (excludeIds == null) {
+            excludeIds = Collections.emptyList();
+        }
+        return employeeRepository.findEmployeesByNameContaining(namePattern.trim(), excludeIds, PageRequest.of(0, 5));
     }
 }

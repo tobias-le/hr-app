@@ -6,7 +6,6 @@ import jakarta.persistence.*;
 import lombok.Data;
 
 import java.time.LocalDate;
-import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "leave")
@@ -39,4 +38,7 @@ public class Leave {
 
     @Column(name="reason", nullable = false)
     private String reason;
+
+    @Column(nullable = false)
+    private boolean deleted = false;
 }

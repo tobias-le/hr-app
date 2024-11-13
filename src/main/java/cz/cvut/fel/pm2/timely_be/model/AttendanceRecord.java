@@ -30,4 +30,7 @@ public class AttendanceRecord {
     private Project project;
 
     private String description;
+
+    @Column(nullable = false)
+    private boolean deleted = false;
 }

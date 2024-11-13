@@ -5,6 +5,7 @@ import cz.cvut.fel.pm2.timely_be.model.AttendanceRecord;
 import cz.cvut.fel.pm2.timely_be.model.Employee;
 import cz.cvut.fel.pm2.timely_be.model.Project;
 import cz.cvut.fel.pm2.timely_be.model.Team;
+import org.hibernate.Hibernate;
 
 import java.util.stream.Collectors;
 
@@ -42,19 +43,21 @@ public class MapperUtils {
         return attendanceRecordDto;
     }
 
-    public static EmployeeNameWithIdDto toEmployeeNameWithIdDto(Employee employee) {
-        EmployeeNameWithIdDto employeeNameWithIdDto = new EmployeeNameWithIdDto();
-        employeeNameWithIdDto.setId(employee.getEmployeeId());
-        employeeNameWithIdDto.setName(employee.getName());
-        return employeeNameWithIdDto;
-    }
-
     public static ProjectDto toProjectDto(Project project) {
         ProjectDto projectDto = new ProjectDto();
         projectDto.setProjectId(project.getProjectId());
         projectDto.setName(project.getName());
         projectDto.setManagerName(project.getManager().getName());
         projectDto.setManagerId(project.getManager().getEmployeeId());
+        
+        if (Hibernate.isInitialized(project.getMembers())) {
+            projectDto.setMembers(
+                project.getMembers()
+                    .stream()
+                    .map(MapperUtils::toEmployeeDto)
+                    .toList()
+            );
+        }
         return projectDto;
     }
 }

@@ -1,11 +1,11 @@
 package cz.cvut.fel.pm2.timely_be.service;
 
+import cz.cvut.fel.pm2.timely_be.dto.AttendanceRecordDto;
 import cz.cvut.fel.pm2.timely_be.model.AttendanceRecord;
-import cz.cvut.fel.pm2.timely_be.model.Employee;
-import cz.cvut.fel.pm2.timely_be.model.Team;
+import cz.cvut.fel.pm2.timely_be.model.Project;
 import cz.cvut.fel.pm2.timely_be.repository.AttendanceRecordRepository;
 import cz.cvut.fel.pm2.timely_be.repository.EmployeeRepository;
-import cz.cvut.fel.pm2.timely_be.repository.TeamRepository;
+import cz.cvut.fel.pm2.timely_be.repository.ProjectRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -13,11 +13,13 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
-import java.time.*;
-import java.util.*;
+import java.time.Duration;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.util.List;
+import java.util.Optional;
 
 import static cz.cvut.fel.pm2.timely_be.enums.EmploymentType.FULL_TIME;
-import static cz.cvut.fel.pm2.timely_be.enums.EmploymentType.PART_TIME;
 import static cz.cvut.fel.pm2.timely_be.utils.TestUtils.createAttendanceRecord;
 import static cz.cvut.fel.pm2.timely_be.utils.TestUtils.createEmployee;
 import static java.time.DayOfWeek.MONDAY;
@@ -34,10 +36,10 @@ public class AttendanceServiceTest {
     private AttendanceRecordRepository attendanceRecordRepository;
 
     @Mock
-    private TeamRepository teamRepository;
+    private EmployeeRepository employeeRepository;
 
     @Mock
-    private EmployeeRepository employeeRepository;
+    private ProjectRepository projectRepository;
 
     @InjectMocks
     private AttendanceService attendanceService;
@@ -50,16 +52,16 @@ public class AttendanceServiceTest {
     @Test
     public void testGetAttendanceRecordsByTeamSinceStartOfWeek() {
         // Given
-        var employee1 = createEmployee(FULL_TIME);
-        var record1 = createAttendanceRecord(employee1, employee1.getCurrentProjects().get(0));
-        var record2 = createAttendanceRecord(employee1, employee1.getCurrentProjects().get(0));
-        var records = Arrays.asList(record1, record2);
+        var employee = createEmployee(FULL_TIME);
+        var record1 = createAttendanceRecord(employee, employee.getCurrentProjects().get(0));
+        var record2 = createAttendanceRecord(employee, employee.getCurrentProjects().get(0));
+        var records = List.of(record1, record2);
 
-        when(attendanceRecordRepository.findByTeamIdAndDateBetween(eq(employee1.getTeam().getId()), any(LocalDate.class), any(LocalDate.class)))
+        when(attendanceRecordRepository.findByTeamIdAndDateBetween(anyLong(), any(LocalDate.class), any(LocalDate.class)))
                 .thenReturn(records);
 
         // When
-        var result = attendanceService.getAttendanceRecordsByTeamSinceStartOfWeek(employee1.getTeam().getId());
+        var result = attendanceService.getAttendanceRecordsByTeamSinceStartOfWeek(employee.getTeam().getId());
 
         // Then
         assertNotNull(result);
@@ -72,7 +74,7 @@ public class AttendanceServiceTest {
         var member = createEmployee(FULL_TIME);
         var record1 = createAttendanceRecord(member, member.getCurrentProjects().get(0));
         var record2 = createAttendanceRecord(member, member.getCurrentProjects().get(0));
-        var records = Arrays.asList(record1, record2);
+        var records = List.of(record1, record2);
 
         when(attendanceRecordRepository.findByMember(member)).thenReturn(records);
 
@@ -88,8 +90,8 @@ public class AttendanceServiceTest {
     public void testGetAttendanceRecordById() {
         // Given
         var attendanceId = 1L;
-        var employee1 = createEmployee(FULL_TIME);
-        var record = createAttendanceRecord(employee1, employee1.getCurrentProjects().get(0));
+        var employee = createEmployee(FULL_TIME);
+        var record = createAttendanceRecord(employee, employee.getCurrentProjects().get(0));
         record.setAttendanceId(attendanceId);
 
         when(attendanceRecordRepository.findById(attendanceId)).thenReturn(Optional.of(record));
@@ -102,67 +104,109 @@ public class AttendanceServiceTest {
     }
 
     @Test
-    public void testGetCurrentWeekAttendancePerformance() {
+    public void testGetCurrentWeekAttendancePerformanceForProject() {
         // Given
-        var teamId = 1L;
-        var team = new Team();
-        team.setId(teamId);
-        team.setName("Development Team");
+        var projectId = 1L;
+        var project = new Project();
+        project.setProjectId(projectId);
+        project.setName("Project A");
 
-        var employee1 = new Employee();
-        employee1.setEmployeeId(1L);
-        employee1.setEmploymentType(FULL_TIME);
+        var employee1 = createEmployee(FULL_TIME);
+        var employee2 = createEmployee(FULL_TIME);
+        project.setMembers(List.of(employee1, employee2));
 
-        var employee2 = createEmployee(PART_TIME);
-        employee2.setEmployeeId(2L);
-        employee2.setEmploymentType(PART_TIME);
-
-        team.setMembers(Arrays.asList(employee1, employee2));
-
-        when(teamRepository.findById(teamId)).thenReturn(Optional.of(team));
+        when(projectRepository.findById(projectId)).thenReturn(Optional.of(project));
 
         var startOfWeek = now().with(MONDAY);
         var endOfWeek = now().with(SUNDAY);
 
-        // Create AttendanceRecords with LocalDateTime for clockInTime and clockOutTime
-        var record1 = new AttendanceRecord();
-        record1.setMember(employee1);
-        record1.setDate(startOfWeek);
-        record1.setClockInTime(LocalDateTime.of(startOfWeek, LocalTime.of(9, 0)));
-        record1.setClockOutTime(LocalDateTime.of(startOfWeek, LocalTime.of(17, 0))); // 8 hours
+        var record1 = createAttendanceRecord(employee1, project, startOfWeek, 9, 17); // 8 hours
+        var record2 = createAttendanceRecord(employee2, project, startOfWeek.plusDays(1), 10, 14); // 4 hours
+        var records = List.of(record1, record2);
 
-        var record2 = new AttendanceRecord();
-        record2.setMember(employee2);
-        record2.setDate(startOfWeek.plusDays(1));
-        record2.setClockInTime(LocalDateTime.of(startOfWeek.plusDays(1), LocalTime.of(10, 0)));
-        record2.setClockOutTime(LocalDateTime.of(startOfWeek.plusDays(1), LocalTime.of(14, 0))); // 4 hours
-
-        var records = Arrays.asList(record1, record2);
-
-        when(attendanceRecordRepository.findByTeamAndDateBetween(eq(team), any(LocalDate.class), any(LocalDate.class)))
+        when(attendanceRecordRepository.findByProjectIdAndDateBetween(eq(projectId), any(LocalDate.class), any(LocalDate.class)))
                 .thenReturn(records);
 
-        when(employeeRepository.findByTeamId(teamId)).thenReturn(Arrays.asList(employee1, employee2));
+        when(employeeRepository.findEmployeesByProjectId(projectId)).thenReturn(List.of(employee1, employee2));
 
         // When
-        var result = attendanceService.getCurrentWeekAttendancePerformance(teamId);
+        var result = attendanceService.getCurrentWeekAttendancePerformanceForProject(projectId);
 
         // Then
         assertNotNull(result);
-        assertEquals("Development Team", result.getTeamName());
+        assertEquals("Project A", result.getProjectName());
         assertEquals(12, result.getTotalHours()); // 8 + 4 hours
 
-        // Calculate expected hours for team per week
-        var expectedHoursPerWeek = (FULL_TIME.getExpectedHoursPerDay() * 5)
-                + (PART_TIME.getExpectedHoursPerDay() * 5);
-
+        // Calculate expected hours for the week based on employment types
+        var expectedHoursPerWeek = employee1.getEmploymentType().getExpectedHoursPerDay() * 5
+                + employee2.getEmploymentType().getExpectedHoursPerDay() * 5;
         assertEquals(expectedHoursPerWeek, result.getExpectedHours());
 
-        var averageHoursPerDay = (double) result.getTotalHours() / 5;
+        double averageHoursPerDay = (double) result.getTotalHours() / 5;
         assertEquals(averageHoursPerDay, result.getAverageHoursPerDay(), 0.01);
 
-        var totalDaysInRange = (int) (Duration.between(startOfWeek.atStartOfDay(), endOfWeek.plusDays(1).atStartOfDay()).toDays());
-        var attendanceRate = (double) records.size() / (team.getMembers().size() * totalDaysInRange) * 100;
+        int totalDaysInRange = (int) (Duration.between(startOfWeek.atStartOfDay(), endOfWeek.atStartOfDay()).toDays()) + 1;
+        double attendanceRate = (double) records.size() / (project.getMembers().size() * totalDaysInRange) * 100;
         assertEquals(attendanceRate, result.getAttendanceRate(), 0.01);
+    }
+
+    @Test
+    public void testCreateAttendanceRecord() {
+        // Given
+        var attendanceRecordDto = new AttendanceRecordDto();
+        var employee = createEmployee(FULL_TIME);
+        var project = employee.getCurrentProjects().get(0);
+
+        attendanceRecordDto.setMemberId(employee.getEmployeeId());
+        attendanceRecordDto.setProject(project.getName());
+        attendanceRecordDto.setDate(LocalDate.now());
+        attendanceRecordDto.setClockInTime(LocalDateTime.now().withHour(9));
+        attendanceRecordDto.setClockOutTime(LocalDateTime.now().withHour(17));
+
+        when(employeeRepository.findById(anyLong())).thenReturn(Optional.of(employee));
+        when(attendanceRecordRepository.save(any(AttendanceRecord.class))).thenReturn(new AttendanceRecord());
+
+        // When
+        var result = attendanceService.createAttendanceRecord(attendanceRecordDto);
+
+        // Then
+        assertNotNull(result);
+    }
+
+    @Test
+    public void testUpdateAttendanceRecordById() {
+        // Given
+        var attendanceId = 1L;
+        var attendanceRecordDto = new AttendanceRecordDto();
+        var employee = createEmployee(FULL_TIME);
+        var project = employee.getCurrentProjects().get(0);
+
+        attendanceRecordDto.setMemberId(employee.getEmployeeId());
+        attendanceRecordDto.setProject(project.getName());
+        attendanceRecordDto.setDate(LocalDate.now());
+        attendanceRecordDto.setClockInTime(LocalDateTime.now().withHour(9));
+        attendanceRecordDto.setClockOutTime(LocalDateTime.now().withHour(17));
+
+        var existingRecord = new AttendanceRecord();
+        existingRecord.setAttendanceId(attendanceId);
+
+        when(attendanceRecordRepository.findById(attendanceId)).thenReturn(Optional.of(existingRecord));
+        when(employeeRepository.findById(anyLong())).thenReturn(Optional.of(employee));
+        when(attendanceRecordRepository.save(any(AttendanceRecord.class))).thenReturn(new AttendanceRecord());
+
+        // When
+        var result = attendanceService.updateAttendanceRecordById(attendanceId, attendanceRecordDto);
+
+        // Then
+        assertNotNull(result);
+    }
+
+    @Test
+    public void testDeleteAttendanceRecordById() {
+        // Given
+        var attendanceId = 1L;
+
+        // When & Then
+        assertDoesNotThrow(() -> attendanceService.deleteAttendanceRecordById(attendanceId));
     }
 }

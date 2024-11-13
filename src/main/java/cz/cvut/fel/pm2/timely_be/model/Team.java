@@ -27,6 +27,9 @@ public class Team {
     @OneToMany(mappedBy = "team")  // `mappedBy` points to `team` in Employee
     private List<Employee> members;
 
+    @Column(nullable = false)
+    private boolean deleted = false;
+
     @NonNull
     public List<Employee> getMembers() {
         if (members == null) {

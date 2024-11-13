@@ -3,6 +3,7 @@ package cz.cvut.fel.pm2.timely_be.model;
 import cz.cvut.fel.pm2.timely_be.enums.EmploymentType;
 import jakarta.persistence.*;
 import lombok.Data;
+import lombok.ToString;
 
 import java.util.List;
 
@@ -12,6 +13,7 @@ import static jakarta.persistence.GenerationType.IDENTITY;
 @Entity
 @Table(name = "employees")
 @Data
+@ToString(exclude = {"currentProjects", "team"})
 public class Employee {
 
     @Id
@@ -29,12 +31,15 @@ public class Employee {
 
     private String phoneNumber;
 
-    @ManyToMany
+    @ManyToMany(fetch = FetchType.LAZY)
     private List<Project> currentProjects;
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "team_id")
     private Team team;
+
+    @Column(nullable = false)
+    private boolean deleted = false;
 
     public void setPhoneNumber(String phoneNumber) {
         if (phoneNumber == null || phoneNumber.isEmpty()) {

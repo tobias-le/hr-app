@@ -18,6 +18,8 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import static org.springframework.web.servlet.support.ServletUriComponentsBuilder.fromCurrentRequest;
+
 @RestController
 @RequestMapping("/api/employees")
 @Tag(name = "Employee", description = "The Employee API")
@@ -46,7 +48,7 @@ public class EmployeeController {
         } else if (projectId != null) {
             employeePage = employeeService.getEmployeesByProject(pageable, projectId);
         } else {
-            return ResponseEntity.badRequest().build(); // Return 400 if neither teamId nor projectId is provided
+            employeePage = employeeService.getAllEmployeesPage();
         }
 
         // Convert Employee entities to EmployeeDto using EmployeeMapper
@@ -59,12 +61,16 @@ public class EmployeeController {
         return ResponseEntity.ok(result);
     }
 
-
     @PutMapping("/{id}")
     @Operation(summary = "Update employee", description = "Update employee by id")
     public ResponseEntity<EmployeeDto> updateEmployee(@PathVariable Long id, @RequestBody EmployeeDto employeeDto) {
         Employee updatedEmployee = employeeService.updateEmployee(id, employeeDto);
-        return ResponseEntity.ok(MapperUtils.toEmployeeDto(updatedEmployee));
+        return ResponseEntity.created(
+                fromCurrentRequest()
+                        .path("/{id}")
+                        .buildAndExpand(updatedEmployee.getEmployeeId())
+                        .toUri()
+        ).body(MapperUtils.toEmployeeDto(updatedEmployee));
     }
 
     @GetMapping("/{id}")
@@ -77,11 +83,15 @@ public class EmployeeController {
     @GetMapping("/withId")
     @Operation(summary = "Get employee names with ids", description = "Get employee names with ids")
     public ResponseEntity<List<EmployeeNameWithIdDto>> getEmployeeNamesWithIds() {
-        var employees = employeeService.getAllEmployees();
-        var employeeDtos = employees.stream()
-                .map(MapperUtils::toEmployeeNameWithIdDto)
-                .collect(Collectors.toList());
-        return ResponseEntity.ok(employeeDtos);
+        return ResponseEntity.ok(employeeService.getAllEmployeeNamesWithIds());
+    }
+
+    @PostMapping("/autocomplete")
+    @Operation(summary = "Autocomplete employee names", description = "Get employee names and ids matching the search pattern, excluding already selected employees")
+    public ResponseEntity<List<EmployeeNameWithIdDto>> autocompleteEmployees(
+            @RequestParam(required = false, defaultValue = "") String query,
+            @RequestBody(required = false) List<Long> excludeIds) {
+        return ResponseEntity.ok(employeeService.autocompleteEmployees(query, excludeIds != null ? excludeIds : List.of()));
     }
 
 }

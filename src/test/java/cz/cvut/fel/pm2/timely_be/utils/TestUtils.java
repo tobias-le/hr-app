@@ -65,6 +65,19 @@ public class TestUtils {
         return attendanceRecord;
     }
 
+    public static AttendanceRecord createAttendanceRecord(Employee employee, Project project, LocalDate date, int clockInHour, int clockOutHour) {
+        var id = getRandomId();
+        AttendanceRecord attendanceRecord = new AttendanceRecord();
+        attendanceRecord.setAttendanceId(id);
+        attendanceRecord.setMember(employee);
+        attendanceRecord.setProject(project);
+        attendanceRecord.setDate(date);
+        attendanceRecord.setClockInTime(LocalDateTime.of(date, LocalTime.of(clockInHour, 0)));
+        attendanceRecord.setClockOutTime(LocalDateTime.of(date, LocalTime.of(clockOutHour, 0)));
+        return attendanceRecord;
+    }
+
+
     public static EmployeeDto createEmployeeDto(EmploymentType employmentType) {
         EmployeeDto employeeDto = new EmployeeDto();
         employeeDto.setName("Employee");
