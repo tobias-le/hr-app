@@ -85,15 +85,12 @@ public class ProjectService {
             newMembers.add(manager);
         }
         
-        // Update bidirectional relationships
         if (project.getMembers() != null) {
-            // Remove project from old members that are not in new members list
             project.getMembers().stream()
                     .filter(oldMember -> !newMembers.contains(oldMember))
                     .forEach(removedMember -> removedMember.getCurrentProjects().remove(project));
         }
         
-        // Add project to new members' currentProjects
         newMembers.forEach(member -> {
             if (!member.getCurrentProjects().contains(project)) {
                 member.getCurrentProjects().add(project);

@@ -18,7 +18,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import static org.springframework.web.servlet.support.ServletUriComponentsBuilder.fromCurrentRequest;
+import static cz.cvut.fel.pm2.timely_be.mapper.MapperUtils.toEmployeeDto;
 
 @RestController
 @RequestMapping("/api/employees")
@@ -65,19 +65,14 @@ public class EmployeeController {
     @Operation(summary = "Update employee", description = "Update employee by id")
     public ResponseEntity<EmployeeDto> updateEmployee(@PathVariable Long id, @RequestBody EmployeeDto employeeDto) {
         Employee updatedEmployee = employeeService.updateEmployee(id, employeeDto);
-        return ResponseEntity.created(
-                fromCurrentRequest()
-                        .path("/{id}")
-                        .buildAndExpand(updatedEmployee.getEmployeeId())
-                        .toUri()
-        ).body(MapperUtils.toEmployeeDto(updatedEmployee));
+        return ResponseEntity.ok(toEmployeeDto(updatedEmployee));
     }
 
     @GetMapping("/{id}")
     @Operation(summary = "Get employee by id", description = "Get employee by id")
     public ResponseEntity<EmployeeDto> getEmployee(@PathVariable Long id) {
         Employee employee = employeeService.getEmployee(id);
-        return ResponseEntity.ok(MapperUtils.toEmployeeDto(employee));
+        return ResponseEntity.ok(toEmployeeDto(employee));
     }
 
     @GetMapping("/withId")

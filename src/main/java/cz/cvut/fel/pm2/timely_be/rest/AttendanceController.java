@@ -81,11 +81,6 @@ public class AttendanceController {
     @Operation(summary = "Update an attendance record by ID")
     public ResponseEntity<AttendanceRecordDto> updateAttendanceRecordById(@PathVariable Long id, @RequestBody AttendanceRecordDto attendanceRecordDto) {
         var attendanceRecord = attendanceService.updateAttendanceRecordById(id, attendanceRecordDto);
-        return ResponseEntity.created(
-                fromCurrentRequest()
-                        .path("/{id}")
-                        .buildAndExpand(attendanceRecord.getAttendanceId())
-                        .toUri()
-        ).body(toAttendanceRecordDto(attendanceRecord));
+        return ResponseEntity.ok(toAttendanceRecordDto(attendanceRecord));
     }
 }

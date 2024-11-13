@@ -44,12 +44,7 @@ public class ProjectController {
     @Operation(summary = "Update a project", description = "Updates an existing project with new data")
     public ResponseEntity<ProjectDto> updateProject(@PathVariable Long projectId, @RequestBody ProjectDto projectDto) {
         Project updatedProject = projectService.updateProject(projectId, projectDto);
-        return ResponseEntity.created(
-                fromCurrentRequest()
-                        .path("/{id}")
-                        .buildAndExpand(updatedProject.getProjectId())
-                        .toUri()
-        ).body(toProjectDto(updatedProject));
+        return ResponseEntity.ok(toProjectDto(updatedProject));
     }
 
     @DeleteMapping("/{projectId}")
