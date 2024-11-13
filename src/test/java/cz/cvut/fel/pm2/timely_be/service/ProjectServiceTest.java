@@ -23,6 +23,7 @@ import static cz.cvut.fel.pm2.timely_be.mapper.MapperUtils.toEmployeeDto;
 import static cz.cvut.fel.pm2.timely_be.utils.TestUtils.createEmployee;
 import static cz.cvut.fel.pm2.timely_be.utils.TestUtils.createProject;
 import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.Mockito.when;
 
@@ -187,6 +188,78 @@ public class ProjectServiceTest {
 
         // When & Then
         assertThrows(IllegalArgumentException.class, () -> projectService.getProjectDetails(1L));
+    }
+
+    @Test
+    public void testCreateProject_Success() {
+        // Given
+        var manager = createEmployee(FULL_TIME);
+        var member = createEmployee(FULL_TIME);
+
+        projectDto.setManagerId(manager.getEmployeeId());
+        projectDto.setMembers(List.of(toEmployeeDto(member)));
+
+        when(employeeRepository.findById(manager.getEmployeeId())).thenReturn(Optional.of(manager));
+        when(employeeRepository.findById(member.getEmployeeId())).thenReturn(Optional.of(member));
+        when(projectRepository.save(any(Project.class))).thenAnswer(i -> i.getArgument(0));
+
+        // When
+        var result = projectService.createProject(projectDto);
+
+        // Then
+        assertNotNull(result);
+        assertEquals(projectDto.getName(), result.getName());
+        assertEquals(manager, result.getManager());
+        assertTrue(result.getMembers().contains(manager), "Manager should be automatically added as a member");
+        assertTrue(result.getMembers().contains(member));
+    }
+
+    @Test
+    public void testUpdateProject_Success() {
+        // Given
+        var existingProject = createProject();
+        var manager = createEmployee(FULL_TIME);
+        var member = createEmployee(FULL_TIME);
+        
+        projectDto.setManagerId(manager.getEmployeeId());
+        projectDto.setMembers(List.of(toEmployeeDto(member)));
+
+        when(projectRepository.findById(existingProject.getProjectId())).thenReturn(Optional.of(existingProject));
+        when(employeeRepository.findById(manager.getEmployeeId())).thenReturn(Optional.of(manager));
+        when(employeeRepository.findById(member.getEmployeeId())).thenReturn(Optional.of(member));
+        when(projectRepository.save(any(Project.class))).thenAnswer(i -> i.getArgument(0));
+
+        // When
+        var result = projectService.updateProject(existingProject.getProjectId(), projectDto);
+
+        // Then
+        assertNotNull(result);
+        assertEquals(projectDto.getName(), result.getName());
+        assertEquals(manager, result.getManager());
+        assertTrue(result.getMembers().contains(manager), "Manager should be automatically added as a member");
+        assertTrue(result.getMembers().contains(member));
+    }
+
+    @Test
+    public void testGetProjectDetails_Success() {
+        // Given
+        var project = createProject();
+        var manager = createEmployee(FULL_TIME);
+        var member = createEmployee(FULL_TIME);
+        
+        project.setManager(manager);
+        project.setMembers(List.of(manager, member));
+
+        when(projectRepository.findProjectWithMembers(project.getProjectId())).thenReturn(Optional.of(project));
+
+        // When
+        var result = projectService.getProjectDetails(project.getProjectId());
+
+        // Then
+        assertNotNull(result);
+        assertEquals(project.getName(), result.getName());
+        assertEquals(project.getManager().getEmployeeId(), result.getManagerId());
+        assertEquals(2, result.getMembers().size());
     }
 
 }

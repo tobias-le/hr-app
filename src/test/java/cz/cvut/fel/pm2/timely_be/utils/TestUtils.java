@@ -11,6 +11,7 @@ import cz.cvut.fel.pm2.timely_be.model.Team;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
+import java.util.ArrayList;
 import java.util.List;
 
 public class TestUtils {
@@ -28,7 +29,7 @@ public class TestUtils {
         employee.setEmploymentType(employmentType);
 
         var project = createProject();
-        employee.setCurrentProjects(List.of(project));
+        employee.setCurrentProjects(new ArrayList<>(List.of(project)));
 
         var team = createTeam(List.of(employee));
         employee.setTeam(team);

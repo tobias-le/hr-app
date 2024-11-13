@@ -17,6 +17,7 @@ import java.time.Duration;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.NoSuchElementException;
 import java.util.Optional;
 
 import static cz.cvut.fel.pm2.timely_be.enums.EmploymentType.FULL_TIME;
@@ -190,5 +191,83 @@ public class AttendanceServiceTest {
 
         // When & Then
         assertDoesNotThrow(() -> attendanceService.deleteAttendanceRecordById(attendanceId));
+    }
+
+    @Test
+    public void testGetAttendanceRecordsByProjectSinceStartOfWeek() {
+        // Given
+        var projectId = 1L;
+        var employee = createEmployee(FULL_TIME);
+        var project = employee.getCurrentProjects().get(0);
+        var startOfWeek = now().with(MONDAY);
+        var today = now();
+        
+        var record1 = createAttendanceRecord(employee, project, startOfWeek, 9, 17);
+        var record2 = createAttendanceRecord(employee, project, today, 8, 16);
+        var records = List.of(record1, record2);
+
+        when(attendanceRecordRepository.findByProjectIdAndDateBetween(projectId, startOfWeek, today))
+                .thenReturn(records);
+
+        // When
+        var result = attendanceService.getAttendanceRecordsByProjectSinceStartOfWeek(projectId);
+
+        // Then
+        assertNotNull(result);
+        assertEquals(2, result.size());
+    }
+
+    @Test
+    public void testGetCurrentWeekAttendancePerformanceForProject_ProjectNotFound() {
+        // Given
+        var projectId = 999L;
+        when(projectRepository.findById(projectId)).thenReturn(Optional.empty());
+
+        // When
+        var result = attendanceService.getCurrentWeekAttendancePerformanceForProject(projectId);
+
+        // Then
+        assertNull(result);
+    }
+
+    @Test
+    public void testUpdateAttendanceRecordById_RecordNotFound() {
+        // Given
+        var attendanceId = 999L;
+        var attendanceRecordDto = new AttendanceRecordDto();
+        
+        when(attendanceRecordRepository.findById(attendanceId)).thenReturn(Optional.empty());
+
+        // When & Then
+        assertThrows(NoSuchElementException.class, 
+            () -> attendanceService.updateAttendanceRecordById(attendanceId, attendanceRecordDto));
+    }
+
+    @Test
+    public void testCreateAttendanceRecord_EmployeeNotFound() {
+        // Given
+        var attendanceRecordDto = new AttendanceRecordDto();
+        attendanceRecordDto.setMemberId(999L);
+
+        when(employeeRepository.findById(999L)).thenReturn(Optional.empty());
+
+        // When & Then
+        assertThrows(NoSuchElementException.class, 
+            () -> attendanceService.createAttendanceRecord(attendanceRecordDto));
+    }
+
+    @Test
+    public void testCreateAttendanceRecord_ProjectNotFound() {
+        // Given
+        var attendanceRecordDto = new AttendanceRecordDto();
+        var employee = createEmployee(FULL_TIME);
+        attendanceRecordDto.setMemberId(employee.getEmployeeId());
+        attendanceRecordDto.setProject("Non-existent Project");
+
+        when(employeeRepository.findById(employee.getEmployeeId())).thenReturn(Optional.of(employee));
+
+        // When & Then
+        assertThrows(NoSuchElementException.class, 
+            () -> attendanceService.createAttendanceRecord(attendanceRecordDto));
     }
 }

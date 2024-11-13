@@ -177,4 +177,81 @@ public class EmployeeServiceTest {
         // Then
         assertTrue(result.isEmpty());
     }
+
+    @Test
+    public void testGetEmployeesByTeam() {
+        // Given
+        var teamId = 1L;
+        var employee1 = createEmployee(FULL_TIME);
+        var employee2 = createEmployee(PART_TIME);
+        var employees = Arrays.asList(employee1, employee2);
+        var pageable = PageRequest.of(0, 10);
+        var page = new PageImpl<>(employees, pageable, employees.size());
+
+        when(employeeRepository.findByTeamId(pageable, teamId)).thenReturn(page);
+
+        // When
+        var result = employeeService.getEmployeesByTeam(pageable, teamId);
+
+        // Then
+        assertNotNull(result);
+        assertEquals(2, result.getTotalElements());
+        assertEquals(employees, result.getContent());
+    }
+
+    @Test
+    public void testGetEmployeesByProject() {
+        // Given
+        var projectId = 1L;
+        var employee1 = createEmployee(FULL_TIME);
+        var employee2 = createEmployee(PART_TIME);
+        var employees = Arrays.asList(employee1, employee2);
+        var pageable = PageRequest.of(0, 10);
+        var page = new PageImpl<>(employees, pageable, employees.size());
+
+        when(employeeRepository.findEmployeesByProjectIdPageable(projectId, pageable)).thenReturn(page);
+
+        // When
+        var result = employeeService.getEmployeesByProject(pageable, projectId);
+
+        // Then
+        assertNotNull(result);
+        assertEquals(2, result.getTotalElements());
+        assertEquals(employees, result.getContent());
+    }
+
+    @Test
+    public void testGetAllEmployeesPage() {
+        // Given
+        var employee1 = createEmployee(FULL_TIME);
+        var employee2 = createEmployee(PART_TIME);
+        var employees = Arrays.asList(employee1, employee2);
+        
+        when(employeeRepository.count()).thenReturn((long) employees.size());
+        var pageable = PageRequest.of(0, employees.size());
+        var page = new PageImpl<>(employees, pageable, employees.size());
+        
+        when(employeeRepository.findAll(any(Pageable.class))).thenReturn(page);
+
+        // When
+        var result = employeeService.getAllEmployeesPage();
+
+        // Then
+        assertNotNull(result);
+        assertEquals(2, result.getTotalElements());
+        assertEquals(employees, result.getContent());
+    }
+
+    @Test
+    public void testUpdateEmployee_NotFound() {
+        // Given
+        var employeeId = 999L;
+        var employeeDto = createEmployeeDto(FULL_TIME);
+        
+        when(employeeRepository.findById(employeeId)).thenReturn(Optional.empty());
+
+        // When & Then
+        assertThrows(IllegalArgumentException.class, 
+            () -> employeeService.updateEmployee(employeeId, employeeDto));
+    }
 }
