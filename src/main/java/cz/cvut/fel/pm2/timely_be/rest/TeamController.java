@@ -1,6 +1,7 @@
 package cz.cvut.fel.pm2.timely_be.rest;
 
 import cz.cvut.fel.pm2.timely_be.dto.TeamDTO;
+import cz.cvut.fel.pm2.timely_be.dto.TeamNameWithIdDto;
 import cz.cvut.fel.pm2.timely_be.mapper.MapperUtils;
 import cz.cvut.fel.pm2.timely_be.model.Team;
 import cz.cvut.fel.pm2.timely_be.service.TeamService;
@@ -57,5 +58,12 @@ public class TeamController {
     public ResponseEntity<Void> deleteTeam(@PathVariable Long teamId) {
         teamService.deleteTeam(teamId);
         return ResponseEntity.noContent().build();
+    }
+
+    @GetMapping("/autocomplete")
+    @Operation(summary = "Autocomplete team names", description = "Get team names and ids matching the search pattern")
+    public ResponseEntity<List<TeamNameWithIdDto>> autocompleteTeams(
+            @RequestParam(required = false, defaultValue = "") String query) {
+        return ResponseEntity.ok(teamService.autocompleteTeams(query));
     }
 }

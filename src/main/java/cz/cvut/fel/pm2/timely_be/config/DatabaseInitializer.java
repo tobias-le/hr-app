@@ -12,12 +12,8 @@ import org.springframework.context.annotation.Configuration;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
-import java.util.Arrays;
-import java.util.List;
-import java.util.ArrayList;
-import java.util.Random;
+import java.util.*;
 import java.util.stream.Collectors;
-import java.util.Collections;
 
 import static cz.cvut.fel.pm2.timely_be.enums.EmploymentType.FULL_TIME;
 import static cz.cvut.fel.pm2.timely_be.enums.EmploymentType.PART_TIME;
@@ -142,49 +138,158 @@ public class DatabaseInitializer {
     }
 
     private static List<Team> initializeTeams(TeamRepository teamRepository, List<Employee> employees) {
-        // Find managers
+        // Find C-level executives
+        Employee ceo = findEmployeeByTitle(employees, "Chief Executive Officer");
+        Employee cto = findEmployeeByTitle(employees, "Chief Technology Officer");
+        Employee cfo = findEmployeeByTitle(employees, "Chief Financial Officer");
+        Employee coo = findEmployeeByTitle(employees, "Chief Operations Officer");
+
+        // Create company-wide team under CEO
+        Team companyTeam = createTeam("Company Leadership", ceo);
+        companyTeam = teamRepository.save(companyTeam);
+
+        // Create main divisions under CEO
+        Team technologyDivision = createTeam("Technology Division", cto);
+        Team financeDivision = createTeam("Finance Division", cfo);
+        Team operationsDivision = createTeam("Operations Division", coo);
+
+        // Set parent relationships for divisions
+        technologyDivision.setParentTeam(companyTeam);
+        financeDivision.setParentTeam(companyTeam);
+        operationsDivision.setParentTeam(companyTeam);
+
+        // Save divisions
+        List<Team> divisions = teamRepository.saveAll(Arrays.asList(
+            technologyDivision, financeDivision, operationsDivision
+        ));
+
+        // Create departments under Technology Division
         Employee infraManager = findEmployeeByTitle(employees, "Infrastructure Manager");
-        Employee devManager = findEmployeeByTitle(employees, "Development Director");
-        Employee finManager = findEmployeeByTitle(employees, "Finance Director");
-        Employee hrManager = findEmployeeByTitle(employees, "HR Director");
+        Employee devDirector = findEmployeeByTitle(employees, "Development Director");
+        
+        Team infrastructureDept = createTeam("Infrastructure Department", infraManager);
+        Team developmentDept = createTeam("Development Department", devDirector);
+        
+        infrastructureDept.setParentTeam(technologyDivision);
+        developmentDept.setParentTeam(technologyDivision);
 
-        // Create teams
-        Team infrastructureTeam = createTeam("Infrastructure Team", infraManager);
-        Team developmentTeam = createTeam("Development Team", devManager);
-        Team financeTeam = createTeam("Finance Team", finManager);
-        Team hrTeam = createTeam("HR Team", hrManager);
+        // Create departments under Finance Division
+        Employee financeDirector = findEmployeeByTitle(employees, "Finance Director");
+        Team accountingDept = createTeam("Accounting Department", financeDirector);
+        accountingDept.setParentTeam(financeDivision);
 
-        // Save teams first
-        List<Team> teams = teamRepository.saveAll(Arrays.asList(infrastructureTeam, developmentTeam, financeTeam, hrTeam));
+        // Create departments under Operations Division
+        Employee hrDirector = findEmployeeByTitle(employees, "HR Director");
+        Team hrDept = createTeam("HR Department", hrDirector);
+        hrDept.setParentTeam(operationsDivision);
 
-        // Assign team members and update employees
+        // Save all departments
+        List<Team> departments = teamRepository.saveAll(Arrays.asList(
+            infrastructureDept, developmentDept, accountingDept, hrDept
+        ));
+
+        // Create teams under Infrastructure Department
+        Team networkTeam = createTeam("Network Team", findEmployeeByTitle(employees, "Senior Network Engineer"));
+        Team cloudTeam = createTeam("Cloud Team", findEmployeeByTitle(employees, "Cloud Architect"));
+        Team securityTeam = createTeam("Security Team", findEmployeeByTitle(employees, "Security Specialist"));
+        
+        networkTeam.setParentTeam(infrastructureDept);
+        cloudTeam.setParentTeam(infrastructureDept);
+        securityTeam.setParentTeam(infrastructureDept);
+
+        // Create teams under Development Department
+        Team frontendTeam = createTeam("Frontend Team", findEmployeeByTitle(employees, "Frontend Developer"));
+        Team backendTeam = createTeam("Backend Team", findEmployeeByTitle(employees, "Backend Developer"));
+        Team qaTeam = createTeam("QA Team", findEmployeeByTitle(employees, "QA Engineer"));
+        
+        frontendTeam.setParentTeam(developmentDept);
+        backendTeam.setParentTeam(developmentDept);
+        qaTeam.setParentTeam(developmentDept);
+
+        // Save all teams
+        List<Team> teams = teamRepository.saveAll(Arrays.asList(
+            networkTeam, cloudTeam, securityTeam,
+            frontendTeam, backendTeam, qaTeam
+        ));
+
+        // Assign employees to their respective teams
+        assignEmployeesToTeams(employees, companyTeam, divisions, departments, teams);
+
+        // Save all teams again with updated members
+        List<Team> allTeams = new ArrayList<>();
+        allTeams.add(companyTeam);
+        allTeams.addAll(divisions);
+        allTeams.addAll(departments);
+        allTeams.addAll(teams);
+        return teamRepository.saveAll(allTeams);
+    }
+
+    private static void assignEmployeesToTeams(List<Employee> employees, Team companyTeam, 
+            List<Team> divisions, List<Team> departments, List<Team> teams) {
         for (Employee employee : employees) {
             String title = employee.getJobTitle().toLowerCase();
             
-            if (title.contains("network") || title.contains("cloud") || 
-                title.contains("security") || title.contains("system")) {
-                infrastructureTeam.addMember(employee);
-                employee.setTeam(infrastructureTeam);
+            // Assign C-level to company team
+            if (title.contains("chief")) {
+                companyTeam.addMember(employee);
+                employee.setTeam(companyTeam);
             }
-            else if (title.contains("developer") || title.contains("engineer") || 
-                     title.contains("qa") || title.contains("devops")) {
-                developmentTeam.addMember(employee);
-                employee.setTeam(developmentTeam);
+            // Assign directors to respective divisions
+            else if (title.contains("director")) {
+                findTeamByName(divisions, getDivisionForDirector(title))
+                    .ifPresent(team -> {
+                        team.addMember(employee);
+                        employee.setTeam(team);
+                    });
             }
-            else if (title.contains("accountant") || title.contains("financial") || 
-                     title.contains("payroll")) {
-                financeTeam.addMember(employee);
-                employee.setTeam(financeTeam);
+            // Assign managers to departments
+            else if (title.contains("manager")) {
+                findTeamByName(departments, getDepartmentForManager(title))
+                    .ifPresent(team -> {
+                        team.addMember(employee);
+                        employee.setTeam(team);
+                    });
             }
-            else if (title.contains("recruitment") || title.contains("training")) {
-                hrTeam.addMember(employee);
-                employee.setTeam(hrTeam);
+            // Assign other employees to specific teams
+            else {
+                findTeamByName(teams, getTeamForEmployee(title))
+                    .ifPresent(team -> {
+                        team.addMember(employee);
+                        employee.setTeam(team);
+                    });
             }
         }
+    }
 
-        // Save updated teams and employees
-        teamRepository.saveAll(teams);
-        return teams;
+    private static Optional<Team> findTeamByName(List<Team> teams, String name) {
+        return teams.stream()
+            .filter(t -> t.getName().toLowerCase().contains(name.toLowerCase()))
+            .findFirst();
+    }
+
+    private static String getDivisionForDirector(String title) {
+        if (title.contains("technology")) return "Technology Division";
+        if (title.contains("finance")) return "Finance Division";
+        if (title.contains("operations")) return "Operations Division";
+        return "";
+    }
+
+    private static String getDepartmentForManager(String title) {
+        if (title.contains("infrastructure")) return "Infrastructure Department";
+        if (title.contains("development")) return "Development Department";
+        if (title.contains("accounting")) return "Accounting Department";
+        if (title.contains("hr")) return "HR Department";
+        return "";
+    }
+
+    private static String getTeamForEmployee(String title) {
+        if (title.contains("network")) return "Network Team";
+        if (title.contains("cloud")) return "Cloud Team";
+        if (title.contains("security")) return "Security Team";
+        if (title.contains("frontend")) return "Frontend Team";
+        if (title.contains("backend")) return "Backend Team";
+        if (title.contains("qa")) return "QA Team";
+        return "";
     }
 
     private static Employee findEmployeeByTitle(List<Employee> employees, String title) {
@@ -263,10 +368,10 @@ public class DatabaseInitializer {
     }
 
     private static Team createTeam(String name, Employee manager) {
-        var team = new Team();
+        Team team = new Team();
         team.setName(name);
         team.setManager(manager);
-        team.setMembers(new ArrayList<>());
+        team.setMembers(new HashSet<>());
         return team;
     }
 

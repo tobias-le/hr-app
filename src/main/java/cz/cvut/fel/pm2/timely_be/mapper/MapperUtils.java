@@ -23,20 +23,50 @@ public class MapperUtils {
     }
 
     public static TeamDTO toTeamDto(Team team) {
-        TeamDTO teamDTO = new TeamDTO();
-        teamDTO.setTeamId(team.getId());
-        teamDTO.setName(team.getName());
-        teamDTO.setManagerName(team.getManager().getName());
-        teamDTO.setManagerId(team.getManager().getEmployeeId());
-        if (Hibernate.isInitialized(team.getMembers())) {
-            teamDTO.setMembers(
-                    team.getMembers()
-                            .stream()
-                            .map(MapperUtils::toEmployeeDto)
-                            .toList()
-            );
+        if (team == null) return null;
+        
+        TeamDTO dto = new TeamDTO();
+        dto.setTeamId(team.getId());
+        dto.setName(team.getName());
+        
+        if (team.getManager() != null) {
+            dto.setManagerId(team.getManager().getEmployeeId());
+            dto.setManagerName(team.getManager().getName());
         }
-        return teamDTO;
+        
+        if (team.getMembers() != null) {
+            dto.setMembers(team.getMembers().stream()
+                .map(MapperUtils::toEmployeeDto)
+                .collect(Collectors.toSet()));
+        }
+        
+        return dto;
+    }
+
+    public static TeamDTO toTeamDtoWithHierarchy(Team team) {
+        if (team == null) return null;
+        
+        TeamDTO dto = new TeamDTO();
+        dto.setTeamId(team.getId());
+        dto.setName(team.getName());
+        
+        if (team.getManager() != null) {
+            dto.setManagerId(team.getManager().getEmployeeId());
+            dto.setManagerName(team.getManager().getName());
+            dto.setManagerJobTitle(team.getManager().getJobTitle());
+        }
+        
+        if (team.getMembers() != null) {
+            dto.setMembers(team.getMembers().stream()
+                .map(MapperUtils::toEmployeeDto)
+                .collect(Collectors.toSet()));
+        }
+        
+        if (team.getParentTeam() != null) {
+            dto.setParentTeam(toTeamDtoWithHierarchy(team.getParentTeam()));
+        }
+        
+        return dto;
     }
 
     public static AttendanceRecordDto toAttendanceRecordDto(AttendanceRecord attendance) {

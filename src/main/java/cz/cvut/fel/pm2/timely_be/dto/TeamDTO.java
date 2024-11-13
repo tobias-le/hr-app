@@ -2,7 +2,7 @@ package cz.cvut.fel.pm2.timely_be.dto;
 
 import lombok.Data;
 
-import java.util.List;
+import java.util.Set;
 
 @Data
 public class TeamDTO {
@@ -10,5 +10,7 @@ public class TeamDTO {
     private String name;
     private String managerName;
     private Long managerId;
-    private List<EmployeeDto> members;
+    private String managerJobTitle;
+    private Set<EmployeeDto> members;
+    private TeamDTO parentTeam;
 }

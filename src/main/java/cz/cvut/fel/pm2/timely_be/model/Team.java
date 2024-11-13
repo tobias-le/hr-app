@@ -4,10 +4,8 @@ import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import lombok.NonNull;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
 
 import static jakarta.persistence.GenerationType.IDENTITY;
 
@@ -28,24 +26,38 @@ public class Team {
     @JoinColumn(name = "manager_id", referencedColumnName = "employeeId")
     private Employee manager;
 
-    @OneToMany(mappedBy = "team")  // `mappedBy` points to `team` in Employee
-    private List<Employee> members;
+    @OneToMany(mappedBy = "team")
+    private Set<Employee> members = new HashSet<>();
 
     @Column(nullable = false)
     private boolean deleted = false;
 
-    @NonNull
-    public List<Employee> getMembers() {
-        if (members == null) {
-            members = new ArrayList<>();
-        }
-        return members;
-    }
+    @ManyToOne
+    @JoinColumn(name = "parent_team_id")
+    private Team parentTeam;
 
     public void addMember(Employee employee) {
         if (this.members == null) {
-            this.members = new ArrayList<>();
+            this.members = new HashSet<>();
         }
         this.members.add(employee);
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+
+        Team team = (Team) o;
+
+        if (!Objects.equals(id, team.id)) return false;
+        return Objects.equals(name, team.name);
+    }
+
+    @Override
+    public int hashCode() {
+        int result = id != null ? id.hashCode() : 0;
+        result = 31 * result + (name != null ? name.hashCode() : 0);
+        return result;
     }
 }
