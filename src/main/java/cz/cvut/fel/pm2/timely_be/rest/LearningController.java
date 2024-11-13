@@ -2,7 +2,6 @@ package cz.cvut.fel.pm2.timely_be.rest;
 
 import cz.cvut.fel.pm2.timely_be.model.Learning;
 import cz.cvut.fel.pm2.timely_be.service.LearningService;
-import cz.cvut.fel.pm2.timely_be.service.ProjectService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.beans.factory.annotation.Autowired;
