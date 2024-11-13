@@ -10,8 +10,8 @@ import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.util.Arrays;
 
-import static cz.cvut.fel.pm2.timely_be.enums.EmploymentStatus.FULL_TIME;
-import static cz.cvut.fel.pm2.timely_be.enums.EmploymentStatus.PART_TIME;
+import static cz.cvut.fel.pm2.timely_be.enums.EmploymentType.FULL_TIME;
+import static cz.cvut.fel.pm2.timely_be.enums.EmploymentType.PART_TIME;
 import static cz.cvut.fel.pm2.timely_be.utils.TestUtils.createEmployee;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.when;

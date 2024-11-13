@@ -3,7 +3,7 @@ package cz.cvut.fel.pm2.timely_be.config;
 import cz.cvut.fel.pm2.timely_be.enums.LeaveStatus;
 import cz.cvut.fel.pm2.timely_be.enums.LeaveType;
 import cz.cvut.fel.pm2.timely_be.model.*;
-import cz.cvut.fel.pm2.timely_be.enums.EmploymentStatus;
+import cz.cvut.fel.pm2.timely_be.enums.EmploymentType;
 import cz.cvut.fel.pm2.timely_be.repository.*;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.context.annotation.Bean;
@@ -43,7 +43,7 @@ public class DatabaseInitializer {
         Employee employee1 = new Employee();
         employee1.setName("John Doe");
         employee1.setJobTitle("Software Developer");
-        employee1.setEmploymentStatus(EmploymentStatus.FULL_TIME);
+        employee1.setEmploymentType(EmploymentType.FULL_TIME);
         employee1.setEmail("john.doe@example.com");
         employee1.setPhoneNumber("123456789");
         employee1.setCurrentProjects(List.of(project1, project2));
@@ -51,7 +51,7 @@ public class DatabaseInitializer {
         Employee employee2 = new Employee();
         employee2.setName("Jane Smith");
         employee2.setJobTitle("Project Manager");
-        employee2.setEmploymentStatus(EmploymentStatus.PART_TIME);
+        employee2.setEmploymentType(EmploymentType.PART_TIME);
         employee2.setEmail("jane.smith@example.com");
         employee2.setPhoneNumber("123456789");
         employee2.setCurrentProjects(List.of(project3, project4));
@@ -59,7 +59,7 @@ public class DatabaseInitializer {
         Employee employee3 = new Employee();
         employee3.setName("Alice Johnson");
         employee3.setJobTitle("UX Designer");
-        employee3.setEmploymentStatus(EmploymentStatus.CONTRACT);
+        employee3.setEmploymentType(EmploymentType.CONTRACT);
         employee3.setEmail("alice.johnson@example.com");
         employee3.setPhoneNumber("123456789");
         employee3.setCurrentProjects(List.of(project5));

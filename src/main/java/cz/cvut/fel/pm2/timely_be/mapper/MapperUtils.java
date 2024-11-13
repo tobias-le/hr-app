@@ -17,7 +17,7 @@ public class MapperUtils {
         employeeDto.setId(employee.getEmployeeId());
         employeeDto.setName(employee.getName());
         employeeDto.setJobTitle(employee.getJobTitle());
-        employeeDto.setEmploymentStatus(employee.getEmploymentStatus().name());
+        employeeDto.setEmploymentStatus(employee.getEmploymentType().name());
         employeeDto.setEmail(employee.getEmail());
         employeeDto.setPhoneNumber(employee.getPhoneNumber());
         employeeDto.setCurrentProjects(employee.getCurrentProjects().stream().map(Project::getName).collect(Collectors.toList()));

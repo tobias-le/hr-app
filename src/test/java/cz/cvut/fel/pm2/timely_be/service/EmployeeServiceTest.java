@@ -12,8 +12,8 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 
-import static cz.cvut.fel.pm2.timely_be.enums.EmploymentStatus.FULL_TIME;
-import static cz.cvut.fel.pm2.timely_be.enums.EmploymentStatus.PART_TIME;
+import static cz.cvut.fel.pm2.timely_be.enums.EmploymentType.FULL_TIME;
+import static cz.cvut.fel.pm2.timely_be.enums.EmploymentType.PART_TIME;
 import static cz.cvut.fel.pm2.timely_be.utils.TestUtils.createEmployee;
 import static cz.cvut.fel.pm2.timely_be.utils.TestUtils.createEmployeeDto;
 import static org.junit.jupiter.api.Assertions.*;
@@ -67,7 +67,7 @@ public class EmployeeServiceTest {
         assertNotNull(result);
         assertEquals(employeeDto.getName(), result.getName());
         assertEquals(employeeDto.getEmail(), result.getEmail());
-        assertEquals(PART_TIME, result.getEmploymentStatus());
+        assertEquals(PART_TIME, result.getEmploymentType());
         assertEquals(employeeDto.getJobTitle(), result.getJobTitle());
         assertEquals(employeeDto.getPhoneNumber(), result.getPhoneNumber());
     }
@@ -105,7 +105,7 @@ public class EmployeeServiceTest {
         assertEquals(employee.getEmployeeId(), result.getEmployeeId());
         assertEquals(employee.getName(), result.getName());
         assertEquals(employee.getEmail(), result.getEmail());
-        assertEquals(employee.getEmploymentStatus(), result.getEmploymentStatus());
+        assertEquals(employee.getEmploymentType(), result.getEmploymentType());
     }
 
     @Test

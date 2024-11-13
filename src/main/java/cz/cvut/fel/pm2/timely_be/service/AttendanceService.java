@@ -2,7 +2,7 @@ package cz.cvut.fel.pm2.timely_be.service;
 
 import cz.cvut.fel.pm2.timely_be.dto.AttendanceRecordDto;
 import cz.cvut.fel.pm2.timely_be.dto.AttendanceSummaryDTO;
-import cz.cvut.fel.pm2.timely_be.enums.EmploymentStatus;
+import cz.cvut.fel.pm2.timely_be.enums.EmploymentType;
 import cz.cvut.fel.pm2.timely_be.mapper.MapperUtils;
 import cz.cvut.fel.pm2.timely_be.model.AttendanceRecord;
 import cz.cvut.fel.pm2.timely_be.model.Employee;
@@ -122,8 +122,8 @@ public class AttendanceService {
     private long getExpectedHoursForTeamPerWeek(Long teamId) {
         var employees = employeeRepository.findByTeamId(teamId);
         return employees.stream()
-                .map(Employee::getEmploymentStatus)
-                .map(EmploymentStatus::getExpectedHoursPerDay)
+                .map(Employee::getEmploymentType)
+                .map(EmploymentType::getExpectedHoursPerDay)
                 .map(hours -> hours * 5)
                 .reduce(Long::sum).orElse(0L);
     }

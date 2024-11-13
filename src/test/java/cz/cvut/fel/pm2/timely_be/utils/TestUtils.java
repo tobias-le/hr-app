@@ -1,7 +1,7 @@
 package cz.cvut.fel.pm2.timely_be.utils;
 
 import cz.cvut.fel.pm2.timely_be.dto.EmployeeDto;
-import cz.cvut.fel.pm2.timely_be.enums.EmploymentStatus;
+import cz.cvut.fel.pm2.timely_be.enums.EmploymentType;
 import cz.cvut.fel.pm2.timely_be.model.AttendanceRecord;
 import cz.cvut.fel.pm2.timely_be.model.Employee;
 import cz.cvut.fel.pm2.timely_be.model.Project;
@@ -16,7 +16,7 @@ public class TestUtils {
     public static long getRandomId() {
         return (long) (Math.random() * 1000);
     }
-    public static Employee createEmployee(EmploymentStatus employmentStatus) {
+    public static Employee createEmployee(EmploymentType employmentType) {
         var employee = new Employee();
         var id = getRandomId();
         employee.setEmployeeId(id);
@@ -24,7 +24,7 @@ public class TestUtils {
         employee.setJobTitle("Job Title " + id);
         employee.setEmail("employee" + id + "@example.com");
         employee.setPhoneNumber("123456789");
-        employee.setEmploymentStatus(employmentStatus);
+        employee.setEmploymentType(employmentType);
 
         var project = createProject();
         employee.setCurrentProjects(List.of(project));
@@ -65,13 +65,13 @@ public class TestUtils {
         return attendanceRecord;
     }
 
-    public static EmployeeDto createEmployeeDto(EmploymentStatus employmentStatus) {
+    public static EmployeeDto createEmployeeDto(EmploymentType employmentType) {
         EmployeeDto employeeDto = new EmployeeDto();
         employeeDto.setName("Employee");
         employeeDto.setJobTitle("Job Title");
         employeeDto.setEmail("random"+ getRandomId() + "@example.com");
         employeeDto.setPhoneNumber("123456789");
-        employeeDto.setEmploymentStatus(employmentStatus.toString());
+        employeeDto.setEmploymentStatus(employmentType.toString());
         return employeeDto;
     }
 }

@@ -16,8 +16,8 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import java.time.*;
 import java.util.*;
 
-import static cz.cvut.fel.pm2.timely_be.enums.EmploymentStatus.FULL_TIME;
-import static cz.cvut.fel.pm2.timely_be.enums.EmploymentStatus.PART_TIME;
+import static cz.cvut.fel.pm2.timely_be.enums.EmploymentType.FULL_TIME;
+import static cz.cvut.fel.pm2.timely_be.enums.EmploymentType.PART_TIME;
 import static cz.cvut.fel.pm2.timely_be.utils.TestUtils.createAttendanceRecord;
 import static cz.cvut.fel.pm2.timely_be.utils.TestUtils.createEmployee;
 import static java.time.DayOfWeek.MONDAY;
@@ -111,11 +111,11 @@ public class AttendanceServiceTest {
 
         var employee1 = new Employee();
         employee1.setEmployeeId(1L);
-        employee1.setEmploymentStatus(FULL_TIME);
+        employee1.setEmploymentType(FULL_TIME);
 
         var employee2 = createEmployee(PART_TIME);
         employee2.setEmployeeId(2L);
-        employee2.setEmploymentStatus(PART_TIME);
+        employee2.setEmploymentType(PART_TIME);
 
         team.setMembers(Arrays.asList(employee1, employee2));
 

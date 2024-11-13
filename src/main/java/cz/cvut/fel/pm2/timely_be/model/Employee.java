@@ -1,6 +1,6 @@
 package cz.cvut.fel.pm2.timely_be.model;
 
-import cz.cvut.fel.pm2.timely_be.enums.EmploymentStatus;
+import cz.cvut.fel.pm2.timely_be.enums.EmploymentType;
 import jakarta.persistence.*;
 import lombok.Data;
 
@@ -23,7 +23,7 @@ public class Employee {
     private String jobTitle;
 
     @Enumerated(STRING)
-    private EmploymentStatus employmentStatus;
+    private EmploymentType employmentType;
 
     private String email;
 
