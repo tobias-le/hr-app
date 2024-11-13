@@ -43,7 +43,7 @@ public class EmployeeServiceTest {
         when(employeeRepository.findByTeamId(eq(pageable), eq(teamId))).thenReturn(page);
 
         // When
-        var result = employeeService.getEmployees(pageable, teamId);
+        var result = employeeService.getEmployeesByTeam(pageable, teamId);
 
         // Then
         assertNotNull(result);

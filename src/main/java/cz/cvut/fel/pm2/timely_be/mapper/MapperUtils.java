@@ -1,9 +1,6 @@
 package cz.cvut.fel.pm2.timely_be.mapper;
 
-import cz.cvut.fel.pm2.timely_be.dto.AttendanceRecordDto;
-import cz.cvut.fel.pm2.timely_be.dto.EmployeeDto;
-import cz.cvut.fel.pm2.timely_be.dto.EmployeeNameWithIdDto;
-import cz.cvut.fel.pm2.timely_be.dto.TeamDTO;
+import cz.cvut.fel.pm2.timely_be.dto.*;
 import cz.cvut.fel.pm2.timely_be.model.AttendanceRecord;
 import cz.cvut.fel.pm2.timely_be.model.Employee;
 import cz.cvut.fel.pm2.timely_be.model.Project;
@@ -50,5 +47,14 @@ public class MapperUtils {
         employeeNameWithIdDto.setId(employee.getEmployeeId());
         employeeNameWithIdDto.setName(employee.getName());
         return employeeNameWithIdDto;
+    }
+
+    public static ProjectDto toProjectDto(Project project) {
+        ProjectDto projectDto = new ProjectDto();
+        projectDto.setProjectId(project.getProjectId());
+        projectDto.setName(project.getName());
+        projectDto.setManagerName(project.getManager().getName());
+        projectDto.setManagerId(project.getManager().getEmployeeId());
+        return projectDto;
     }
 }

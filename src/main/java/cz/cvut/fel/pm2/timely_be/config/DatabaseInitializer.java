@@ -46,7 +46,7 @@ public class DatabaseInitializer {
         employee1.setEmploymentType(EmploymentType.FULL_TIME);
         employee1.setEmail("john.doe@example.com");
         employee1.setPhoneNumber("123456789");
-        employee1.setCurrentProjects(List.of(project1, project2));
+        employee1.setCurrentProjects(projects);
 
         Employee employee2 = new Employee();
         employee2.setName("Jane Smith");
@@ -54,7 +54,7 @@ public class DatabaseInitializer {
         employee2.setEmploymentType(EmploymentType.PART_TIME);
         employee2.setEmail("jane.smith@example.com");
         employee2.setPhoneNumber("123456789");
-        employee2.setCurrentProjects(List.of(project3, project4));
+        employee2.setCurrentProjects(projects);
 
         Employee employee3 = new Employee();
         employee3.setName("Alice Johnson");
@@ -62,11 +62,19 @@ public class DatabaseInitializer {
         employee3.setEmploymentType(EmploymentType.CONTRACT);
         employee3.setEmail("alice.johnson@example.com");
         employee3.setPhoneNumber("123456789");
-        employee3.setCurrentProjects(List.of(project5));
+        employee3.setCurrentProjects(projects);
 
         // Save employees to the database
         List<Employee> allEmployees = Arrays.asList(employee1, employee2, employee3);
         List<Employee> employees = employeeRepository.saveAll(allEmployees);
+
+        project1.setManager(employee1);
+        project2.setManager(employee2);
+        project3.setManager(employee3);
+        project4.setManager(employee1);
+        project5.setManager(employee2);
+
+        projectRepository.saveAll(projects);
 
         // Sample Team data
         Team team = new Team();

@@ -31,12 +31,23 @@ public class EmployeeController {
     }
 
     @GetMapping
-    @Operation(summary = "Get all employees in teams", description = "Get all employees in teams with pagination")
+    @Operation(summary = "Get all employees in teams or projects", description = "Get all employees in teams or projects with pagination")
     public ResponseEntity<Page<EmployeeDto>> getEmployees(@RequestParam(defaultValue = "0") int page,
-                                                         @RequestParam(defaultValue = "10") int size,
-                                                          @RequestParam long teamId) {
+                                                          @RequestParam(defaultValue = "10") int size,
+                                                          @RequestParam(required = false) Long teamId,
+                                                          @RequestParam(required = false) Long projectId) {
         Pageable pageable = PageRequest.of(page, size);
-        Page<Employee> employeePage = employeeService.getEmployees(pageable, teamId);
+        Page<Employee> employeePage;
+
+        if (teamId != null && projectId != null) {
+            return ResponseEntity.badRequest().build();
+        } else if (teamId != null) {
+            employeePage = employeeService.getEmployeesByTeam(pageable, teamId);
+        } else if (projectId != null) {
+            employeePage = employeeService.getEmployeesByProject(pageable, projectId);
+        } else {
+            return ResponseEntity.badRequest().build(); // Return 400 if neither teamId nor projectId is provided
+        }
 
         // Convert Employee entities to EmployeeDto using EmployeeMapper
         List<EmployeeDto> employeeDtoList = employeePage.getContent().stream()
@@ -44,9 +55,10 @@ public class EmployeeController {
                 .collect(Collectors.toList());
 
         // Return a new Page<EmployeeDto> based on the mapped list and pageable information
-        var result =  new PageImpl<>(employeeDtoList, pageable, employeePage.getTotalElements());
+        var result = new PageImpl<>(employeeDtoList, pageable, employeePage.getTotalElements());
         return ResponseEntity.ok(result);
     }
+
 
     @PutMapping("/{id}")
     @Operation(summary = "Update employee", description = "Update employee by id")

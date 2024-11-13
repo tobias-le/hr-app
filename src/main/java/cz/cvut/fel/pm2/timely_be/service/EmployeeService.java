@@ -19,8 +19,12 @@ public class EmployeeService {
         this.employeeRepository = employeeRepository;
     }
 
-    public Page<Employee> getEmployees(Pageable pageable, long teamId) {
+    public Page<Employee> getEmployeesByTeam(Pageable pageable, long teamId) {
         return employeeRepository.findByTeamId(pageable, teamId);
+    }
+
+    public Page<Employee> getEmployeesByProject(Pageable pageable, long projectId) {
+        return employeeRepository.findEmployeesByProjectIdPageable(projectId, pageable);
     }
 
     /**
