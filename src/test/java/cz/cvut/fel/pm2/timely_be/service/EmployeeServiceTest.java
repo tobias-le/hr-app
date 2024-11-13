@@ -10,6 +10,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.data.domain.*;
 
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 
@@ -253,5 +254,25 @@ public class EmployeeServiceTest {
         // When & Then
         assertThrows(IllegalArgumentException.class, 
             () -> employeeService.updateEmployee(employeeId, employeeDto));
+    }
+
+    @Test
+    public void testAutocompleteEmployees_NullExcludeIds() {
+        // Given
+        String searchPattern = "john";
+        var employee1 = new EmployeeNameWithIdDto(1L, "John Doe");
+        var employee2 = new EmployeeNameWithIdDto(2L, "Johnny Smith");
+        var expectedResults = Arrays.asList(employee1, employee2);
+
+        when(employeeRepository.findEmployeesByNameContaining(eq(searchPattern), eq(Collections.emptyList()), any(Pageable.class)))
+                .thenReturn(expectedResults);
+
+        // When
+        var result = employeeService.autocompleteEmployees(searchPattern, null);
+
+        // Then
+        assertNotNull(result);
+        assertEquals(2, result.size());
+        assertEquals(expectedResults, result);
     }
 }

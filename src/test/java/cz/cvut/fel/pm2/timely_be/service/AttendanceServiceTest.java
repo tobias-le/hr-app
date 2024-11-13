@@ -267,7 +267,7 @@ public class AttendanceServiceTest {
         when(employeeRepository.findById(employee.getEmployeeId())).thenReturn(Optional.of(employee));
 
         // When & Then
-        assertThrows(NoSuchElementException.class, 
-            () -> attendanceService.createAttendanceRecord(attendanceRecordDto));
+        assertThrows(NoSuchElementException.class,
+                () -> attendanceService.createAttendanceRecord(attendanceRecordDto));
     }
 }

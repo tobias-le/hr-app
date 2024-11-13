@@ -1,6 +1,7 @@
 package cz.cvut.fel.pm2.timely_be.service;
 
 import cz.cvut.fel.pm2.timely_be.dto.ProjectDto;
+import cz.cvut.fel.pm2.timely_be.mapper.MapperUtils;
 import cz.cvut.fel.pm2.timely_be.model.Employee;
 import cz.cvut.fel.pm2.timely_be.model.Project;
 import cz.cvut.fel.pm2.timely_be.repository.EmployeeRepository;
@@ -19,6 +20,7 @@ import java.util.List;
 import java.util.Optional;
 
 import static cz.cvut.fel.pm2.timely_be.enums.EmploymentType.FULL_TIME;
+import static cz.cvut.fel.pm2.timely_be.enums.EmploymentType.PART_TIME;
 import static cz.cvut.fel.pm2.timely_be.mapper.MapperUtils.toEmployeeDto;
 import static cz.cvut.fel.pm2.timely_be.utils.TestUtils.createEmployee;
 import static cz.cvut.fel.pm2.timely_be.utils.TestUtils.createProject;
@@ -260,6 +262,42 @@ public class ProjectServiceTest {
         assertEquals(project.getName(), result.getName());
         assertEquals(project.getManager().getEmployeeId(), result.getManagerId());
         assertEquals(2, result.getMembers().size());
+    }
+
+    @Test
+    public void testUpdateProject_MembershipChanges() {
+        // Given
+        var existingProject = createProject();
+        var oldMember = createEmployee(FULL_TIME);
+        var newMember = createEmployee(PART_TIME);
+        var manager = createEmployee(FULL_TIME);
+        
+        existingProject.setMembers(List.of(oldMember, manager));
+        existingProject.setManager(manager);
+        oldMember.getCurrentProjects().add(existingProject);
+        manager.getCurrentProjects().add(existingProject);
+        
+        var projectDto = new ProjectDto();
+        projectDto.setName("Updated Project");
+        projectDto.setManagerId(manager.getEmployeeId());
+        projectDto.setMembers(List.of(MapperUtils.toEmployeeDto(newMember)));
+
+        when(projectRepository.findById(existingProject.getProjectId())).thenReturn(Optional.of(existingProject));
+        when(employeeRepository.findById(manager.getEmployeeId())).thenReturn(Optional.of(manager));
+        when(employeeRepository.findById(newMember.getEmployeeId())).thenReturn(Optional.of(newMember));
+        when(projectRepository.save(any(Project.class))).thenAnswer(i -> i.getArgument(0));
+
+        // When
+        var result = projectService.updateProject(existingProject.getProjectId(), projectDto);
+
+        // Then
+        assertNotNull(result);
+        assertEquals(2, result.getMembers().size()); // newMember + manager
+        assertTrue(result.getMembers().contains(manager));
+        assertTrue(result.getMembers().contains(newMember));
+        assertFalse(result.getMembers().contains(oldMember));
+        assertFalse(oldMember.getCurrentProjects().contains(result));
+        assertTrue(newMember.getCurrentProjects().contains(result));
     }
 
 }
