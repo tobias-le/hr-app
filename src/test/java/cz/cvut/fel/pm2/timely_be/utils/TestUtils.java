@@ -16,6 +16,7 @@ public class TestUtils {
     public static long getRandomId() {
         return (long) (Math.random() * 1000);
     }
+
     public static Employee createEmployee(EmploymentStatus employmentStatus) {
         var employee = new Employee();
         var id = getRandomId();
