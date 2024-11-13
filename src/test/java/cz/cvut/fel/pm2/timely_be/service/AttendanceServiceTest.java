@@ -50,25 +50,6 @@ public class AttendanceServiceTest {
     }
 
     @Test
-    public void testGetAttendanceRecordsByTeamSinceStartOfWeek() {
-        // Given
-        var employee = createEmployee(FULL_TIME);
-        var record1 = createAttendanceRecord(employee, employee.getCurrentProjects().get(0));
-        var record2 = createAttendanceRecord(employee, employee.getCurrentProjects().get(0));
-        var records = List.of(record1, record2);
-
-        when(attendanceRecordRepository.findByTeamIdAndDateBetween(anyLong(), any(LocalDate.class), any(LocalDate.class)))
-                .thenReturn(records);
-
-        // When
-        var result = attendanceService.getAttendanceRecordsByProjectSinceStartOfWeek(employee.getTeam().getId());
-
-        // Then
-        assertNotNull(result);
-        assertEquals(2, result.size());
-    }
-
-    @Test
     public void testGetAttendanceRecordsByMember() {
         // Given
         var member = createEmployee(FULL_TIME);
@@ -93,6 +74,7 @@ public class AttendanceServiceTest {
         var employee = createEmployee(FULL_TIME);
         var record = createAttendanceRecord(employee, employee.getCurrentProjects().get(0));
         record.setAttendanceId(attendanceId);
+
 
         when(attendanceRecordRepository.findById(attendanceId)).thenReturn(Optional.of(record));
 

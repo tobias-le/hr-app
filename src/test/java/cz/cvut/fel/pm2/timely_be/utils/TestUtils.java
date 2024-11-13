@@ -2,6 +2,7 @@ package cz.cvut.fel.pm2.timely_be.utils;
 
 import cz.cvut.fel.pm2.timely_be.dto.EmployeeDto;
 import cz.cvut.fel.pm2.timely_be.enums.EmploymentType;
+import cz.cvut.fel.pm2.timely_be.enums.RequestStatus;
 import cz.cvut.fel.pm2.timely_be.model.AttendanceRecord;
 import cz.cvut.fel.pm2.timely_be.model.Employee;
 import cz.cvut.fel.pm2.timely_be.model.Project;
@@ -62,6 +63,7 @@ public class TestUtils {
         attendanceRecord.setDate(LocalDate.now());
         attendanceRecord.setClockInTime(LocalDateTime.of(LocalDate.now(), LocalTime.of(8, 0)));
         attendanceRecord.setClockOutTime(LocalDateTime.of(LocalDate.now(), LocalTime.of(16, 0)));
+        attendanceRecord.setStatus(RequestStatus.APPROVED);
         return attendanceRecord;
     }
 
@@ -74,6 +76,7 @@ public class TestUtils {
         attendanceRecord.setDate(date);
         attendanceRecord.setClockInTime(LocalDateTime.of(date, LocalTime.of(clockInHour, 0)));
         attendanceRecord.setClockOutTime(LocalDateTime.of(date, LocalTime.of(clockOutHour, 0)));
+        attendanceRecord.setStatus(RequestStatus.APPROVED);
         return attendanceRecord;
     }
 
