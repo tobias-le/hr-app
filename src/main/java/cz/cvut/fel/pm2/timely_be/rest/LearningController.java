@@ -52,7 +52,7 @@ public class LearningController {
     @PostMapping("/{employeeId}/{learningId}")
     @Operation(summary = "Register learning to employee", description = "Register learning to employee after they finished it")
     public ResponseEntity<Iterable<Learning>> registerLearningToEmployee(Long employeeId, Long learningId) {
-        return ResponseEntity.ok(learningService.registerLearningToEmployee(employeeId, learningId));
+        return ResponseEntity.ok((Iterable<Learning>) learningService.registerLearningToEmployee(employeeId, learningId));
     }
 
 }

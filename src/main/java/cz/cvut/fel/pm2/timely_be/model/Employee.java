@@ -47,6 +47,6 @@ public class Employee {
         this.phoneNumber = phoneNumber;
     }
 
-    @ManyToMany
-    private List<Learning> finishedLearnings;
+    @OneToMany(mappedBy = "employee")
+    private List<EmployeeLearning> finishedLearnings;
 }

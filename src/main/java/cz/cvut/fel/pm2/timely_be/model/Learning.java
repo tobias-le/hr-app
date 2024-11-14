@@ -3,6 +3,8 @@ package cz.cvut.fel.pm2.timely_be.model;
 import jakarta.persistence.*;
 import lombok.Data;
 
+import java.util.List;
+
 
 @Entity
 @Table(name = "learnings")
@@ -18,5 +20,8 @@ public class Learning {
 
     @Column(nullable = false, unique = true)
     private String link;
+
+    @OneToMany(mappedBy = "learning")
+    private List<EmployeeLearning> enrolledEmployees;
 
 }

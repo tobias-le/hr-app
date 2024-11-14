@@ -1,23 +1,28 @@
 package cz.cvut.fel.pm2.timely_be.service;
 
+import cz.cvut.fel.pm2.timely_be.model.EmployeeLearning;
 import cz.cvut.fel.pm2.timely_be.model.Learning;
+import cz.cvut.fel.pm2.timely_be.repository.EmployeeLearningRepository;
 import cz.cvut.fel.pm2.timely_be.repository.EmployeeRepository;
 import cz.cvut.fel.pm2.timely_be.repository.LearningRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDate;
 import java.util.List;
 
 @Service
 public class LearningService {
 
     private final LearningRepository learningRepository;
+    private final EmployeeLearningRepository employeeLearningRepository;
     private final EmployeeRepository employeeRepository;
 
     @Autowired
-    public LearningService(LearningRepository learningRepository, EmployeeRepository employeeRepository) {
+    public LearningService(LearningRepository learningRepository, EmployeeRepository employeeRepository, EmployeeLearningRepository employeeLearningRepository) {
         this.learningRepository = learningRepository;
         this.employeeRepository = employeeRepository;
+        this.employeeLearningRepository = employeeLearningRepository;
     }
 
     public Learning registerLearning(String name, String link){
@@ -33,13 +38,16 @@ public class LearningService {
 
     public List<Learning> getLearningsByEmployeeId(Long employeeId) {
         var employee = employeeRepository.findById(employeeId).orElseThrow(() -> new IllegalArgumentException("Employee not found"));
-        return employee.getFinishedLearnings();
+        return employee.getFinishedLearnings().stream().map(EmployeeLearning::getLearning).toList();
     }
 
-    public Iterable<Learning> registerLearningToEmployee(Long employeeId, Long learningId) {
+    public EmployeeLearning registerLearningToEmployee(Long employeeId, Long learningId) {
         var employee = employeeRepository.findById(employeeId).orElseThrow(() -> new IllegalArgumentException("Employee not found"));
         var learning = learningRepository.findById(learningId).orElseThrow(() -> new IllegalArgumentException("Learning not found"));
-        employee.getFinishedLearnings().add(learning);
-        return learningRepository.findAll();
+        var newLearningAssignmentToEmployee = new EmployeeLearning();
+        newLearningAssignmentToEmployee.setEmployee(employee);
+        newLearningAssignmentToEmployee.setLearning(learning);
+        newLearningAssignmentToEmployee.setDate(LocalDate.now().plusDays(7));
+        return employeeLearningRepository.save(newLearningAssignmentToEmployee);
     }
 }
