@@ -29,6 +29,11 @@ public class Employee {
 
     private String phoneNumber;
 
+    private Integer annualSalary;
+    private Integer annualLearningBudget;
+    private Integer annualBusinessPerformanceBonusMax;
+    private Integer annualPersonalPerformanceBonusMax;
+
     @ManyToMany
     private List<Project> currentProjects;
 
