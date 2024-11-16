@@ -1,13 +1,7 @@
 package cz.cvut.fel.pm2.timely_be.mapper;
 
-import cz.cvut.fel.pm2.timely_be.dto.AttendanceRecordDto;
-import cz.cvut.fel.pm2.timely_be.dto.EmployeeDto;
-import cz.cvut.fel.pm2.timely_be.dto.EmployeeNameWithIdDto;
-import cz.cvut.fel.pm2.timely_be.dto.TeamDTO;
-import cz.cvut.fel.pm2.timely_be.model.AttendanceRecord;
-import cz.cvut.fel.pm2.timely_be.model.Employee;
-import cz.cvut.fel.pm2.timely_be.model.Project;
-import cz.cvut.fel.pm2.timely_be.model.Team;
+import cz.cvut.fel.pm2.timely_be.dto.*;
+import cz.cvut.fel.pm2.timely_be.model.*;
 
 import java.util.stream.Collectors;
 
@@ -50,5 +44,13 @@ public class MapperUtils {
         employeeNameWithIdDto.setId(employee.getEmployeeId());
         employeeNameWithIdDto.setName(employee.getName());
         return employeeNameWithIdDto;
+    }
+
+    public static LearningDto toLearningDto(Learning learning) {
+        LearningDto learningDto = new LearningDto();
+        learningDto.setLearningId(learning.getLearningId());
+        learningDto.setName(learning.getName());
+        learningDto.setLink(learning.getLink());
+        return learningDto;
     }
 }

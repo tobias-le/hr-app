@@ -48,5 +48,5 @@ public class Employee {
     }
 
     @OneToMany(mappedBy = "employee")
-    private List<EmployeeLearning> finishedLearnings;
+    private List<EmployeeLearning> learnings;
 }

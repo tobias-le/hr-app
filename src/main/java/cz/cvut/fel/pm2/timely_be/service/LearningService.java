@@ -1,5 +1,6 @@
 package cz.cvut.fel.pm2.timely_be.service;
 
+import cz.cvut.fel.pm2.timely_be.dto.LearningAssignmentDto;
 import cz.cvut.fel.pm2.timely_be.model.EmployeeLearning;
 import cz.cvut.fel.pm2.timely_be.model.Learning;
 import cz.cvut.fel.pm2.timely_be.repository.EmployeeLearningRepository;
@@ -38,10 +39,12 @@ public class LearningService {
 
     public List<Learning> getLearningsByEmployeeId(Long employeeId) {
         var employee = employeeRepository.findById(employeeId).orElseThrow(() -> new IllegalArgumentException("Employee not found"));
-        return employee.getFinishedLearnings().stream().map(EmployeeLearning::getLearning).toList();
+        return employee.getLearnings().stream().map(EmployeeLearning::getLearning).toList();
     }
 
-    public EmployeeLearning registerLearningToEmployee(Long employeeId, Long learningId) {
+    public EmployeeLearning registerLearningToEmployee(LearningAssignmentDto learningAssignment) {
+        var employeeId = learningAssignment.getEmployeeId();
+        var learningId = learningAssignment.getLearningId();
         var employee = employeeRepository.findById(employeeId).orElseThrow(() -> new IllegalArgumentException("Employee not found"));
         var learning = learningRepository.findById(learningId).orElseThrow(() -> new IllegalArgumentException("Learning not found"));
         var newLearningAssignmentToEmployee = new EmployeeLearning();

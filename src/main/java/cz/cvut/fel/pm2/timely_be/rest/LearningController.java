@@ -1,16 +1,16 @@
 package cz.cvut.fel.pm2.timely_be.rest;
 
+import cz.cvut.fel.pm2.timely_be.dto.LearningAssignmentDto;
+import cz.cvut.fel.pm2.timely_be.dto.LearningDto;
 import cz.cvut.fel.pm2.timely_be.model.Learning;
 import cz.cvut.fel.pm2.timely_be.service.LearningService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
+import static cz.cvut.fel.pm2.timely_be.mapper.MapperUtils.toLearningDto;
 import static org.springframework.web.servlet.support.ServletUriComponentsBuilder.fromCurrentRequest;
 
 @RestController
@@ -26,15 +26,15 @@ public class LearningController {
     }
 
     @PostMapping
-    @Operation(summary = "Register a new learning", description = "Creates a new learning with the given link")
-    public ResponseEntity<Learning> registerLearning(String name, String link) {
-        Learning newLearning = learningService.registerLearning(name, link);
+    @Operation(summary = "Register a new learning", description = "Creates a new learning with the given details")
+    public ResponseEntity<LearningDto> registerLearning(@RequestBody LearningDto learning) {
+        Learning newLearning = learningService.registerLearning(learning.getName(), learning.getLink());
         return ResponseEntity.created(
                 fromCurrentRequest()
                         .path("/{id}")
                         .buildAndExpand(newLearning.getLearningId())
                         .toUri()
-        ).body(newLearning);
+        ).body(toLearningDto(newLearning));
     }
 
     @GetMapping
@@ -45,14 +45,19 @@ public class LearningController {
 
     @GetMapping("/{employeeId}")
     @Operation(summary = "Get learnings by employee ID", description = "Returns a list of learnings for the given employee")
-    public ResponseEntity<Iterable<Learning>> getLearningsByEmployeeId(Long employeeId) {
+    public ResponseEntity<Iterable<Learning>> getLearningsByEmployeeId(@PathVariable Long employeeId) {
         return ResponseEntity.ok(learningService.getLearningsByEmployeeId(employeeId));
     }
 
-    @PostMapping("/{employeeId}/{learningId}")
+    @PostMapping("/assign")
     @Operation(summary = "Register learning to employee", description = "Register learning to employee after they finished it")
-    public ResponseEntity<Iterable<Learning>> registerLearningToEmployee(Long employeeId, Long learningId) {
-        return ResponseEntity.ok((Iterable<Learning>) learningService.registerLearningToEmployee(employeeId, learningId));
+    public ResponseEntity<Learning> registerLearningToEmployee(@RequestBody LearningAssignmentDto learningAssignment) {
+        return ResponseEntity.created(
+                fromCurrentRequest()
+                        .path("/{id}")
+                        .buildAndExpand(learningService.registerLearningToEmployee(learningAssignment)
+                                .getLearning().getLearningId())
+                        .toUri()
+        ).build();
     }
-
 }
