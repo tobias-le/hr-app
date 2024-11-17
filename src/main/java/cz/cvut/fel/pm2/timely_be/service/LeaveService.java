@@ -27,7 +27,7 @@ public class LeaveService {
     }
 
     public List<Leave> getPendingRequests() {
-        return leaveRepository.findByPendingStatus(LeaveStatus.PENDING);
+        return leaveRepository.findByPendingStatus(RequestStatus.PENDING);
     }
 
     public Leave getLeaveRequestById(Long id) {
@@ -36,13 +36,13 @@ public class LeaveService {
 
     public Leave approveLeaveRequest(Long id) {
         Leave leave = leaveRepository.findByLeaveId(id);
-        leave.setStatus(LeaveStatus.APPROVED);
+        leave.setStatus(RequestStatus.APPROVED);
         return leaveRepository.save(leave);
     }
 
     public Leave rejectLeaveRequest(Long id) {
         Leave leave = leaveRepository.findByLeaveId(id);
-        leave.setStatus(LeaveStatus.REJECTED);
+        leave.setStatus(RequestStatus.REJECTED);
         return leaveRepository.save(leave);
     }
 
