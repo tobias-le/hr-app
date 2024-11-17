@@ -13,11 +13,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 
 import static cz.cvut.fel.pm2.timely_be.enums.EmploymentType.FULL_TIME;
 import static cz.cvut.fel.pm2.timely_be.enums.EmploymentType.PART_TIME;
@@ -54,7 +50,7 @@ public class ProjectServiceTest {
         employee.setCurrentProjects(new ArrayList<>());
         // Make sure the employee ID is consistent
         employee.setEmployeeId(2L); // Set a specific ID
-        projectDto.setMembers(List.of(toEmployeeDto(employee)));
+        projectDto.setMembers(Set.of(toEmployeeDto(employee)));
     }
 
     @Test
@@ -71,7 +67,7 @@ public class ProjectServiceTest {
 
         projects
                 .forEach(project -> {
-                    project.setMembers(List.of(employee));
+                    project.setMembers(Set.of(employee));
                     project.setManager(employee);
                 });
 
@@ -155,7 +151,7 @@ public class ProjectServiceTest {
         var employee = createEmployee(FULL_TIME);
         employee.setEmployeeId(99L); // Set ID to match the one we're testing for
 
-        projectDto.setMembers(Collections.singletonList(toEmployeeDto(employee)));  // Mock employee with ID 99
+        projectDto.setMembers(Collections.singleton(toEmployeeDto(employee)));  // Mock employee with ID 99
 
         // Mocking repository behavior
         when(projectRepository.findById(anyLong())).thenReturn(Optional.of(project));
@@ -171,7 +167,7 @@ public class ProjectServiceTest {
     public void testGetProjectWithMembers() {
         // Given
         var project = createProject();
-        project.setMembers(List.of(createEmployee(FULL_TIME)));
+        project.setMembers(Set.of(createEmployee(FULL_TIME)));
         when(projectRepository.findProjectWithMembers(anyLong())).thenReturn(Optional.of(project));
 
         // When
@@ -199,7 +195,7 @@ public class ProjectServiceTest {
         var member = createEmployee(FULL_TIME);
 
         projectDto.setManagerId(manager.getEmployeeId());
-        projectDto.setMembers(List.of(toEmployeeDto(member)));
+        projectDto.setMembers(Set.of(toEmployeeDto(member)));
 
         when(employeeRepository.findById(manager.getEmployeeId())).thenReturn(Optional.of(manager));
         when(employeeRepository.findById(member.getEmployeeId())).thenReturn(Optional.of(member));
@@ -224,7 +220,7 @@ public class ProjectServiceTest {
         var member = createEmployee(FULL_TIME);
         
         projectDto.setManagerId(manager.getEmployeeId());
-        projectDto.setMembers(List.of(toEmployeeDto(member)));
+        projectDto.setMembers(Set.of(toEmployeeDto(member)));
 
         when(projectRepository.findById(existingProject.getProjectId())).thenReturn(Optional.of(existingProject));
         when(employeeRepository.findById(manager.getEmployeeId())).thenReturn(Optional.of(manager));
@@ -250,7 +246,7 @@ public class ProjectServiceTest {
         var member = createEmployee(FULL_TIME);
         
         project.setManager(manager);
-        project.setMembers(List.of(manager, member));
+        project.setMembers(Set.of(manager, member));
 
         when(projectRepository.findProjectWithMembers(project.getProjectId())).thenReturn(Optional.of(project));
 
@@ -272,7 +268,7 @@ public class ProjectServiceTest {
         var newMember = createEmployee(PART_TIME);
         var manager = createEmployee(FULL_TIME);
         
-        existingProject.setMembers(List.of(oldMember, manager));
+        existingProject.setMembers(Set.of(oldMember, manager));
         existingProject.setManager(manager);
         oldMember.getCurrentProjects().add(existingProject);
         manager.getCurrentProjects().add(existingProject);
@@ -280,7 +276,7 @@ public class ProjectServiceTest {
         var projectDto = new ProjectDto();
         projectDto.setName("Updated Project");
         projectDto.setManagerId(manager.getEmployeeId());
-        projectDto.setMembers(List.of(MapperUtils.toEmployeeDto(newMember)));
+        projectDto.setMembers(Set.of(MapperUtils.toEmployeeDto(newMember)));
 
         when(projectRepository.findById(existingProject.getProjectId())).thenReturn(Optional.of(existingProject));
         when(employeeRepository.findById(manager.getEmployeeId())).thenReturn(Optional.of(manager));

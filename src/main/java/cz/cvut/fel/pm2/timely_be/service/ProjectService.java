@@ -75,11 +75,11 @@ public class ProjectService {
         project.setManager(manager);
         
         // Get new members list and add manager if not present
-        List<Employee> newMembers = projectDto.getMembers()
+        var newMembers = projectDto.getMembers()
                 .stream()
                 .map(employeeDto -> employeeRepository.findById(employeeDto.getId())
                         .orElseThrow(() -> new IllegalArgumentException("Employee with ID " + employeeDto.getId() + " not found")))
-                .collect(Collectors.toList());
+                .collect(Collectors.toSet());
         
         if (!newMembers.contains(manager)) {
             newMembers.add(manager);

@@ -13,6 +13,7 @@ import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 
 public class TestUtils {
     public static long getRandomId() {
@@ -31,19 +32,19 @@ public class TestUtils {
         var project = createProject();
         employee.setCurrentProjects(new ArrayList<>(List.of(project)));
 
-        var team = createTeam(List.of(employee));
+        var team = createTeam(Set.of(employee));
         employee.setTeam(team);
 
         return employee;
     }
 
-    public static Team createTeam(List<Employee> members) {
+    public static Team createTeam(Set<Employee> members) {
         var id = getRandomId();
         Team team = new Team();
         team.setId(id);
         team.setName("Team " + id);
         team.setMembers(members);
-        team.setManager(members.get(0));
+        team.setManager(members.stream().findFirst().orElseThrow());
         return team;
     }
 

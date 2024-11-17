@@ -4,7 +4,7 @@ import jakarta.persistence.*;
 import lombok.Data;
 import lombok.ToString;
 
-import java.util.List;
+import java.util.Set;
 
 import static jakarta.persistence.GenerationType.IDENTITY;
 
@@ -23,7 +23,7 @@ public class Project {
     private Employee manager;
 
     @ManyToMany(mappedBy = "currentProjects", fetch = FetchType.LAZY)
-    private List<Employee> members;
+    private Set<Employee> members;
 
     @Column(nullable = false)
     private boolean deleted = false;

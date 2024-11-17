@@ -19,6 +19,7 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.Optional;
+import java.util.Set;
 
 import static cz.cvut.fel.pm2.timely_be.enums.EmploymentType.FULL_TIME;
 import static cz.cvut.fel.pm2.timely_be.utils.TestUtils.createAttendanceRecord;
@@ -96,7 +97,7 @@ public class AttendanceServiceTest {
 
         var employee1 = createEmployee(FULL_TIME);
         var employee2 = createEmployee(FULL_TIME);
-        project.setMembers(List.of(employee1, employee2));
+        project.setMembers(Set.of(employee1, employee2));
 
         when(projectRepository.findById(projectId)).thenReturn(Optional.of(project));
 

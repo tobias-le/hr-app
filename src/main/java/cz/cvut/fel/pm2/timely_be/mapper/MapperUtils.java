@@ -95,7 +95,7 @@ public class MapperUtils {
                 project.getMembers()
                     .stream()
                     .map(MapperUtils::toEmployeeDto)
-                    .toList()
+                    .collect(Collectors.toSet())
             );
         }
         return projectDto;

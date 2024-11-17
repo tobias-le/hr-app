@@ -13,8 +13,8 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.util.Arrays;
-import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 
 import static cz.cvut.fel.pm2.timely_be.enums.EmploymentType.FULL_TIME;
 import static cz.cvut.fel.pm2.timely_be.enums.EmploymentType.PART_TIME;
@@ -64,7 +64,7 @@ public class TeamServiceTest {
         var teamDTO = new TeamDTO();
         teamDTO.setName("New Team");
         teamDTO.setManagerId(manager.getEmployeeId());
-        teamDTO.setMembers(List.of(MapperUtils.toEmployeeDto(member)));
+        teamDTO.setMembers(Set.of(MapperUtils.toEmployeeDto(member)));
 
         when(employeeRepository.findById(manager.getEmployeeId())).thenReturn(Optional.of(manager));
         when(employeeRepository.findById(member.getEmployeeId())).thenReturn(Optional.of(member));
@@ -78,7 +78,7 @@ public class TeamServiceTest {
         assertEquals(teamDTO.getName(), result.getName());
         assertEquals(manager, result.getManager());
         assertEquals(1, result.getMembers().size());
-        assertEquals(member, result.getMembers().get(0));
+        assertEquals(member, result.getMembers().stream().findFirst().orElseThrow());
     }
 
     @Test
@@ -88,7 +88,7 @@ public class TeamServiceTest {
         var team = employee.getTeam();
         var teamId = team.getId();
 
-        when(teamRepository.findTeamWithMembers(teamId)).thenReturn(Optional.of(team));
+        when(teamRepository.findTeamWithMembersAndParent(teamId)).thenReturn(Optional.of(team));
 
         // When
         var result = teamService.getTeamDetails(teamId);
@@ -104,7 +104,7 @@ public class TeamServiceTest {
     public void testGetTeamDetails_NotFound() {
         // Given
         var teamId = 999L;
-        when(teamRepository.findTeamWithMembers(teamId)).thenReturn(Optional.empty());
+        when(teamRepository.findTeamWithMembersAndParent(teamId)).thenReturn(Optional.empty());
 
         // When & Then
         assertThrows(IllegalArgumentException.class, () -> teamService.getTeamDetails(teamId));
@@ -120,7 +120,7 @@ public class TeamServiceTest {
         var teamDTO = new TeamDTO();
         teamDTO.setName("Updated Team");
         teamDTO.setManagerId(newManager.getEmployeeId());
-        teamDTO.setMembers(List.of(MapperUtils.toEmployeeDto(newMember)));
+        teamDTO.setMembers(Set.of(MapperUtils.toEmployeeDto(newMember)));
 
         when(teamRepository.findById(existingTeam.getId())).thenReturn(Optional.of(existingTeam));
         when(employeeRepository.findById(newManager.getEmployeeId())).thenReturn(Optional.of(newManager));
@@ -135,7 +135,7 @@ public class TeamServiceTest {
         assertEquals(teamDTO.getName(), result.getName());
         assertEquals(newManager, result.getManager());
         assertEquals(1, result.getMembers().size());
-        assertEquals(newMember, result.getMembers().get(0));
+        assertEquals(newMember, result.getMembers().stream().findFirst().orElseThrow());
     }
 
     @Test
@@ -143,7 +143,7 @@ public class TeamServiceTest {
         // Given
         var employee = createEmployee(FULL_TIME);
         var team = employee.getTeam();
-        team.setMembers(List.of(employee));
+        team.setMembers(Set.of(employee));
 
         when(teamRepository.findById(team.getId())).thenReturn(Optional.of(team));
         when(employeeRepository.save(any(Employee.class))).thenAnswer(invocation -> invocation.getArgument(0));
