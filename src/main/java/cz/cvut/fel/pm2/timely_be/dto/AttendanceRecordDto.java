@@ -15,4 +15,5 @@ public class AttendanceRecordDto {
     private LocalDateTime clockOutTime;
     private String project;
     private String description;
+    private String status;
 }

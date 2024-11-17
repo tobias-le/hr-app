@@ -2,14 +2,16 @@ package cz.cvut.fel.pm2.timely_be.service;
 
 import cz.cvut.fel.pm2.timely_be.dto.AttendanceRecordDto;
 import cz.cvut.fel.pm2.timely_be.dto.AttendanceSummaryDTO;
-import cz.cvut.fel.pm2.timely_be.enums.EmploymentStatus;
+import cz.cvut.fel.pm2.timely_be.enums.EmploymentType;
+import cz.cvut.fel.pm2.timely_be.enums.RequestStatus;
 import cz.cvut.fel.pm2.timely_be.mapper.MapperUtils;
 import cz.cvut.fel.pm2.timely_be.model.AttendanceRecord;
 import cz.cvut.fel.pm2.timely_be.model.Employee;
+import cz.cvut.fel.pm2.timely_be.model.Project;
 import cz.cvut.fel.pm2.timely_be.model.Team;
 import cz.cvut.fel.pm2.timely_be.repository.AttendanceRecordRepository;
 import cz.cvut.fel.pm2.timely_be.repository.EmployeeRepository;
-import cz.cvut.fel.pm2.timely_be.repository.TeamRepository;
+import cz.cvut.fel.pm2.timely_be.repository.ProjectRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -27,24 +29,23 @@ import static java.time.LocalDate.now;
 public class AttendanceService {
 
     private final AttendanceRecordRepository attendanceRecordRepository;
-    private final TeamRepository teamRepository;
     private final EmployeeRepository employeeRepository;
+    private final ProjectRepository projectRepository;
 
     @Autowired
-    public AttendanceService(AttendanceRecordRepository attendanceRecordRepository, TeamRepository teamRepository,
-                             EmployeeRepository employeeRepository) {
+    public AttendanceService(AttendanceRecordRepository attendanceRecordRepository,
+                             EmployeeRepository employeeRepository, ProjectRepository projectRepository) {
         this.attendanceRecordRepository = attendanceRecordRepository;
-        this.teamRepository = teamRepository;
         this.employeeRepository = employeeRepository;
+        this.projectRepository = projectRepository;
     }
 
-    public List<AttendanceRecordDto> getAttendanceRecordsByTeamSinceStartOfWeek(Long teamId) {
+    public List<AttendanceRecordDto> getAttendanceRecordsByProjectSinceStartOfWeek(Long projectId) {
         LocalDate startOfWeek = getStartOfWeek();
         LocalDate today = getToday();
 
-        // Fetch attendance records for the team from the start of the week until today
         return attendanceRecordRepository
-                .findByTeamIdAndDateBetween(teamId, startOfWeek, today)
+                .findByProjectIdAndDateBetween(projectId, startOfWeek, today)
                 .stream()
                 .map(MapperUtils::toAttendanceRecordDto)
                 .collect(Collectors.toList());
@@ -66,16 +67,24 @@ public class AttendanceService {
                 .map(MapperUtils::toAttendanceRecordDto);
     }
 
-    public AttendanceSummaryDTO getCurrentWeekAttendancePerformance(Long teamId) {
-        // Determine the current date
-        Team team = teamRepository.findById(teamId).orElse(null);
+    public AttendanceSummaryDTO getCurrentWeekAttendancePerformanceForProject(Long projectId) {
+        Project project = projectRepository.findById(projectId).orElse(null);
+        if (project == null) return null;
+        return calculateAttendancePerformance(null, project);
+    }
 
+    private AttendanceSummaryDTO calculateAttendancePerformance(Team team, Project project) {
         var startOfWeek = getStartOfWeek();
         var endOfWeek = getEndOfWeek();
 
-
-        // Fetch attendance records for the team within the current work week
-        List<AttendanceRecord> records = attendanceRecordRepository.findByTeamAndDateBetween(team, startOfWeek, endOfWeek);
+        List<AttendanceRecord> records;
+        if (team != null) {
+            records = attendanceRecordRepository.findByTeamAndDateBetween(team, startOfWeek, endOfWeek);
+        } else if (project != null) {
+            records = attendanceRecordRepository.findByProjectIdAndDateBetween(project.getProjectId(), startOfWeek, endOfWeek);
+        } else {
+            return null;
+        }
 
         // Group records by date to determine attendance rate
         Map<LocalDate, List<AttendanceRecord>> recordsByDate = records.stream()
@@ -85,45 +94,50 @@ public class AttendanceService {
         long totalHours = 0;
         int totalDaysPresent = 0;
 
-        for (Map.Entry<LocalDate, List<AttendanceRecord>> entry : recordsByDate.entrySet()) {
-            List<AttendanceRecord> dailyRecords = entry.getValue();
-
+        for (List<AttendanceRecord> dailyRecords : recordsByDate.values()) {
             totalDaysPresent += dailyRecords.size();
-
-            for (AttendanceRecord record : dailyRecords) {
-                if (record.getClockInTime() != null && record.getClockOutTime() != null) {
-                    Duration duration = Duration.between(record.getClockInTime(), record.getClockOutTime());
-                    totalHours += duration.toHours();
-                }
-            }
+            totalHours += dailyRecords.stream()
+                    .filter(record -> record.getClockInTime() != null && record.getClockOutTime() != null)
+                    .mapToLong(record -> Duration.between(record.getClockInTime(), record.getClockOutTime()).toHours())
+                    .sum();
         }
 
         // Calculate average hours per day and attendance rate
         int totalDaysInRange = (int) (Duration.between(startOfWeek.atStartOfDay(), endOfWeek.atStartOfDay()).toDays()) + 1;
         double averageHoursPerDay = (double) totalHours / 5;
-        double attendanceRate;
-        assert team != null;
-        if (!team.getMembers().isEmpty()) {
-            attendanceRate = totalDaysPresent / (double) (team.getMembers().size() * totalDaysInRange) * 100;
-        } else {
-            attendanceRate = 0;
-        }
 
-        // Create and return the DTO with the performance summary for the current work week
+        int memberCount = team != null ? team.getMembers().size() : project.getMembers().size();
+        double attendanceRate = memberCount > 0
+                ? totalDaysPresent / (double) (memberCount * totalDaysInRange) * 100
+                : 0;
+
+        String name = team != null ? team.getName() : project.getName();
+        Long entityId = team != null ? team.getId() : project.getProjectId();
+
         return new AttendanceSummaryDTO(
-                team.getName(),
+                name,
                 totalHours,
-                getExpectedHoursForTeamPerWeek(teamId),
+                getExpectedHoursForEntityPerWeek(entityId, team != null),
                 averageHoursPerDay,
                 attendanceRate
         );
     }
 
-    private long getExpectedHoursForTeamPerWeek(Long teamId) {
-        var employees = employeeRepository.findByTeamId(teamId);
+    private long getExpectedHoursForEntityPerWeek(Long entityId, boolean isTeam) {
+        List<Employee> employees;
+        if (isTeam) {
+            employees = employeeRepository.findByTeamId(entityId);
+        } else {
+            employees = employeeRepository.findEmployeesByProjectId(entityId);
+        }
+        return getExpectedHoursPerWeek(employees);
+    }
+
+
+    private long getExpectedHoursPerWeek(List<Employee> employees) {
         return employees.stream()
-                .map(Employee::getEmploymentStatus)
-                .map(EmploymentStatus::getExpectedHoursPerDay)
+                .map(Employee::getEmploymentType)
+                .map(EmploymentType::getExpectedHoursPerDay)
                 .map(hours -> hours * 5)
                 .reduce(Long::sum).orElse(0L);
     }
@@ -151,12 +165,15 @@ public class AttendanceService {
         attendanceRecord.setDate(attendanceRecordDto.getDate());
         attendanceRecord.setClockInTime(attendanceRecordDto.getClockInTime());
         attendanceRecord.setClockOutTime(attendanceRecordDto.getClockOutTime());
+        attendanceRecord.setStatus(RequestStatus.requestStatusFromString(attendanceRecordDto.getStatus()));
         return attendanceRecordRepository.save(attendanceRecord);
     }
 
     public void deleteAttendanceRecordById(Long id) {
         attendanceRecordRepository.deleteById(id);
     }
+
+
 
     private LocalDate getStartOfWeek() {
         var today = now();

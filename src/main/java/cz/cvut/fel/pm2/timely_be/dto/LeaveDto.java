@@ -1,6 +1,6 @@
 package cz.cvut.fel.pm2.timely_be.dto;
 
-import cz.cvut.fel.pm2.timely_be.enums.LeaveStatus;
+import cz.cvut.fel.pm2.timely_be.enums.RequestStatus;
 import cz.cvut.fel.pm2.timely_be.enums.LeaveType;
 import lombok.Data;
 
@@ -12,7 +12,7 @@ public class LeaveDto {
     private LeaveType leaveType;
     private LocalDate startDate;
     private LocalDate endDate;
-    private LeaveStatus leaveStatus;
+    private RequestStatus leaveStatus;
     private Integer leaveAmount;
     private String reason;
 }

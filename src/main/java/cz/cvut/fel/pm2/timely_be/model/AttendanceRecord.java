@@ -1,5 +1,6 @@
 package cz.cvut.fel.pm2.timely_be.model;
 
+import cz.cvut.fel.pm2.timely_be.enums.RequestStatus;
 import jakarta.persistence.*;
 import lombok.Data;
 import java.time.LocalDate;
@@ -30,4 +31,11 @@ public class AttendanceRecord {
     private Project project;
 
     private String description;
+
+    @Column(nullable = false)
+    private boolean deleted = false;
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "status", nullable = false)
+    private RequestStatus status;
 }
