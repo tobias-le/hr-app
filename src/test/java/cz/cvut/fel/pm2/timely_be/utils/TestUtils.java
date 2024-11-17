@@ -1,6 +1,8 @@
 package cz.cvut.fel.pm2.timely_be.utils;
 
 import cz.cvut.fel.pm2.timely_be.dto.EmployeeDto;
+import cz.cvut.fel.pm2.timely_be.enums.EmploymentType;
+import cz.cvut.fel.pm2.timely_be.enums.RequestStatus;
 import cz.cvut.fel.pm2.timely_be.model.*;
 import cz.cvut.fel.pm2.timely_be.model.AttendanceRecord;
 import cz.cvut.fel.pm2.timely_be.model.Employee;
