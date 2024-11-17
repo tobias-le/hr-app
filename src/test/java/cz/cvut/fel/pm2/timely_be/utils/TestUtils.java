@@ -1,19 +1,24 @@
 package cz.cvut.fel.pm2.timely_be.utils;
 
 import cz.cvut.fel.pm2.timely_be.dto.EmployeeDto;
-import cz.cvut.fel.pm2.timely_be.enums.EmploymentStatus;
 import cz.cvut.fel.pm2.timely_be.model.*;
+import cz.cvut.fel.pm2.timely_be.model.AttendanceRecord;
+import cz.cvut.fel.pm2.timely_be.model.Employee;
+import cz.cvut.fel.pm2.timely_be.model.Project;
+import cz.cvut.fel.pm2.timely_be.model.Team;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 
 public class TestUtils {
     public static long getRandomId() {
         return (long) (Math.random() * 1000);
     }
-    public static Employee createEmployee(EmploymentStatus employmentStatus) {
+    public static Employee createEmployee(EmploymentType employmentType) {
         var employee = new Employee();
         var id = getRandomId();
         employee.setEmployeeId(id);
@@ -21,24 +26,24 @@ public class TestUtils {
         employee.setJobTitle("Job Title " + id);
         employee.setEmail("employee" + id + "@example.com");
         employee.setPhoneNumber("123456789");
-        employee.setEmploymentStatus(employmentStatus);
+        employee.setEmploymentType(employmentType);
 
         var project = createProject();
-        employee.setCurrentProjects(List.of(project));
+        employee.setCurrentProjects(new ArrayList<>(List.of(project)));
 
-        var team = createTeam(List.of(employee));
+        var team = createTeam(Set.of(employee));
         employee.setTeam(team);
 
         return employee;
     }
 
-    public static Team createTeam(List<Employee> members) {
+    public static Team createTeam(Set<Employee> members) {
         var id = getRandomId();
         Team team = new Team();
         team.setId(id);
         team.setName("Team " + id);
         team.setMembers(members);
-        team.setManager(members.get(0));
+        team.setManager(members.stream().findFirst().orElseThrow());
         return team;
     }
 
@@ -59,16 +64,31 @@ public class TestUtils {
         attendanceRecord.setDate(LocalDate.now());
         attendanceRecord.setClockInTime(LocalDateTime.of(LocalDate.now(), LocalTime.of(8, 0)));
         attendanceRecord.setClockOutTime(LocalDateTime.of(LocalDate.now(), LocalTime.of(16, 0)));
+        attendanceRecord.setStatus(RequestStatus.APPROVED);
         return attendanceRecord;
     }
 
-    public static EmployeeDto createEmployeeDto(EmploymentStatus employmentStatus) {
+    public static AttendanceRecord createAttendanceRecord(Employee employee, Project project, LocalDate date, int clockInHour, int clockOutHour) {
+        var id = getRandomId();
+        AttendanceRecord attendanceRecord = new AttendanceRecord();
+        attendanceRecord.setAttendanceId(id);
+        attendanceRecord.setMember(employee);
+        attendanceRecord.setProject(project);
+        attendanceRecord.setDate(date);
+        attendanceRecord.setClockInTime(LocalDateTime.of(date, LocalTime.of(clockInHour, 0)));
+        attendanceRecord.setClockOutTime(LocalDateTime.of(date, LocalTime.of(clockOutHour, 0)));
+        attendanceRecord.setStatus(RequestStatus.APPROVED);
+        return attendanceRecord;
+    }
+
+
+    public static EmployeeDto createEmployeeDto(EmploymentType employmentType) {
         EmployeeDto employeeDto = new EmployeeDto();
         employeeDto.setName("Employee");
         employeeDto.setJobTitle("Job Title");
         employeeDto.setEmail("random"+ getRandomId() + "@example.com");
         employeeDto.setPhoneNumber("123456789");
-        employeeDto.setEmploymentStatus(employmentStatus.toString());
+        employeeDto.setEmploymentStatus(employmentType.toString());
         return employeeDto;
     }
 

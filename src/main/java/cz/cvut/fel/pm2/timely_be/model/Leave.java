@@ -1,12 +1,11 @@
 package cz.cvut.fel.pm2.timely_be.model;
 
-import cz.cvut.fel.pm2.timely_be.enums.LeaveStatus;
+import cz.cvut.fel.pm2.timely_be.enums.RequestStatus;
 import cz.cvut.fel.pm2.timely_be.enums.LeaveType;
 import jakarta.persistence.*;
 import lombok.Data;
 
 import java.time.LocalDate;
-import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "leave")
@@ -35,8 +34,11 @@ public class Leave {
 
     @Enumerated(EnumType.STRING)
     @Column(name = "leave_status", nullable = false)
-    private LeaveStatus status;
+    private RequestStatus status;
 
     @Column(name="reason", nullable = false)
     private String reason;
+
+    @Column(nullable = false)
+    private boolean deleted = false;
 }

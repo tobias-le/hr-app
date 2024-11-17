@@ -5,9 +5,9 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 @Data
-@NoArgsConstructor
 @AllArgsConstructor
-public class EmployeeNameWithIdDto {
-    private Long id;
+@NoArgsConstructor
+public class TeamNameWithIdDto {
+    private Long teamId;
     private String name;
-}
+} 

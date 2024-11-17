@@ -5,12 +5,10 @@ import lombok.Data;
 import java.util.Set;
 
 @Data
-public class TeamDTO {
-    private Long teamId;
+public class ProjectDto {
+    private Long projectId;
     private String name;
     private String managerName;
     private Long managerId;
-    private String managerJobTitle;
     private Set<EmployeeDto> members;
-    private TeamDTO parentTeam;
 }
