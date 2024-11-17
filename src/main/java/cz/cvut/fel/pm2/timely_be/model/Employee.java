@@ -32,6 +32,11 @@ public class Employee {
 
     private String phoneNumber;
 
+    private Integer annualSalary;
+    private Integer annualLearningBudget;
+    private Integer annualBusinessPerformanceBonusMax;
+    private Integer annualPersonalPerformanceBonusMax;
+
     @ManyToMany(fetch = FetchType.LAZY)
     private List<Project> currentProjects;
 

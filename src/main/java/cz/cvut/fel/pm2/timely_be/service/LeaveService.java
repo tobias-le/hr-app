@@ -26,6 +26,26 @@ public class LeaveService {
         this.leaveBalanceRepository = leaveBalanceRepository;
     }
 
+    public List<Leave> getPendingRequests() {
+        return leaveRepository.findByPendingStatus(LeaveStatus.PENDING);
+    }
+
+    public Leave getLeaveRequestById(Long id) {
+        return leaveRepository.findByLeaveId(id);
+    }
+
+    public Leave approveLeaveRequest(Long id) {
+        Leave leave = leaveRepository.findByLeaveId(id);
+        leave.setStatus(LeaveStatus.APPROVED);
+        return leaveRepository.save(leave);
+    }
+
+    public Leave rejectLeaveRequest(Long id) {
+        Leave leave = leaveRepository.findByLeaveId(id);
+        leave.setStatus(LeaveStatus.REJECTED);
+        return leaveRepository.save(leave);
+    }
+
     public EmployeeLeaveBalance getLeaveBalanceByEmployeeId(Long employeeId) {
         return leaveBalanceRepository.findLeaveBalanceByEmployeeId(employeeId);
     }

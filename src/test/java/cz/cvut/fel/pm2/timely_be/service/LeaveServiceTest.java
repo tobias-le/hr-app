@@ -16,7 +16,7 @@ import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
 public class LeaveServiceTest {
     @Mock
@@ -176,4 +176,65 @@ public class LeaveServiceTest {
         assertTrue(result.get(0).getVacationDaysLeft() > 0);
     }
 
+    @Test
+    public void testGetPendingRequests() {
+        Leave leave = new Leave();
+        leave.setStatus(LeaveStatus.PENDING);
+
+        when(leaveRepository.findByPendingStatus(LeaveStatus.PENDING)).thenReturn(List.of(leave));
+
+        List<Leave> result = leaveService.getPendingRequests();
+
+        assertNotNull(result);
+        assertEquals(1, result.size());
+        assertEquals(LeaveStatus.PENDING, result.get(0).getStatus());
+    }
+
+    @Test
+    public void testGetLeaveRequestById() {
+        Long leaveId = 1L;
+        Leave leave = new Leave();
+        leave.setId(leaveId);
+
+        when(leaveRepository.findByLeaveId(leaveId)).thenReturn(leave);
+
+        Leave result = leaveService.getLeaveRequestById(leaveId);
+
+        assertNotNull(result);
+        assertEquals(leaveId, result.getId());
+    }
+
+    @Test
+    public void testApproveLeaveRequest() {
+        Long leaveId = 1L;
+        Leave leave = new Leave();
+        leave.setId(leaveId);
+        leave.setStatus(LeaveStatus.PENDING);
+
+        when(leaveRepository.findByLeaveId(leaveId)).thenReturn(leave);
+        when(leaveRepository.save(any(Leave.class))).thenReturn(leave);
+
+        Leave result = leaveService.approveLeaveRequest(leaveId);
+
+        assertNotNull(result);
+        assertEquals(LeaveStatus.APPROVED, result.getStatus());
+        verify(leaveRepository, times(1)).save(leave);
+    }
+
+    @Test
+    public void testRejectLeaveRequest() {
+        Long leaveId = 1L;
+        Leave leave = new Leave();
+        leave.setId(leaveId);
+        leave.setStatus(LeaveStatus.PENDING);
+
+        when(leaveRepository.findByLeaveId(leaveId)).thenReturn(leave);
+        when(leaveRepository.save(any(Leave.class))).thenReturn(leave);
+
+        Leave result = leaveService.rejectLeaveRequest(leaveId);
+
+        assertNotNull(result);
+        assertEquals(LeaveStatus.REJECTED, result.getStatus());
+        verify(leaveRepository, times(1)).save(leave);
+    }
 }

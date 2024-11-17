@@ -19,6 +19,12 @@ public class MapperUtils {
         employeeDto.setEmail(employee.getEmail());
         employeeDto.setPhoneNumber(employee.getPhoneNumber());
         employeeDto.setCurrentProjects(employee.getCurrentProjects().stream().map(Project::getName).collect(Collectors.toList()));
+
+        employeeDto.setAnnualSalary(employee.getAnnualSalary());
+        employeeDto.setAnnualLearningBudget(employee.getAnnualLearningBudget());
+        employeeDto.setAnnualBusinessPerformanceBonusMax(employee.getAnnualBusinessPerformanceBonusMax());
+        employeeDto.setAnnualPersonalPerformanceBonusMax(employee.getAnnualPersonalPerformanceBonusMax());
+
         return employeeDto;
     }
 

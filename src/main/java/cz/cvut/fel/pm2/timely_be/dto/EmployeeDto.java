@@ -13,4 +13,9 @@ public class EmployeeDto {
     private String email;
     private String phoneNumber;
     private List<String> currentProjects;
+
+    private Integer annualSalary;
+    private Integer annualLearningBudget;
+    private Integer annualBusinessPerformanceBonusMax;
+    private Integer annualPersonalPerformanceBonusMax;
 }
