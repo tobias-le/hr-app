@@ -6,6 +6,7 @@ import cz.cvut.fel.pm2.timely_be.model.Learning;
 import cz.cvut.fel.pm2.timely_be.repository.EmployeeLearningRepository;
 import cz.cvut.fel.pm2.timely_be.repository.EmployeeRepository;
 import cz.cvut.fel.pm2.timely_be.repository.LearningRepository;
+import cz.cvut.fel.pm2.timely_be.repository.composite.EmployeeLearningId;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -48,6 +49,8 @@ public class LearningService {
         var employee = employeeRepository.findById(employeeId).orElseThrow(() -> new IllegalArgumentException("Employee not found"));
         var learning = learningRepository.findById(learningId).orElseThrow(() -> new IllegalArgumentException("Learning not found"));
         var newLearningAssignmentToEmployee = new EmployeeLearning();
+        var employeeLearningId = new EmployeeLearningId();
+        newLearningAssignmentToEmployee.setId(employeeLearningId);
         newLearningAssignmentToEmployee.setEmployee(employee);
         newLearningAssignmentToEmployee.setLearning(learning);
         newLearningAssignmentToEmployee.setDate(LocalDate.now().plusDays(7));

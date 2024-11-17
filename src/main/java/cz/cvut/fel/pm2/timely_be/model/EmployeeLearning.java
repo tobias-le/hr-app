@@ -1,5 +1,6 @@
 package cz.cvut.fel.pm2.timely_be.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import cz.cvut.fel.pm2.timely_be.repository.composite.EmployeeLearningId;
 import jakarta.persistence.*;
 import lombok.Data;
@@ -17,11 +18,13 @@ public class EmployeeLearning {
     @ManyToOne
     @MapsId("employeeId")
     @JoinColumn(name = "employee_id", nullable = false)
+    @JsonIgnore
     private Employee employee;
 
     @ManyToOne
     @MapsId("learningId")
     @JoinColumn(name = "learning_id", nullable = false)
+    @JsonIgnore
     private Learning learning;
 
     @Column(name = "date")
