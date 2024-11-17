@@ -1,6 +1,7 @@
 package cz.cvut.fel.pm2.timely_be.service;
 
 import cz.cvut.fel.pm2.timely_be.dto.TeamDTO;
+import cz.cvut.fel.pm2.timely_be.dto.TeamNameWithIdDto;
 import cz.cvut.fel.pm2.timely_be.mapper.MapperUtils;
 import cz.cvut.fel.pm2.timely_be.model.Employee;
 import cz.cvut.fel.pm2.timely_be.model.Team;
@@ -11,8 +12,10 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.data.domain.PageRequest;
 
 import java.util.Arrays;
+import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 
@@ -165,5 +168,104 @@ public class TeamServiceTest {
 
         // When & Then
         assertThrows(IllegalArgumentException.class, () -> teamService.deleteTeam(teamId));
+    }
+
+    @Test
+    public void testGetTeamDetails_WithParentTeam() {
+        // Given
+        var parentTeam = new Team();
+        parentTeam.setId(1L);
+        parentTeam.setName("Parent Team");
+
+        var childTeam = new Team();
+        childTeam.setId(2L);
+        childTeam.setName("Child Team");
+        childTeam.setParentTeam(parentTeam);
+
+        when(teamRepository.findTeamWithMembersAndParent(2L)).thenReturn(Optional.of(childTeam));
+        when(teamRepository.findTeamWithCompleteHierarchy(2L)).thenReturn(List.of(parentTeam, childTeam));
+
+        // When
+        var result = teamService.getTeamDetails(2L);
+
+        // Then
+        assertNotNull(result);
+        assertEquals("Child Team", result.getName());
+        assertEquals("Parent Team", result.getParentTeam().getName());
+    }
+
+    @Test
+    public void testDeleteTeam_NoMembers() {
+        // Given
+        var team = new Team();
+        team.setId(1L);
+        team.setMembers(Set.of());
+
+        when(teamRepository.findById(1L)).thenReturn(Optional.of(team));
+        when(teamRepository.save(any(Team.class))).thenAnswer(invocation -> invocation.getArgument(0));
+
+        // When
+        assertDoesNotThrow(() -> teamService.deleteTeam(1L));
+
+        // Then
+        assertTrue(team.isDeleted());
+    }
+
+    @Test
+    public void testCreateTeam_ManagerNotFound() {
+        // Given
+        var teamDTO = new TeamDTO();
+        teamDTO.setManagerId(999L);
+
+        when(employeeRepository.findById(999L)).thenReturn(Optional.empty());
+
+        // When & Then
+        assertThrows(IllegalArgumentException.class, () -> teamService.createTeam(teamDTO));
+    }
+
+    @Test
+    public void testUpdateTeam_InvalidTeamId() {
+        // Given
+        var teamDTO = new TeamDTO();
+        var invalidTeamId = 999L;
+
+        when(teamRepository.findById(invalidTeamId)).thenReturn(Optional.empty());
+
+        // When & Then
+        assertThrows(IllegalArgumentException.class, () -> teamService.updateTeam(invalidTeamId, teamDTO));
+    }
+
+    @Test
+    public void testAutocompleteTeams_ValidPattern() {
+        // Given
+        var team1 = new Team();
+        team1.setId(1L);
+        team1.setName("Development");
+
+        var team2 = new Team();
+        team2.setId(2L);
+        team2.setName("DevOps");
+
+        when(teamRepository.findTeamsByNameContaining("Dev", PageRequest.of(0, 5))).thenReturn(List.of(
+                new TeamNameWithIdDto(team1.getId(), team1.getName()), new TeamNameWithIdDto(team2.getId(), team2.getName())));
+
+        // When
+        var result = teamService.autocompleteTeams("Dev");
+
+        // Then
+        assertNotNull(result);
+        assertEquals(2, result.size());
+        assertEquals("Development", result.get(0).getName());
+        assertEquals("DevOps", result.get(1).getName());
+    }
+
+    @Test
+    public void testAutocompleteTeams_EmptyPattern() {
+        // When
+        var result = teamService.autocompleteTeams("");
+
+        // Then
+        assertNotNull(result);
+        assertTrue(result.isEmpty());
     }
 }

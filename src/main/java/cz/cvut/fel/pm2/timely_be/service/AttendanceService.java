@@ -173,6 +173,8 @@ public class AttendanceService {
         attendanceRecordRepository.deleteById(id);
     }
 
+
+
     private LocalDate getStartOfWeek() {
         var today = now();
         return today.with(MONDAY);

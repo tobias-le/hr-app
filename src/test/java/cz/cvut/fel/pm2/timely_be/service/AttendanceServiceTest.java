@@ -271,4 +271,62 @@ public class AttendanceServiceTest {
         assertThrows(NoSuchElementException.class,
                 () -> attendanceService.createAttendanceRecord(attendanceRecordDto));
     }
+
+    @Test
+    public void testCreateAttendanceRecord_BoundaryHours() {
+        // Given
+        var attendanceRecordDto = new AttendanceRecordDto();
+        var employee = createEmployee(FULL_TIME);
+        var project = employee.getCurrentProjects().get(0);
+
+        attendanceRecordDto.setMemberId(employee.getEmployeeId());
+        attendanceRecordDto.setProject(project.getName());
+        attendanceRecordDto.setDate(LocalDate.now());
+        attendanceRecordDto.setClockInTime(LocalDateTime.now().withHour(0).withMinute(0)); // 00:00
+        attendanceRecordDto.setClockOutTime(LocalDateTime.now().withHour(23).withMinute(59)); // 23:59
+
+        when(employeeRepository.findById(anyLong())).thenReturn(Optional.of(employee));
+        when(attendanceRecordRepository.save(any(AttendanceRecord.class))).thenReturn(new AttendanceRecord());
+
+        // When
+        var result = attendanceService.createAttendanceRecord(attendanceRecordDto);
+
+        // Then
+        assertNotNull(result);
+    }
+
+    @Test
+    public void testGetAttendanceRecordsByProjectSinceStartOfWeek_NoRecords() {
+        // Given
+        var projectId = 1L;
+        when(attendanceRecordRepository.findByProjectIdAndDateBetween(anyLong(), any(LocalDate.class), any(LocalDate.class)))
+                .thenReturn(List.of());
+
+        // When
+        var result = attendanceService.getAttendanceRecordsByProjectSinceStartOfWeek(projectId);
+
+        // Then
+        assertNotNull(result);
+        assertTrue(result.isEmpty());
+    }
+
+    @Test
+    public void testGetCurrentWeekAttendancePerformanceForProject_NoEmployees() {
+        // Given
+        var projectId = 1L;
+        var project = new Project();
+        project.setProjectId(projectId);
+        project.setMembers(Set.of());
+
+        when(projectRepository.findById(projectId)).thenReturn(Optional.of(project));
+
+        // When
+        var result = attendanceService.getCurrentWeekAttendancePerformanceForProject(projectId);
+
+        // Then
+        assertNotNull(result);
+        assertEquals(0, result.getTotalHours());
+        assertEquals(0, result.getExpectedHours());
+        assertEquals(0.0, result.getAttendanceRate(), 0.01);
+    }
 }
