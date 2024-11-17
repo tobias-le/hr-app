@@ -12,6 +12,9 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
+import static cz.cvut.fel.pm2.timely_be.mapper.MapperUtils.toAttendanceRecordDto;
+import static org.springframework.web.servlet.support.ServletUriComponentsBuilder.fromCurrentRequest;
+
 @RestController
 @RequestMapping("/api/attendance")
 @Tag(name = "Attendance", description = "The Attendance API")
@@ -40,18 +43,44 @@ public class AttendanceController {
         return ResponseEntity.ok(attendanceRecords);
     }
 
-    @GetMapping("/team/{teamId}")
-    @Operation(summary = "Get attendance records for a team for past work week")
-    public ResponseEntity<List<AttendanceRecordDto>> getAttendanceRecordsByTeamSinceStartOfWeek(@PathVariable Long teamId) {
-        var attendanceRecordsByTeam = attendanceService.getAttendanceRecordsByTeamSinceStartOfWeek(teamId);
+    @GetMapping("/project/{projectId}")
+    @Operation(summary = "Get attendance records for a project for past work week")
+    public ResponseEntity<List<AttendanceRecordDto>> getAttendanceRecordsByProjectSinceStartOfWeek(@PathVariable Long projectId) {
+        var attendanceRecordsByTeam = attendanceService.getAttendanceRecordsByProjectSinceStartOfWeek(projectId);
         return ResponseEntity.ok(attendanceRecordsByTeam);
     }
 
-    @GetMapping("/team/{teamId}/summary")
-    @Operation(summary = "Get an attendance summary for the current work week")
-    public ResponseEntity<AttendanceSummaryDTO> getCurrentWeekAttendanceSummary(@PathVariable Long teamId) {
+    @GetMapping("/project/{projectId}/summary")
+    @Operation(summary = "Get an attendance summary for the current work week on a project")
+    public ResponseEntity<AttendanceSummaryDTO> getCurrentWeekAttendanceSummaryForProject(@PathVariable Long projectId) {
         // Call the service method to get the current week's attendance performance
-        var attendancePerformance = attendanceService.getCurrentWeekAttendancePerformance(teamId);
+        var attendancePerformance = attendanceService.getCurrentWeekAttendancePerformanceForProject(projectId);
         return ResponseEntity.ok(attendancePerformance);
+    }
+
+    @PostMapping
+    @Operation(summary = "Create a new attendance record")
+    public ResponseEntity<AttendanceRecordDto> createAttendanceRecord(@RequestBody AttendanceRecordDto attendanceRecordDto) {
+        var attendanceRecord = attendanceService.createAttendanceRecord(attendanceRecordDto);
+        return ResponseEntity.created(
+                fromCurrentRequest()
+                        .path("/{id}")
+                        .buildAndExpand(attendanceRecord.getAttendanceId())
+                        .toUri()
+        ).body(toAttendanceRecordDto(attendanceRecord));
+    }
+
+    @DeleteMapping("/{id}")
+    @Operation(summary = "Delete an attendance record by ID")
+    public ResponseEntity<Void> deleteAttendanceRecordById(@PathVariable Long id) {
+        attendanceService.deleteAttendanceRecordById(id);
+        return ResponseEntity.noContent().build();
+    }
+
+    @PutMapping("/{id}")
+    @Operation(summary = "Update an attendance record by ID")
+    public ResponseEntity<AttendanceRecordDto> updateAttendanceRecordById(@PathVariable Long id, @RequestBody AttendanceRecordDto attendanceRecordDto) {
+        var attendanceRecord = attendanceService.updateAttendanceRecordById(id, attendanceRecordDto);
+        return ResponseEntity.ok(toAttendanceRecordDto(attendanceRecord));
     }
 }

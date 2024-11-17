@@ -17,4 +17,10 @@ public interface AttendanceRecordRepository extends JpaRepository<AttendanceReco
     List<AttendanceRecord> findByTeamAndDateBetween(@Param("team") Team team, @Param("startDate") LocalDate startDate, @Param("endDate") LocalDate endDate);
     @Query("SELECT ar FROM AttendanceRecord ar WHERE ar.member.team.id = :teamId AND ar.date BETWEEN :startOfWeek AND :today")
     List<AttendanceRecord> findByTeamIdAndDateBetween(@Param("teamId") Long teamId, @Param("startOfWeek") LocalDate startOfWeek, @Param("today") LocalDate today);
+
+    @Query("SELECT ar FROM AttendanceRecord ar JOIN ar.project p WHERE p.projectId = :projectId AND ar.date BETWEEN :startOfWeek AND :endOfWeek")
+    List<AttendanceRecord> findByProjectIdAndDateBetween(@Param("projectId") Long projectId,
+                                                         @Param("startOfWeek") LocalDate startOfWeek,
+                                                         @Param("endOfWeek") LocalDate endOfWeek);
+
 }
