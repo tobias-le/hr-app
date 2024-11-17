@@ -5,7 +5,7 @@ import com.microsoft.playwright.BrowserType;
 import com.microsoft.playwright.Playwright;
 
 public class TestConfig {
-    public static final String FRONTEND_URL = "https://hr-app-frontend-test.up.railway.app/";
+    public static final String FRONTEND_URL = "https://hr-app-frontend-test.up.railway.app";
     public static final Browser BROWSER;
 
     static {

@@ -5,7 +5,6 @@ import cz.cvut.fel.pm2.timely_be.pages.BasePage;
 import cz.cvut.fel.pm2.timely_be.pages.DashboardPage;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
-import org.springframework.boot.test.context.SpringBootTest;
 
 public class AbstractE2ETest {
 
@@ -16,7 +15,7 @@ public class AbstractE2ETest {
     protected Playwright playwright;
     protected Browser browser;
     protected BrowserContext context;
-    private Page page;
+    protected Page page;
     protected BasePage basePage;
 
     // Set up the Playwright environment before each test
