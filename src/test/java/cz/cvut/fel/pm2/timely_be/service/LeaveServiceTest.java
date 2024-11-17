@@ -1,6 +1,6 @@
 package cz.cvut.fel.pm2.timely_be.service;
 
-import cz.cvut.fel.pm2.timely_be.enums.LeaveStatus;
+import cz.cvut.fel.pm2.timely_be.enums.RequestStatus;
 import cz.cvut.fel.pm2.timely_be.enums.LeaveType;
 import cz.cvut.fel.pm2.timely_be.model.EmployeeLeaveBalance;
 import cz.cvut.fel.pm2.timely_be.model.Leave;
@@ -64,13 +64,13 @@ public class LeaveServiceTest {
     public void testCreateLeaveRequest() {
         Leave leave = new Leave();
         leave.setLeaveAmount(8);
-        leave.setStatus(LeaveStatus.PENDING);
+        leave.setStatus(RequestStatus.PENDING);
 
         when(leaveRepository.save(any(Leave.class))).thenReturn(leave);
 
         Leave result = leaveService.createLeaveRequest(leave);
         assertNotNull(result);
-        assertEquals(LeaveStatus.PENDING, result.getStatus());
+        assertEquals(RequestStatus.PENDING, result.getStatus());
     }
 
     @Test
@@ -99,14 +99,14 @@ public class LeaveServiceTest {
     public void testGetPendingLeaveRequestsByEmployeeId() {
         Long employeeId = 1L;
         Leave leave = new Leave();
-        leave.setStatus(LeaveStatus.PENDING);
+        leave.setStatus(RequestStatus.PENDING);
 
         when(leaveRepository.findPendingLeaveRequestsByEmployeeId(employeeId)).thenReturn(List.of(leave));
 
         List<Leave> result = leaveService.getPendingLeaveRequestsByEmployeeId(employeeId);
         assertNotNull(result);
         assertEquals(1, result.size());
-        assertEquals(LeaveStatus.PENDING, result.get(0).getStatus());
+        assertEquals(RequestStatus.PENDING, result.get(0).getStatus());
     }
 
     @Test
@@ -125,7 +125,7 @@ public class LeaveServiceTest {
 
     @Test
     public void testGetLeaveRequestsByStatus() {
-        LeaveStatus status = LeaveStatus.PENDING;
+        RequestStatus status = RequestStatus.PENDING;
         Leave leave = new Leave();
         leave.setStatus(status);
 
@@ -179,15 +179,15 @@ public class LeaveServiceTest {
     @Test
     public void testGetPendingRequests() {
         Leave leave = new Leave();
-        leave.setStatus(LeaveStatus.PENDING);
+        leave.setStatus(RequestStatus.PENDING);
 
-        when(leaveRepository.findByPendingStatus(LeaveStatus.PENDING)).thenReturn(List.of(leave));
+        when(leaveRepository.findByPendingStatus(RequestStatus.PENDING)).thenReturn(List.of(leave));
 
         List<Leave> result = leaveService.getPendingRequests();
 
         assertNotNull(result);
         assertEquals(1, result.size());
-        assertEquals(LeaveStatus.PENDING, result.get(0).getStatus());
+        assertEquals(RequestStatus.PENDING, result.get(0).getStatus());
     }
 
     @Test
@@ -209,7 +209,7 @@ public class LeaveServiceTest {
         Long leaveId = 1L;
         Leave leave = new Leave();
         leave.setId(leaveId);
-        leave.setStatus(LeaveStatus.PENDING);
+        leave.setStatus(RequestStatus.PENDING);
 
         when(leaveRepository.findByLeaveId(leaveId)).thenReturn(leave);
         when(leaveRepository.save(any(Leave.class))).thenReturn(leave);
@@ -217,7 +217,7 @@ public class LeaveServiceTest {
         Leave result = leaveService.approveLeaveRequest(leaveId);
 
         assertNotNull(result);
-        assertEquals(LeaveStatus.APPROVED, result.getStatus());
+        assertEquals(RequestStatus.APPROVED, result.getStatus());
         verify(leaveRepository, times(1)).save(leave);
     }
 
@@ -226,7 +226,7 @@ public class LeaveServiceTest {
         Long leaveId = 1L;
         Leave leave = new Leave();
         leave.setId(leaveId);
-        leave.setStatus(LeaveStatus.PENDING);
+        leave.setStatus(RequestStatus.PENDING);
 
         when(leaveRepository.findByLeaveId(leaveId)).thenReturn(leave);
         when(leaveRepository.save(any(Leave.class))).thenReturn(leave);
@@ -234,7 +234,7 @@ public class LeaveServiceTest {
         Leave result = leaveService.rejectLeaveRequest(leaveId);
 
         assertNotNull(result);
-        assertEquals(LeaveStatus.REJECTED, result.getStatus());
+        assertEquals(RequestStatus.REJECTED, result.getStatus());
         verify(leaveRepository, times(1)).save(leave);
     }
 }
