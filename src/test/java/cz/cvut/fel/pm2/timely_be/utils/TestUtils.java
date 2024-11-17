@@ -73,9 +73,10 @@ public class TestUtils {
     }
 
     public static Learning createLearning() {
+        long learningId = getRandomId();
         Learning learning = new Learning();
-        learning.setName("Learning");
-        learning.setLink("https://example.com");
+        learning.setName("Learning" + learningId);
+        learning.setLink("https://example" + learningId + ".com");
         return learning;
     }
 }
