@@ -3,6 +3,7 @@ package cz.cvut.fel.pm2.timely_be.utils;
 import cz.cvut.fel.pm2.timely_be.dto.EmployeeDto;
 import cz.cvut.fel.pm2.timely_be.enums.EmploymentType;
 import cz.cvut.fel.pm2.timely_be.enums.RequestStatus;
+import cz.cvut.fel.pm2.timely_be.model.*;
 import cz.cvut.fel.pm2.timely_be.model.AttendanceRecord;
 import cz.cvut.fel.pm2.timely_be.model.Employee;
 import cz.cvut.fel.pm2.timely_be.model.Project;
@@ -91,5 +92,13 @@ public class TestUtils {
         employeeDto.setPhoneNumber("123456789");
         employeeDto.setEmploymentStatus(employmentType.toString());
         return employeeDto;
+    }
+
+    public static Learning createLearning() {
+        long learningId = getRandomId();
+        Learning learning = new Learning();
+        learning.setName("Learning" + learningId);
+        learning.setLink("https://example" + learningId + ".com");
+        return learning;
     }
 }

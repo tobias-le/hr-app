@@ -83,4 +83,7 @@ public class Employee {
         result = 31 * result + (phoneNumber != null ? phoneNumber.hashCode() : 0);
         return result;
     }
+
+    @OneToMany(mappedBy = "employee")
+    private List<EmployeeLearning> learnings;
 }

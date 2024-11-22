@@ -6,6 +6,7 @@ import cz.cvut.fel.pm2.timely_be.model.Employee;
 import cz.cvut.fel.pm2.timely_be.model.Project;
 import cz.cvut.fel.pm2.timely_be.model.Team;
 import org.hibernate.Hibernate;
+import cz.cvut.fel.pm2.timely_be.model.*;
 
 import java.util.stream.Collectors;
 
@@ -30,48 +31,48 @@ public class MapperUtils {
 
     public static TeamDTO toTeamDto(Team team) {
         if (team == null) return null;
-        
+
         TeamDTO dto = new TeamDTO();
         dto.setTeamId(team.getId());
         dto.setName(team.getName());
-        
+
         if (team.getManager() != null) {
             dto.setManagerId(team.getManager().getEmployeeId());
             dto.setManagerName(team.getManager().getName());
         }
-        
+
         if (team.getMembers() != null) {
             dto.setMembers(team.getMembers().stream()
                 .map(MapperUtils::toEmployeeDto)
                 .collect(Collectors.toSet()));
         }
-        
+
         return dto;
     }
 
     public static TeamDTO toTeamDtoWithHierarchy(Team team) {
         if (team == null) return null;
-        
+
         TeamDTO dto = new TeamDTO();
         dto.setTeamId(team.getId());
         dto.setName(team.getName());
-        
+
         if (team.getManager() != null) {
             dto.setManagerId(team.getManager().getEmployeeId());
             dto.setManagerName(team.getManager().getName());
             dto.setManagerJobTitle(team.getManager().getJobTitle());
         }
-        
+
         if (team.getMembers() != null) {
             dto.setMembers(team.getMembers().stream()
                 .map(MapperUtils::toEmployeeDto)
                 .collect(Collectors.toSet()));
         }
-        
+
         if (team.getParentTeam() != null) {
             dto.setParentTeam(toTeamDtoWithHierarchy(team.getParentTeam()));
         }
-        
+
         return dto;
     }
 
@@ -95,7 +96,7 @@ public class MapperUtils {
         projectDto.setName(project.getName());
         projectDto.setManagerName(project.getManager().getName());
         projectDto.setManagerId(project.getManager().getEmployeeId());
-        
+
         if (Hibernate.isInitialized(project.getMembers())) {
             projectDto.setMembers(
                 project.getMembers()
@@ -105,5 +106,13 @@ public class MapperUtils {
             );
         }
         return projectDto;
+    }
+
+    public static LearningDto toLearningDto(Learning learning) {
+        LearningDto learningDto = new LearningDto();
+        learningDto.setLearningId(learning.getLearningId());
+        learningDto.setName(learning.getName());
+        learningDto.setLink(learning.getLink());
+        return learningDto;
     }
 }
