@@ -11,7 +11,8 @@ public class TestConfig {
     static {
         // Initialize Playwright and browser instance
         Playwright playwright = Playwright.create();
-        BROWSER = playwright.chromium().launch(new BrowserType.LaunchOptions().setHeadless(false));
+        // !! setHeadless must be set to true to run on CI !! (set to false for visible browser - for debugging purposes)
+        BROWSER = playwright.chromium().launch(new BrowserType.LaunchOptions().setHeadless(true));
 
         // Shutdown hook to close the browser when tests complete (on JVM shutdown)
         Runtime.getRuntime().addShutdownHook(new Thread(() -> {
