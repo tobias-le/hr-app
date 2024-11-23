@@ -30,6 +30,14 @@ public class WorkingHoursManagementTest extends AbstractE2ETest{
     }
 
     @Test
+    // TODO: test after implementing the HR view
+    public void assertSelectedWorkerView_HR(){
+        page.getByTestId("employee-search-input").click();
+        page.getByRole(AriaRole.OPTION, new Page.GetByRoleOptions().setName("John Smith")).click();
+        PlaywrightAssertions.assertThat(page.getByTestId("employee-search-input")).hasText("John Smith");
+    }
+
+    @Test
     public void testNewWorkTimeEntry_JohnSmith() {
         String projectName = "AI Integration Initiative";
         assertSelectedWorkerView_JohnSmith();
