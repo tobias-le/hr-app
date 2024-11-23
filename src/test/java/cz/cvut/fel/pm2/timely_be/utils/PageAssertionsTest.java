@@ -52,13 +52,21 @@ public class PageAssertionsTest extends AbstractE2ETest {
         PlaywrightAssertions.assertThat(workTimeButton).hasAttribute("href", "/work-time");
     }
 
-//    public void assertFindButtonAction(){
-//        Locator findButton = toolbarSection().locator("button").nth(4);
-//        findButton.click();
-////        PlaywrightAssertions.assertThat(findButton).hasAttribute("/href", "/find");
-////        PlaywrightAssertions.assertThat(findButton).hasText("Find");
-//    }
+    @Test
+    public void assertProjectsButtonAction(){
+        Locator projectManagementButton = toolbarSection().getByTestId("project-management-link");
+        projectManagementButton.click();
+        Assertions.assertEquals(page.url(), TestConfig.FRONTEND_URL + "/project-management");
+        PlaywrightAssertions.assertThat(projectManagementButton).hasAttribute("href", "/project-management");
+    }
 
+    @Test
+    public void assertTeamManagementButtonAction(){
+        Locator teamManagementButton = toolbarSection().getByTestId("team-management-link");
+        teamManagementButton.click();
+        Assertions.assertEquals(page.url(), TestConfig.FRONTEND_URL + "/team-management");
+        PlaywrightAssertions.assertThat(teamManagementButton).hasAttribute("href", "/team-management");
+    }
 
     @Test
     public void assertProfileButtonAction(){

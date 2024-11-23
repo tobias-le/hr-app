@@ -9,7 +9,7 @@ import org.junit.jupiter.api.BeforeEach;
 public class AbstractE2ETest {
 
     // Define the URL for the frontend
-    public static final String FRONTEND_URL = "https://hr-app-frontend-test.up.railway.app/";
+    public static final String FRONTEND_URL = "https://hr-app-frontend-test.up.railway.app";
 
     // Playwright components
     protected Playwright playwright;
@@ -48,5 +48,9 @@ public class AbstractE2ETest {
         if (playwright != null) {
             playwright.close();
         }
+    }
+
+    protected void navigateTo(String endpoint) {
+        page.navigate(FRONTEND_URL + endpoint);
     }
 }
