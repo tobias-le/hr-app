@@ -18,4 +18,6 @@ public class ProjectWorkManagementTest extends AbstractE2ETest {
         navigateTo("/project-management");
     }
 
+    // TODO: after data-testId's will be added from FE
+
 }
