@@ -1,6 +1,6 @@
 package cz.cvut.fel.pm2.timely_be.model;
 
-import cz.cvut.fel.pm2.timely_be.enums.SubmissionStatus;
+import cz.cvut.fel.pm2.timely_be.enums.LeaveStatus;
 import jakarta.persistence.*;
 import lombok.Data;
 import java.time.LocalDateTime;
@@ -24,7 +24,7 @@ public class Submission {
 
     @Column(name = "status", nullable = false)
     @Enumerated(EnumType.STRING)
-    private SubmissionStatus status;
+    private LeaveStatus status;
 
     @Column(name = "message", nullable = false)
     private String message;

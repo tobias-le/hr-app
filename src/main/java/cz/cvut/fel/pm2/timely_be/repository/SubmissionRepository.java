@@ -3,7 +3,7 @@ package cz.cvut.fel.pm2.timely_be.repository;
 import cz.cvut.fel.pm2.timely_be.model.Submission;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
-import cz.cvut.fel.pm2.timely_be.enums.SubmissionStatus;
+import cz.cvut.fel.pm2.timely_be.enums.LeaveStatus;
 
 import java.util.List;
 
