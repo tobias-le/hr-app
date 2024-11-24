@@ -4,6 +4,7 @@ import cz.cvut.fel.pm2.timely_be.enums.EmploymentStatus;
 import jakarta.persistence.*;
 import lombok.Data;
 
+import java.time.LocalDate;
 import java.util.List;
 
 import static jakarta.persistence.EnumType.STRING;
@@ -33,6 +34,9 @@ public class Employee {
     private Integer annualLearningBudget;
     private Integer annualBusinessPerformanceBonusMax;
     private Integer annualPersonalPerformanceBonusMax;
+
+    private LocalDate dateOfBirth;
+    private String internationalBankAccountNumber;
 
     @ManyToMany
     private List<Project> currentProjects;

@@ -46,6 +46,9 @@ public class EmployeeService {
         employee.setAnnualBusinessPerformanceBonusMax(employeeDto.getAnnualBusinessPerformanceBonusMax());
         employee.setAnnualPersonalPerformanceBonusMax(employeeDto.getAnnualPersonalPerformanceBonusMax());
 
+        employee.setDateOfBirth(employeeDto.getDateOfBirth());
+        employee.setInternationalBankAccountNumber(employeeDto.getInternationalBankAccountNumber());
+
 
         return employeeRepository.save(employee);
     }
