@@ -6,7 +6,7 @@ import lombok.Data;
 @Data
 @AllArgsConstructor
 public class AttendanceSummaryDTO {
-    private String teamName;
+    private String projectName;
     private long totalHours;
     private long expectedHours;
     private double averageHoursPerDay;
