@@ -83,13 +83,16 @@ public class TestUtils {
     }
 
 
-    public static EmployeeDto createEmployeeDto(EmploymentType employmentType) {
-        EmployeeDto employeeDto = new EmployeeDto();
-        employeeDto.setName("Employee");
-        employeeDto.setJobTitle("Job Title");
-        employeeDto.setEmail("random"+ getRandomId() + "@example.com");
-        employeeDto.setPhoneNumber("123456789");
-        employeeDto.setEmploymentStatus(employmentType.toString());
-        return employeeDto;
+    public static EmployeeDto createEmployeeDto(EmploymentType type) {
+        EmployeeDto dto = new EmployeeDto();
+        dto.setName("Employee");
+        dto.setJobTitle("Job Title");
+        dto.setEmail("random"+ getRandomId() + "@example.com");
+        dto.setPhoneNumber("123456789");
+        dto.setEmploymentStatus(type.toString());
+//        dto.setTeam(1L);
+//        dto.setTeamName("Test Team");
+        //TODO: add team
+        return dto;
     }
 }

@@ -296,4 +296,27 @@ public class ProjectServiceTest {
         assertTrue(newMember.getCurrentProjects().contains(result));
     }
 
+    @Test
+    public void testAutocompleteProjects() {
+        // Given
+        String searchPattern = "test";
+        var project1 = new ProjectNameWithIdDto(1L, "Test Project");
+        var project2 = new ProjectNameWithIdDto(2L, "Testing App");
+        var expectedResults = Arrays.asList(project1, project2);
+
+        when(projectRepository.findProjectsByNameContaining(
+            eq(searchPattern), 
+            eq(Collections.emptyList()), 
+            any(Pageable.class)
+        )).thenReturn(expectedResults);
+
+        // When
+        var result = projectService.autocompleteProjects(searchPattern, null);
+
+        // Then
+        assertNotNull(result);
+        assertEquals(2, result.size());
+        assertEquals(expectedResults, result);
+    }
+
 }

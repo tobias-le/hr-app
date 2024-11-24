@@ -1,15 +1,18 @@
 package cz.cvut.fel.pm2.timely_be.service;
 
 import cz.cvut.fel.pm2.timely_be.dto.ProjectDto;
+import cz.cvut.fel.pm2.timely_be.dto.ProjectNameWithIdDto;
 import cz.cvut.fel.pm2.timely_be.model.Employee;
 import cz.cvut.fel.pm2.timely_be.model.Project;
 import cz.cvut.fel.pm2.timely_be.repository.EmployeeRepository;
 import cz.cvut.fel.pm2.timely_be.repository.ProjectRepository;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -131,5 +134,15 @@ public class ProjectService {
         Project project = projectRepository.findProjectWithMembers(projectId)
                 .orElseThrow(() -> new IllegalArgumentException("Project not found"));
         return toProjectDto(project);
+    }
+
+    public List<ProjectNameWithIdDto> autocompleteProjects(String namePattern, List<Long> excludeIds) {
+        if (namePattern == null || namePattern.trim().isEmpty()) {
+            return Collections.emptyList();
+        }
+        if (excludeIds == null) {
+            excludeIds = Collections.emptyList();
+        }
+        return projectRepository.findProjectsByNameContaining(namePattern.trim(), excludeIds, PageRequest.of(0, 5));
     }
 }

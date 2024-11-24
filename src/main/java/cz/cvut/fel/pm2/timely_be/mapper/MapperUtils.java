@@ -11,21 +11,39 @@ import java.util.stream.Collectors;
 
 public class MapperUtils {
     public static EmployeeDto toEmployeeDto(Employee employee) {
-        EmployeeDto employeeDto = new EmployeeDto();
-        employeeDto.setId(employee.getEmployeeId());
-        employeeDto.setName(employee.getName());
-        employeeDto.setJobTitle(employee.getJobTitle());
-        employeeDto.setEmploymentStatus(employee.getEmploymentType().name());
-        employeeDto.setEmail(employee.getEmail());
-        employeeDto.setPhoneNumber(employee.getPhoneNumber());
-        employeeDto.setCurrentProjects(employee.getCurrentProjects().stream().map(Project::getName).collect(Collectors.toList()));
-
-        employeeDto.setAnnualSalary(employee.getAnnualSalary());
-        employeeDto.setAnnualLearningBudget(employee.getAnnualLearningBudget());
-        employeeDto.setAnnualBusinessPerformanceBonusMax(employee.getAnnualBusinessPerformanceBonusMax());
-        employeeDto.setAnnualPersonalPerformanceBonusMax(employee.getAnnualPersonalPerformanceBonusMax());
-
-        return employeeDto;
+        EmployeeDto dto = new EmployeeDto();
+        dto.setId(employee.getEmployeeId());
+        dto.setName(employee.getName());
+        dto.setJobTitle(employee.getJobTitle());
+        dto.setEmploymentStatus(employee.getEmploymentType().toString());
+        dto.setEmail(employee.getEmail());
+        dto.setPhoneNumber(employee.getPhoneNumber());
+        
+        // Map financial fields
+        dto.setAnnualSalary(employee.getAnnualSalary());
+        dto.setAnnualLearningBudget(employee.getAnnualLearningBudget());
+        dto.setAnnualBusinessPerformanceBonusMax(employee.getAnnualBusinessPerformanceBonusMax());
+        dto.setAnnualPersonalPerformanceBonusMax(employee.getAnnualPersonalPerformanceBonusMax());
+        
+        // Map team
+        if (employee.getTeam() != null) {
+            dto.setTeam(new TeamNameWithIdDto(
+                employee.getTeam().getId(),
+                employee.getTeam().getName()
+            ));
+        }
+        
+        // Map projects
+        if (employee.getCurrentProjects() != null) {
+            dto.setCurrentProjects(employee.getCurrentProjects().stream()
+                .map(project -> new ProjectNameWithIdDto(
+                    project.getProjectId(),
+                    project.getName()
+                ))
+                .collect(Collectors.toList()));
+        }
+        
+        return dto;
     }
 
     public static TeamDTO toTeamDto(Team team) {

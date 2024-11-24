@@ -40,12 +40,9 @@ public class AttendanceService {
         this.projectRepository = projectRepository;
     }
 
-    public List<AttendanceRecordDto> getAttendanceRecordsByProjectSinceStartOfWeek(Long projectId) {
-        LocalDate startOfWeek = getStartOfWeek();
-        LocalDate today = getToday();
-
+    public List<AttendanceRecordDto> getAttendanceRecordsByProject(Long projectId, LocalDate startDate, LocalDate endDate) {
         return attendanceRecordRepository
-                .findByProjectIdAndDateBetween(projectId, startOfWeek, today)
+                .findByProjectIdAndDateBetween(projectId, startDate, endDate)
                 .stream()
                 .map(MapperUtils::toAttendanceRecordDto)
                 .collect(Collectors.toList());
@@ -67,21 +64,18 @@ public class AttendanceService {
                 .map(MapperUtils::toAttendanceRecordDto);
     }
 
-    public AttendanceSummaryDTO getCurrentWeekAttendancePerformanceForProject(Long projectId) {
+    public AttendanceSummaryDTO getAttendanceSummaryForProject(Long projectId, LocalDate startDate, LocalDate endDate) {
         Project project = projectRepository.findById(projectId).orElse(null);
         if (project == null) return null;
-        return calculateAttendancePerformance(null, project);
+        return calculateAttendancePerformance(null, project, startDate, endDate);
     }
 
-    private AttendanceSummaryDTO calculateAttendancePerformance(Team team, Project project) {
-        var startOfWeek = getStartOfWeek();
-        var endOfWeek = getEndOfWeek();
-
+    private AttendanceSummaryDTO calculateAttendancePerformance(Team team, Project project, LocalDate startDate, LocalDate endDate) {
         List<AttendanceRecord> records;
         if (team != null) {
-            records = attendanceRecordRepository.findByTeamAndDateBetween(team, startOfWeek, endOfWeek);
+            records = attendanceRecordRepository.findByTeamAndDateBetween(team, startDate, endDate);
         } else if (project != null) {
-            records = attendanceRecordRepository.findByProjectIdAndDateBetween(project.getProjectId(), startOfWeek, endOfWeek);
+            records = attendanceRecordRepository.findByProjectIdAndDateBetween(project.getProjectId(), startDate, endDate);
         } else {
             return null;
         }
@@ -103,7 +97,7 @@ public class AttendanceService {
         }
 
         // Calculate average hours per day and attendance rate
-        int totalDaysInRange = (int) (Duration.between(startOfWeek.atStartOfDay(), endOfWeek.atStartOfDay()).toDays()) + 1;
+        int totalDaysInRange = (int) (Duration.between(startDate.atStartOfDay(), endDate.atStartOfDay()).toDays()) + 1;
         double averageHoursPerDay = (double) totalHours / 5;
 
         int memberCount = team != null ? team.getMembers().size() : project.getMembers().size();

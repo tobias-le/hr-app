@@ -1,7 +1,14 @@
 package cz.cvut.fel.pm2.timely_be.service;
 
+import cz.cvut.fel.pm2.timely_be.dto.EmployeeDto;
 import cz.cvut.fel.pm2.timely_be.dto.EmployeeNameWithIdDto;
+import cz.cvut.fel.pm2.timely_be.dto.ProjectNameWithIdDto;
+import cz.cvut.fel.pm2.timely_be.dto.TeamNameWithIdDto;
+import cz.cvut.fel.pm2.timely_be.model.Employee;
+import cz.cvut.fel.pm2.timely_be.model.Team;
 import cz.cvut.fel.pm2.timely_be.repository.EmployeeRepository;
+import cz.cvut.fel.pm2.timely_be.repository.ProjectRepository;
+import cz.cvut.fel.pm2.timely_be.repository.TeamRepository;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -9,15 +16,11 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.data.domain.*;
 
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 
 import static cz.cvut.fel.pm2.timely_be.enums.EmploymentType.FULL_TIME;
 import static cz.cvut.fel.pm2.timely_be.enums.EmploymentType.PART_TIME;
-import static cz.cvut.fel.pm2.timely_be.utils.TestUtils.createEmployee;
-import static cz.cvut.fel.pm2.timely_be.utils.TestUtils.createEmployeeDto;
+import static cz.cvut.fel.pm2.timely_be.utils.TestUtils.*;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.when;
@@ -27,6 +30,12 @@ public class EmployeeServiceTest {
 
     @Mock
     private EmployeeRepository employeeRepository;
+
+    @Mock
+    private TeamRepository teamRepository;
+
+    @Mock
+    private ProjectRepository projectRepository;
 
     @InjectMocks
     private EmployeeService employeeService;
@@ -57,10 +66,41 @@ public class EmployeeServiceTest {
     public void testUpdateEmployee() {
         // Given
         var employee = createEmployee(FULL_TIME);
-        var employeeDto = createEmployeeDto(PART_TIME);
+        var employeeDto = new EmployeeDto();
+        var team = new Team();
+        team.setId(1L);
+        team.setName("Test Team");
+        
+        // Create test projects
+        var project1 = createProject();
+        project1.setProjectId(1L);
+        project1.setName("Project 1");
+        
+        var project2 = createProject();
+        project2.setProjectId(2L);
+        project2.setName("Project 2");
+
+        // Set up the DTO
+        employeeDto.setName("John Doe");
+        employeeDto.setEmail("john@example.com");
+        employeeDto.setEmploymentStatus(PART_TIME.toString());
+        employeeDto.setJobTitle("Developer");
+        employeeDto.setPhoneNumber("123456789");
+        employeeDto.setAnnualSalary(50000);
+        employeeDto.setAnnualLearningBudget(1000);
+        employeeDto.setAnnualBusinessPerformanceBonusMax(5000);
+        employeeDto.setAnnualPersonalPerformanceBonusMax(2500);
+        employeeDto.setTeam(new TeamNameWithIdDto(team.getId(), team.getName()));
+        employeeDto.setCurrentProjects(Arrays.asList(
+            new ProjectNameWithIdDto(project1.getProjectId(), project1.getName()),
+            new ProjectNameWithIdDto(project2.getProjectId(), project2.getName())
+        ));
 
         when(employeeRepository.findById(anyLong())).thenReturn(Optional.of(employee));
-        when(employeeRepository.save(any())).thenReturn(employee);
+        when(teamRepository.findById(team.getId())).thenReturn(Optional.of(team));
+        when(projectRepository.findById(project1.getProjectId())).thenReturn(Optional.of(project1));
+        when(projectRepository.findById(project2.getProjectId())).thenReturn(Optional.of(project2));
+        when(employeeRepository.save(any(Employee.class))).thenAnswer(i -> i.getArgument(0));
 
         // When
         var result = employeeService.updateEmployee(1L, employeeDto);
@@ -72,6 +112,75 @@ public class EmployeeServiceTest {
         assertEquals(PART_TIME, result.getEmploymentType());
         assertEquals(employeeDto.getJobTitle(), result.getJobTitle());
         assertEquals(employeeDto.getPhoneNumber(), result.getPhoneNumber());
+        assertEquals(employeeDto.getAnnualSalary(), result.getAnnualSalary());
+        assertEquals(employeeDto.getAnnualLearningBudget(), result.getAnnualLearningBudget());
+        assertEquals(employeeDto.getAnnualBusinessPerformanceBonusMax(), result.getAnnualBusinessPerformanceBonusMax());
+        assertEquals(employeeDto.getAnnualPersonalPerformanceBonusMax(), result.getAnnualPersonalPerformanceBonusMax());
+        assertEquals(team, result.getTeam());
+        assertEquals(2, result.getCurrentProjects().size());
+        assertTrue(result.getCurrentProjects().contains(project1));
+        assertTrue(result.getCurrentProjects().contains(project2));
+    }
+
+    @Test
+    public void testUpdateEmployee_TeamNotFound() {
+        // Given
+        var employee = createEmployee(FULL_TIME);
+        var employeeDto = new EmployeeDto();
+        
+        // Set up the DTO with a non-existent team
+        employeeDto.setTeam(new TeamNameWithIdDto(999L, "Non-existent Team"));
+        
+        when(employeeRepository.findById(anyLong())).thenReturn(Optional.of(employee));
+        when(teamRepository.findById(999L)).thenReturn(Optional.empty());
+
+        // When & Then
+        assertThrows(IllegalArgumentException.class, 
+            () -> employeeService.updateEmployee(1L, employeeDto));
+    }
+
+    @Test
+    public void testUpdateEmployee_ProjectNotFound() {
+        // Given
+        var employee = createEmployee(FULL_TIME);
+        var employeeDto = new EmployeeDto();
+        
+        // Set up the DTO with a non-existent project
+        employeeDto.setCurrentProjects(List.of(
+            new ProjectNameWithIdDto(999L, "Non-existent Project")
+        ));
+        
+        when(employeeRepository.findById(anyLong())).thenReturn(Optional.of(employee));
+        when(projectRepository.findById(999L)).thenReturn(Optional.empty());
+
+        // When & Then
+        assertThrows(IllegalArgumentException.class, 
+            () -> employeeService.updateEmployee(1L, employeeDto),
+            "Project not found: 999");
+    }
+
+    @Test
+    public void testUpdateEmployee_RemoveProjects() {
+        // Given
+        var employee = createEmployee(FULL_TIME);
+        var oldProject = createProject();
+        oldProject.setProjectId(1L);
+        employee.setCurrentProjects(new ArrayList<>(List.of(oldProject)));
+        oldProject.setMembers(new HashSet<>(List.of(employee)));
+        
+        var employeeDto = new EmployeeDto();
+        employeeDto.setCurrentProjects(Collections.emptyList()); // Remove all projects
+        
+        when(employeeRepository.findById(anyLong())).thenReturn(Optional.of(employee));
+        when(employeeRepository.save(any(Employee.class))).thenAnswer(i -> i.getArgument(0));
+
+        // When
+        var result = employeeService.updateEmployee(1L, employeeDto);
+
+        // Then
+        assertNotNull(result);
+        assertTrue(result.getCurrentProjects().isEmpty());
+        assertFalse(oldProject.getMembers().contains(employee));
     }
 
     @Test

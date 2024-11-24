@@ -1,6 +1,7 @@
 package cz.cvut.fel.pm2.timely_be.rest;
 
 import cz.cvut.fel.pm2.timely_be.dto.ProjectDto;
+import cz.cvut.fel.pm2.timely_be.dto.ProjectNameWithIdDto;
 import cz.cvut.fel.pm2.timely_be.mapper.MapperUtils;
 import cz.cvut.fel.pm2.timely_be.model.Project;
 import cz.cvut.fel.pm2.timely_be.service.ProjectService;
@@ -83,5 +84,13 @@ public class ProjectController {
     @Operation(summary = "Get detailed project information", description = "Returns project details including all members")
     public ResponseEntity<ProjectDto> getProjectDetails(@PathVariable Long projectId) {
         return ResponseEntity.ok(projectService.getProjectDetails(projectId));
+    }
+
+    @PostMapping("/autocomplete")
+    @Operation(summary = "Autocomplete project names", description = "Get project names and ids matching the search pattern")
+    public ResponseEntity<List<ProjectNameWithIdDto>> autocompleteProjects(
+            @RequestParam(required = false, defaultValue = "") String query,
+            @RequestBody(required = false) List<Long> excludeIds) {
+        return ResponseEntity.ok(projectService.autocompleteProjects(query, excludeIds != null ? excludeIds : List.of()));
     }
 }

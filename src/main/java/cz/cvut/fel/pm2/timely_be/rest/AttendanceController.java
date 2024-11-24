@@ -7,9 +7,11 @@ import cz.cvut.fel.pm2.timely_be.service.AttendanceService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.LocalDate;
 import java.util.List;
 
 import static cz.cvut.fel.pm2.timely_be.mapper.MapperUtils.toAttendanceRecordDto;
@@ -44,18 +46,23 @@ public class AttendanceController {
     }
 
     @GetMapping("/project/{projectId}")
-    @Operation(summary = "Get attendance records for a project for past work week")
-    public ResponseEntity<List<AttendanceRecordDto>> getAttendanceRecordsByProjectSinceStartOfWeek(@PathVariable Long projectId) {
-        var attendanceRecordsByTeam = attendanceService.getAttendanceRecordsByProjectSinceStartOfWeek(projectId);
-        return ResponseEntity.ok(attendanceRecordsByTeam);
+    @Operation(summary = "Get attendance records for a project for a specified date range")
+    public ResponseEntity<List<AttendanceRecordDto>> getAttendanceRecordsByProject(
+        @PathVariable Long projectId,
+        @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate startDate,
+        @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate endDate) {
+        var attendanceRecords = attendanceService.getAttendanceRecordsByProject(projectId, startDate, endDate);
+        return ResponseEntity.ok(attendanceRecords);
     }
 
     @GetMapping("/project/{projectId}/summary")
-    @Operation(summary = "Get an attendance summary for the current work week on a project")
-    public ResponseEntity<AttendanceSummaryDTO> getCurrentWeekAttendanceSummaryForProject(@PathVariable Long projectId) {
-        // Call the service method to get the current week's attendance performance
-        var attendancePerformance = attendanceService.getCurrentWeekAttendancePerformanceForProject(projectId);
-        return ResponseEntity.ok(attendancePerformance);
+    @Operation(summary = "Get an attendance summary for a specified date range on a project")
+    public ResponseEntity<AttendanceSummaryDTO> getAttendanceSummaryForProject(
+        @PathVariable Long projectId,
+        @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate startDate,
+        @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate endDate) {
+        var attendanceSummary = attendanceService.getAttendanceSummaryForProject(projectId, startDate, endDate);
+        return ResponseEntity.ok(attendanceSummary);
     }
 
     @PostMapping

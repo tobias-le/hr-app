@@ -70,7 +70,11 @@ public class Employee {
         if (!Objects.equals(jobTitle, employee.jobTitle)) return false;
         if (employmentType != employee.employmentType) return false;
         if (!Objects.equals(email, employee.email)) return false;
-        return Objects.equals(phoneNumber, employee.phoneNumber);
+        if (!Objects.equals(phoneNumber, employee.phoneNumber)) return false;
+        if (!Objects.equals(annualSalary, employee.annualSalary)) return false;
+        if (!Objects.equals(annualLearningBudget, employee.annualLearningBudget)) return false;
+        if (!Objects.equals(annualBusinessPerformanceBonusMax, employee.annualBusinessPerformanceBonusMax)) return false;
+        return Objects.equals(annualPersonalPerformanceBonusMax, employee.annualPersonalPerformanceBonusMax);
     }
 
     @Override
@@ -81,6 +85,10 @@ public class Employee {
         result = 31 * result + (employmentType != null ? employmentType.hashCode() : 0);
         result = 31 * result + (email != null ? email.hashCode() : 0);
         result = 31 * result + (phoneNumber != null ? phoneNumber.hashCode() : 0);
+        result = 31 * result + (annualSalary != null ? annualSalary.hashCode() : 0);
+        result = 31 * result + (annualLearningBudget != null ? annualLearningBudget.hashCode() : 0);
+        result = 31 * result + (annualBusinessPerformanceBonusMax != null ? annualBusinessPerformanceBonusMax.hashCode() : 0);
+        result = 31 * result + (annualPersonalPerformanceBonusMax != null ? annualPersonalPerformanceBonusMax.hashCode() : 0);
         return result;
     }
 }

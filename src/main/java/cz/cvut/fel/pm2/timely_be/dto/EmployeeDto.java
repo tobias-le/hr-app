@@ -12,7 +12,8 @@ public class EmployeeDto {
     private String employmentStatus;
     private String email;
     private String phoneNumber;
-    private List<String> currentProjects;
+    private List<ProjectNameWithIdDto> currentProjects;
+    private TeamNameWithIdDto team;
 
     private Integer annualSalary;
     private Integer annualLearningBudget;
