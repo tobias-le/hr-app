@@ -136,74 +136,66 @@ public class DatabaseInitializer {
     }
 
     private static void initializeTeams(TeamRepository teamRepository, List<Employee> employees) {
-        // Create main teams under CTO
+        // Create main departments under CTO
+        Team technologyDepartment = createTeam("Technology Department", findEmployeeByTitle(employees, "Chief Technology Officer"));
+        Team hrDepartment = createTeam("HR Department", findEmployeeByTitle(employees, "HR Director"));
+        Team financeDepartment = createTeam("Finance Department", findEmployeeByTitle(employees, "Chief Financial Officer"));
+        
+        // Create sub-teams under Technology Department
         Team developmentTeam = createTeam("Development Team", findEmployeeByTitle(employees, "Development Director"));
+        developmentTeam.setParentTeam(technologyDepartment);
+        
         Team infrastructureTeam = createTeam("Infrastructure Team", findEmployeeByTitle(employees, "Infrastructure Manager"));
+        infrastructureTeam.setParentTeam(technologyDepartment);
+        
         Team securityTeam = createTeam("Security Team", findEmployeeByTitle(employees, "Security Specialist"));
-        Team qaTeam = createTeam("QA Team", findEmployeeByTitle(employees, "QA Engineer"));
-        Team devOpsTeam = createTeam("DevOps Team", findEmployeeByTitle(employees, "DevOps Engineer"));
-        Team architectureTeam = createTeam("Architecture Team", findEmployeeByTitle(employees, "Cloud Architect"));
-        Team hrTeam = createTeam("HR Team", findEmployeeByTitle(employees, "HR Director"));
-
-        // Use ArrayList instead of Arrays.asList to make the list mutable
+        securityTeam.setParentTeam(infrastructureTeam);  // Security reports to Infrastructure
+        
+        // Use ArrayList to make the list mutable
         List<Team> teams = new ArrayList<>(Arrays.asList(
-            developmentTeam, infrastructureTeam, securityTeam,
-            qaTeam, devOpsTeam, architectureTeam, hrTeam
+            technologyDepartment, hrDepartment, financeDepartment,
+            developmentTeam, infrastructureTeam, securityTeam
         ));
 
         // Assign employees to teams based on their job titles
-        assignEmployeesToTeams(employees, teams);
-
-        teamRepository.saveAll(teams);
-    }
-
-    private static void assignEmployeesToTeams(List<Employee> employees, List<Team> teams) {
         for (Employee employee : employees) {
             String title = employee.getJobTitle().toLowerCase();
             String name = employee.getName().toLowerCase();
             
-            // Ensure CEO (John Smith) is in Development Team
-            if (name.contains("john smith") || title.contains("chief executive officer")) {
-                findTeamByName(teams, "Development Team")
-                    .ifPresent(team -> assignEmployeeToTeam(employee, team));
+            // C-Suite assignments
+            if (title.contains("chief technology officer")) {
+                assignEmployeeToTeam(employee, technologyDepartment);
+            } else if (title.contains("chief financial officer")) {
+                assignEmployeeToTeam(employee, financeDepartment);
             }
-            // Ensure HR Director and HR staff are in HR Team
+            // Department-level assignments
             else if (title.contains("hr")) {
-                findTeamByName(teams, "HR Team")
-                    .ifPresent(team -> assignEmployeeToTeam(employee, team));
+                assignEmployeeToTeam(employee, hrDepartment);
+            } else if (title.contains("finance") || title.contains("accountant") || title.contains("payroll")) {
+                assignEmployeeToTeam(employee, financeDepartment);
             }
-            // Existing team assignments
-            else if (title.contains("developer")) {
-                findTeamByName(teams, "Development Team")
-                    .ifPresent(team -> assignEmployeeToTeam(employee, team));
-            } else if (title.contains("infrastructure") || title.contains("network")) {
-                findTeamByName(teams, "Infrastructure Team")
-                    .ifPresent(team -> assignEmployeeToTeam(employee, team));
+            // Technology sub-team assignments
+            else if (title.contains("developer") || title.contains("frontend") || title.contains("backend") || 
+                     title.contains("qa engineer") || title.contains("development director")) {
+                assignEmployeeToTeam(employee, developmentTeam);
+            } else if (title.contains("infrastructure") || title.contains("network") || 
+                       title.contains("cloud architect") || title.contains("system admin")) {
+                assignEmployeeToTeam(employee, infrastructureTeam);
             } else if (title.contains("security")) {
-                findTeamByName(teams, "Security Team")
-                    .ifPresent(team -> assignEmployeeToTeam(employee, team));
-            } else if (title.contains("qa")) {
-                findTeamByName(teams, "QA Team")
-                    .ifPresent(team -> assignEmployeeToTeam(employee, team));
-            } else if (title.contains("devops")) {
-                findTeamByName(teams, "DevOps Team")
-                    .ifPresent(team -> assignEmployeeToTeam(employee, team));
-            } else if (title.contains("architect")) {
-                findTeamByName(teams, "Architecture Team")
-                    .ifPresent(team -> assignEmployeeToTeam(employee, team));
+                assignEmployeeToTeam(employee, securityTeam);
+            }
+            // CEO assignment
+            else if (name.contains("john smith") || title.contains("chief executive officer")) {
+                assignEmployeeToTeam(employee, technologyDepartment);  // CEO joins Technology Department
             }
         }
+
+        teamRepository.saveAll(teams);
     }
 
     private static void assignEmployeeToTeam(Employee employee, Team team) {
         team.addMember(employee);
         employee.setTeam(team);
-    }
-
-    private static Optional<Team> findTeamByName(List<Team> teams, String name) {
-        return teams.stream()
-            .filter(t -> t.getName().toLowerCase().contains(name.toLowerCase()))
-            .findFirst();
     }
 
     private static Employee findEmployeeByTitle(List<Employee> employees, String title) {
