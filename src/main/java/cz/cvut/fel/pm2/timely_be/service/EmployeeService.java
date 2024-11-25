@@ -58,6 +58,7 @@ public class EmployeeService {
         employee.setAnnualBusinessPerformanceBonusMax(employeeDto.getAnnualBusinessPerformanceBonusMax());
         employee.setAnnualPersonalPerformanceBonusMax(employeeDto.getAnnualPersonalPerformanceBonusMax());
 
+        employee.setHR(employeeDto.isHR());
 
         return employeeRepository.save(employee);
     }
@@ -79,5 +80,10 @@ public class EmployeeService {
             excludeIds = Collections.emptyList();
         }
         return employeeRepository.findEmployeesByNameContaining(namePattern.trim(), excludeIds, PageRequest.of(0, 5));
+    }
+
+    public Employee getEmployeeByEmail(String email) {
+        return employeeRepository.findByEmail(email)
+                .orElseThrow(() -> new IllegalArgumentException("Employee not found"));
     }
 }

@@ -18,4 +18,5 @@ public class EmployeeDto {
     private Integer annualLearningBudget;
     private Integer annualBusinessPerformanceBonusMax;
     private Integer annualPersonalPerformanceBonusMax;
+    private boolean isHR;
 }
