@@ -12,12 +12,13 @@ import org.springframework.boot.CommandLineRunner;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
+import java.time.DayOfWeek;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
+import java.time.temporal.TemporalAdjusters;
 import java.util.*;
 import java.util.stream.Collectors;
-import java.util.stream.IntStream;
 
 import static cz.cvut.fel.pm2.timely_be.enums.EmploymentType.FULL_TIME;
 import static cz.cvut.fel.pm2.timely_be.enums.EmploymentType.PART_TIME;
@@ -214,33 +215,45 @@ public class DatabaseInitializer {
 
     private static void initializeAttendanceRecords(AttendanceRecordRepository attendanceRecordRepository,
                                                   List<Employee> employees) {
-        LocalDate today = LocalDate.now();
+        // Get next Monday's date
+        LocalDate nextMonday = LocalDate.now().with(TemporalAdjusters.next(DayOfWeek.MONDAY));
         
-        List<AttendanceRecord> records = employees.stream()
-            .filter(employee -> !employee.getCurrentProjects().isEmpty())
-            .flatMap(employee -> {
-                List<Project> employeeProjects = employee.getCurrentProjects();
-                return IntStream.range(0, 5) // Last 5 days
-                    .mapToObj(i -> {
-                        LocalDate date = today.minusDays(i);
-                        Project randomProject = employeeProjects.get(random.nextInt(employeeProjects.size()));
-                        
-                        AttendanceRecord record = new AttendanceRecord();
-                        record.setMember(employee);
-                        record.setProject(randomProject);
-                        record.setDate(date);
-                        record.setClockInTime(LocalDateTime.of(date, LocalTime.of(8 + random.nextInt(2), random.nextInt(60))));
-                        record.setClockOutTime(LocalDateTime.of(date, LocalTime.of(16 + random.nextInt(3), random.nextInt(60))));
-                        record.setDescription("Work on " + randomProject.getName());
-                        record.setStatus(getRandomStatus());
-                        record.setDeleted(false);
-                        
-                        return record;
-                    });
-            })
-            .collect(Collectors.toList());
+        // Create records in batches to reduce memory usage
+        int batchSize = 100;
+        List<AttendanceRecord> recordsBatch = new ArrayList<>(batchSize);
         
-        attendanceRecordRepository.saveAll(records);
+        for (Employee employee : employees) {
+            if (employee.getCurrentProjects().isEmpty()) continue;
+            
+            List<Project> employeeProjects = employee.getCurrentProjects();
+            for (int i = 0; i < 5; i++) { // Monday to Friday
+                LocalDate date = nextMonday.plusDays(i);
+                Project randomProject = employeeProjects.get(random.nextInt(employeeProjects.size()));
+                
+                AttendanceRecord record = new AttendanceRecord();
+                record.setMember(employee);
+                record.setProject(randomProject);
+                record.setDate(date);
+                record.setClockInTime(LocalDateTime.of(date, LocalTime.of(8 + random.nextInt(2), random.nextInt(60))));
+                record.setClockOutTime(LocalDateTime.of(date, LocalTime.of(16 + random.nextInt(3), random.nextInt(60))));
+                record.setDescription("Work on " + randomProject.getName());
+                record.setStatus(getRandomStatus());
+                record.setDeleted(false);
+                
+                recordsBatch.add(record);
+                
+                // Save batch when it reaches the size limit
+                if (recordsBatch.size() >= batchSize) {
+                    attendanceRecordRepository.saveAll(recordsBatch);
+                    recordsBatch.clear();
+                }
+            }
+        }
+        
+        // Save any remaining records
+        if (!recordsBatch.isEmpty()) {
+            attendanceRecordRepository.saveAll(recordsBatch);
+        }
     }
 
     private static void initializeLeaveData(LeaveRepository leaveRepository, 
