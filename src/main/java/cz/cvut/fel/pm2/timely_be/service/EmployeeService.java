@@ -80,4 +80,9 @@ public class EmployeeService {
         }
         return employeeRepository.findEmployeesByNameContaining(namePattern.trim(), excludeIds, PageRequest.of(0, 5));
     }
+
+    public Employee getEmployeeByEmail(String email) {
+        return employeeRepository.findByEmail(email)
+                .orElseThrow(() -> new IllegalArgumentException("Employee not found"));
+    }
 }
