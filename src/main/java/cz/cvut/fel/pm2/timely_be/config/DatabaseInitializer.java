@@ -5,13 +5,18 @@ import cz.cvut.fel.pm2.timely_be.enums.LeaveType;
 import cz.cvut.fel.pm2.timely_be.model.*;
 import cz.cvut.fel.pm2.timely_be.enums.EmploymentType;
 import cz.cvut.fel.pm2.timely_be.repository.*;
+import cz.cvut.fel.pm2.timely_be.repository.composite.EmployeeLearningId;
+import cz.cvut.fel.pm2.timely_be.service.UserService;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
+import java.time.DayOfWeek;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
+import java.time.temporal.TemporalAdjusters;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -19,21 +24,27 @@ import static cz.cvut.fel.pm2.timely_be.enums.EmploymentType.FULL_TIME;
 import static cz.cvut.fel.pm2.timely_be.enums.EmploymentType.PART_TIME;
 
 @Configuration
+@Slf4j
 public class DatabaseInitializer {
 
     @Bean
     CommandLineRunner initEmployeeDatabase(EmployeeRepository employeeRepository, TeamRepository teamRepository
-            , AttendanceRecordRepository attendanceRecordRepository, ProjectRepository projectRepository, LeaveRepository leaveRepository, EmployeeLeaveBalanceRepository leaveBalanceRepository) {
-        return args -> resetDatabaseToBaseState(employeeRepository, teamRepository, attendanceRecordRepository, projectRepository, leaveRepository, leaveBalanceRepository);
+            , AttendanceRecordRepository attendanceRecordRepository, ProjectRepository projectRepository, LeaveRepository leaveRepository, EmployeeLeaveBalanceRepository leaveBalanceRepository, UserService userService, LearningRepository learningRepository, EmployeeLearningRepository employeeLearningRepository) {
+        return args -> resetDatabaseToBaseState(employeeRepository, teamRepository, attendanceRecordRepository, projectRepository, leaveRepository, leaveBalanceRepository, userService, learningRepository, employeeLearningRepository);
     }
 
     public static void resetDatabaseToBaseState(EmployeeRepository employeeRepository, TeamRepository teamRepository,
             AttendanceRecordRepository attendanceRecordRepository, ProjectRepository projectRepository,
-            LeaveRepository leaveRepository, EmployeeLeaveBalanceRepository leaveBalanceRepository) {
+            LeaveRepository leaveRepository, EmployeeLeaveBalanceRepository leaveBalanceRepository, UserService userService,
+                                                LearningRepository learningRepository,
+                                                EmployeeLearningRepository employeeLearningRepository) {
         
         // Initialize base data in correct order
         var projects = initializeProjects(projectRepository);
         var employees = initializeEmployees(employeeRepository, Collections.emptyList());
+        
+        // Create users for all employees
+        createUsersForEmployees(employees, userService);
         
         // Update projects with managers and save
         updateProjectManagers(projectRepository, projects, employees);
@@ -47,45 +58,32 @@ public class DatabaseInitializer {
         });
         
         // Initialize teams and assign employees to teams
-        var teams = initializeTeams(teamRepository, employees);
+        initializeTeams(teamRepository, employees);
         
         // Save employees with updated projects and team assignments
         employeeRepository.saveAll(employees);
         
         // Initialize attendance records
-        initializeAttendanceRecords(attendanceRecordRepository, employees, projects);
+        initializeAttendanceRecords(attendanceRecordRepository, employees);
         
         // Initialize leave balances and requests
         initializeLeaveData(leaveRepository, leaveBalanceRepository, employees);
+        
+        // Initialize learnings
+        initializeLearnings(learningRepository, employeeLearningRepository, employees);
     }
 
     private static List<Project> initializeProjects(ProjectRepository projectRepository) {
-        // Strategic Projects
-        var digitalTransformation = createProject("Digital Transformation Initiative");
-        var marketExpansion = createProject("Global Market Expansion");
-        var sustainabilityProgram = createProject("Corporate Sustainability Program");
-        
-        // Infrastructure Projects
-        var cloudMigration = createProject("Cloud Infrastructure Migration");
-        var securityOverhaul = createProject("Security Systems Overhaul");
-        var networkUpgrade = createProject("Network Infrastructure Upgrade");
-        
-        // Product Development
-        var mobileApp = createProject("Mobile App Development");
-        var webPlatform = createProject("Web Platform Redesign");
-        var aiIntegration = createProject("AI Integration Initiative");
-        
-        // Business Operations
-        var erpImplementation = createProject("ERP System Implementation");
-        var crmUpgrade = createProject("CRM System Upgrade");
-        var analyticsPlaftorm = createProject("Analytics Platform Development");
-
-        return Arrays.asList(
-            digitalTransformation, marketExpansion, sustainabilityProgram,
-            cloudMigration, securityOverhaul, networkUpgrade,
-            mobileApp, webPlatform, aiIntegration,
-            erpImplementation, crmUpgrade, analyticsPlaftorm
+        // Create exactly 6 projects
+        var projects = Arrays.asList(
+            createProject("Cloud Infrastructure Migration"),
+            createProject("Mobile App Development"),
+            createProject("Web Platform Redesign"),
+            createProject("Security Systems Overhaul"),
+            createProject("Analytics Platform Development"),
+            createProject("ERP System Implementation")
         );
+        return projectRepository.saveAll(projects);
     }
 
     private static List<Employee> initializeEmployees(EmployeeRepository employeeRepository, List<Project> projects) {
@@ -137,159 +135,67 @@ public class DatabaseInitializer {
         return employeeRepository.saveAll(allEmployees);
     }
 
-    private static List<Team> initializeTeams(TeamRepository teamRepository, List<Employee> employees) {
-        // Find C-level executives
-        Employee ceo = findEmployeeByTitle(employees, "Chief Executive Officer");
-        Employee cto = findEmployeeByTitle(employees, "Chief Technology Officer");
-        Employee cfo = findEmployeeByTitle(employees, "Chief Financial Officer");
-        Employee coo = findEmployeeByTitle(employees, "Chief Operations Officer");
-
-        // Create company-wide team under CEO
-        Team companyTeam = createTeam("Company Leadership", ceo);
-        companyTeam = teamRepository.save(companyTeam);
-
-        // Create main divisions under CEO
-        Team technologyDivision = createTeam("Technology Division", cto);
-        Team financeDivision = createTeam("Finance Division", cfo);
-        Team operationsDivision = createTeam("Operations Division", coo);
-
-        // Set parent relationships for divisions
-        technologyDivision.setParentTeam(companyTeam);
-        financeDivision.setParentTeam(companyTeam);
-        operationsDivision.setParentTeam(companyTeam);
-
-        // Save divisions
-        List<Team> divisions = teamRepository.saveAll(Arrays.asList(
-            technologyDivision, financeDivision, operationsDivision
-        ));
-
-        // Create departments under Technology Division
-        Employee infraManager = findEmployeeByTitle(employees, "Infrastructure Manager");
-        Employee devDirector = findEmployeeByTitle(employees, "Development Director");
+    private static void initializeTeams(TeamRepository teamRepository, List<Employee> employees) {
+        // Create main departments under CTO
+        Team technologyDepartment = createTeam("Technology Department", findEmployeeByTitle(employees, "Chief Technology Officer"));
+        Team hrDepartment = createTeam("HR Department", findEmployeeByTitle(employees, "HR Director"));
+        Team financeDepartment = createTeam("Finance Department", findEmployeeByTitle(employees, "Chief Financial Officer"));
         
-        Team infrastructureDept = createTeam("Infrastructure Department", infraManager);
-        Team developmentDept = createTeam("Development Department", devDirector);
+        // Create sub-teams under Technology Department
+        Team developmentTeam = createTeam("Development Team", findEmployeeByTitle(employees, "Development Director"));
+        developmentTeam.setParentTeam(technologyDepartment);
         
-        infrastructureDept.setParentTeam(technologyDivision);
-        developmentDept.setParentTeam(technologyDivision);
-
-        // Create departments under Finance Division
-        Employee financeDirector = findEmployeeByTitle(employees, "Finance Director");
-        Team accountingDept = createTeam("Accounting Department", financeDirector);
-        accountingDept.setParentTeam(financeDivision);
-
-        // Create departments under Operations Division
-        Employee hrDirector = findEmployeeByTitle(employees, "HR Director");
-        Team hrDept = createTeam("HR Department", hrDirector);
-        hrDept.setParentTeam(operationsDivision);
-
-        // Save all departments
-        List<Team> departments = teamRepository.saveAll(Arrays.asList(
-            infrastructureDept, developmentDept, accountingDept, hrDept
-        ));
-
-        // Create teams under Infrastructure Department
-        Team networkTeam = createTeam("Network Team", findEmployeeByTitle(employees, "Senior Network Engineer"));
-        Team cloudTeam = createTeam("Cloud Team", findEmployeeByTitle(employees, "Cloud Architect"));
+        Team infrastructureTeam = createTeam("Infrastructure Team", findEmployeeByTitle(employees, "Infrastructure Manager"));
+        infrastructureTeam.setParentTeam(technologyDepartment);
+        
         Team securityTeam = createTeam("Security Team", findEmployeeByTitle(employees, "Security Specialist"));
+        securityTeam.setParentTeam(infrastructureTeam);  // Security reports to Infrastructure
         
-        networkTeam.setParentTeam(infrastructureDept);
-        cloudTeam.setParentTeam(infrastructureDept);
-        securityTeam.setParentTeam(infrastructureDept);
-
-        // Create teams under Development Department
-        Team frontendTeam = createTeam("Frontend Team", findEmployeeByTitle(employees, "Frontend Developer"));
-        Team backendTeam = createTeam("Backend Team", findEmployeeByTitle(employees, "Backend Developer"));
-        Team qaTeam = createTeam("QA Team", findEmployeeByTitle(employees, "QA Engineer"));
-        
-        frontendTeam.setParentTeam(developmentDept);
-        backendTeam.setParentTeam(developmentDept);
-        qaTeam.setParentTeam(developmentDept);
-
-        // Save all teams
-        List<Team> teams = teamRepository.saveAll(Arrays.asList(
-            networkTeam, cloudTeam, securityTeam,
-            frontendTeam, backendTeam, qaTeam
+        // Use ArrayList to make the list mutable
+        List<Team> teams = new ArrayList<>(Arrays.asList(
+            technologyDepartment, hrDepartment, financeDepartment,
+            developmentTeam, infrastructureTeam, securityTeam
         ));
 
-        // Assign employees to their respective teams
-        assignEmployeesToTeams(employees, companyTeam, divisions, departments, teams);
-
-        // Save all teams again with updated members
-        List<Team> allTeams = new ArrayList<>();
-        allTeams.add(companyTeam);
-        allTeams.addAll(divisions);
-        allTeams.addAll(departments);
-        allTeams.addAll(teams);
-        return teamRepository.saveAll(allTeams);
-    }
-
-    private static void assignEmployeesToTeams(List<Employee> employees, Team companyTeam, 
-            List<Team> divisions, List<Team> departments, List<Team> teams) {
+        // Assign employees to teams based on their job titles
         for (Employee employee : employees) {
             String title = employee.getJobTitle().toLowerCase();
+            String name = employee.getName().toLowerCase();
             
-            // Assign C-level to company team
-            if (title.contains("chief")) {
-                companyTeam.addMember(employee);
-                employee.setTeam(companyTeam);
+            // C-Suite assignments
+            if (title.contains("chief technology officer")) {
+                assignEmployeeToTeam(employee, technologyDepartment);
+            } else if (title.contains("chief financial officer")) {
+                assignEmployeeToTeam(employee, financeDepartment);
             }
-            // Assign directors to respective divisions
-            else if (title.contains("director")) {
-                findTeamByName(divisions, getDivisionForDirector(title))
-                    .ifPresent(team -> {
-                        team.addMember(employee);
-                        employee.setTeam(team);
-                    });
+            // Department-level assignments
+            else if (title.contains("hr")) {
+                assignEmployeeToTeam(employee, hrDepartment);
+            } else if (title.contains("finance") || title.contains("accountant") || title.contains("payroll")) {
+                assignEmployeeToTeam(employee, financeDepartment);
             }
-            // Assign managers to departments
-            else if (title.contains("manager")) {
-                findTeamByName(departments, getDepartmentForManager(title))
-                    .ifPresent(team -> {
-                        team.addMember(employee);
-                        employee.setTeam(team);
-                    });
+            // Technology sub-team assignments
+            else if (title.contains("developer") || title.contains("frontend") || title.contains("backend") || 
+                     title.contains("qa engineer") || title.contains("development director")) {
+                assignEmployeeToTeam(employee, developmentTeam);
+            } else if (title.contains("infrastructure") || title.contains("network") || 
+                       title.contains("cloud architect") || title.contains("system admin")) {
+                assignEmployeeToTeam(employee, infrastructureTeam);
+            } else if (title.contains("security")) {
+                assignEmployeeToTeam(employee, securityTeam);
             }
-            // Assign other employees to specific teams
-            else {
-                findTeamByName(teams, getTeamForEmployee(title))
-                    .ifPresent(team -> {
-                        team.addMember(employee);
-                        employee.setTeam(team);
-                    });
+            // CEO assignment
+            else if (name.contains("john smith") || title.contains("chief executive officer")) {
+                assignEmployeeToTeam(employee, technologyDepartment);  // CEO joins Technology Department
             }
         }
+
+        teamRepository.saveAll(teams);
     }
 
-    private static Optional<Team> findTeamByName(List<Team> teams, String name) {
-        return teams.stream()
-            .filter(t -> t.getName().toLowerCase().contains(name.toLowerCase()))
-            .findFirst();
-    }
-
-    private static String getDivisionForDirector(String title) {
-        if (title.contains("technology")) return "Technology Division";
-        if (title.contains("finance")) return "Finance Division";
-        if (title.contains("operations")) return "Operations Division";
-        return "";
-    }
-
-    private static String getDepartmentForManager(String title) {
-        if (title.contains("infrastructure")) return "Infrastructure Department";
-        if (title.contains("development")) return "Development Department";
-        if (title.contains("accounting")) return "Accounting Department";
-        if (title.contains("hr")) return "HR Department";
-        return "";
-    }
-
-    private static String getTeamForEmployee(String title) {
-        if (title.contains("network")) return "Network Team";
-        if (title.contains("cloud")) return "Cloud Team";
-        if (title.contains("security")) return "Security Team";
-        if (title.contains("frontend")) return "Frontend Team";
-        if (title.contains("backend")) return "Backend Team";
-        if (title.contains("qa")) return "QA Team";
-        return "";
+    private static void assignEmployeeToTeam(Employee employee, Team team) {
+        team.addMember(employee);
+        employee.setTeam(team);
     }
 
     private static Employee findEmployeeByTitle(List<Employee> employees, String title) {
@@ -300,17 +206,20 @@ public class DatabaseInitializer {
     }
 
     private static void initializeAttendanceRecords(AttendanceRecordRepository attendanceRecordRepository,
-                                                  List<Employee> employees, List<Project> projects) {
-        List<AttendanceRecord> records = new ArrayList<>();
-        LocalDate today = LocalDate.now();
+                                                  List<Employee> employees) {
+        // Get next Monday's date
+        LocalDate nextMonday = LocalDate.now().with(TemporalAdjusters.next(DayOfWeek.MONDAY));
+        
+        // Create records in batches to reduce memory usage
+        int batchSize = 100;
+        List<AttendanceRecord> recordsBatch = new ArrayList<>(batchSize);
         
         for (Employee employee : employees) {
-            List<Project> employeeProjects = employee.getCurrentProjects();
-            if (employeeProjects.isEmpty()) continue;
+            if (employee.getCurrentProjects().isEmpty()) continue;
             
-            for (int i = 0; i < 5; i++) {  // Last 5 days
-                LocalDate date = today.minusDays(i);
-                // Pick a random project from employee's assigned projects
+            List<Project> employeeProjects = employee.getCurrentProjects();
+            for (int i = 0; i < 5; i++) { // Monday to Friday
+                LocalDate date = nextMonday.plusDays(i);
                 Project randomProject = employeeProjects.get(random.nextInt(employeeProjects.size()));
                 
                 AttendanceRecord record = new AttendanceRecord();
@@ -323,11 +232,20 @@ public class DatabaseInitializer {
                 record.setStatus(getRandomStatus());
                 record.setDeleted(false);
                 
-                records.add(record);
+                recordsBatch.add(record);
+                
+                // Save batch when it reaches the size limit
+                if (recordsBatch.size() >= batchSize) {
+                    attendanceRecordRepository.saveAll(recordsBatch);
+                    recordsBatch.clear();
+                }
             }
         }
         
-        attendanceRecordRepository.saveAll(records);
+        // Save any remaining records
+        if (!recordsBatch.isEmpty()) {
+            attendanceRecordRepository.saveAll(recordsBatch);
+        }
     }
 
     private static void initializeLeaveData(LeaveRepository leaveRepository, 
@@ -336,15 +254,15 @@ public class DatabaseInitializer {
         List<EmployeeLeaveBalance> balances = employees.stream()
             .map(employee -> createLeaveBalance(employee.getEmployeeId()))
             .collect(Collectors.toList());
-        leaveBalanceRepository.saveAll(balances);
+        
+        // Initialize leave requests
+        List<Leave> leaveRequests = employees.stream()
+            .filter(e -> random.nextBoolean()) // 50% chance for each employee
+            .map(employee -> createLeaveRequest(employee.getEmployeeId()))
+            .collect(Collectors.toList());
 
-        // Create some sample leave requests
-        List<Leave> leaveRequests = new ArrayList<>();
-        for (Employee employee : employees) {
-            if (random.nextBoolean()) { // 50% chance for each employee to have a leave request
-                leaveRequests.add(createLeaveRequest(employee.getEmployeeId()));
-            }
-        }
+        // Batch save
+        leaveBalanceRepository.saveAll(balances);
         leaveRepository.saveAll(leaveRequests);
     }
 
@@ -362,8 +280,49 @@ public class DatabaseInitializer {
         employee.setJobTitle(jobTitle);
         employee.setEmploymentType(type);
         employee.setEmail(email);
-        employee.setPhoneNumber(generatePhoneNumber());
-        employee.setCurrentProjects(new ArrayList<>(projects));
+        employee.setPhoneNumber(generateDeterministicPhone(name));
+        
+        // Set HR flag based on job title (case-insensitive)
+        if (jobTitle.toLowerCase().contains("hr ") || 
+            jobTitle.toLowerCase().startsWith("hr") || 
+            jobTitle.toLowerCase().endsWith("hr")) {
+            employee.setHR(true);
+        }
+        
+        // Set new fields based on job title
+        if (jobTitle.toLowerCase().contains("chief")) {
+            employee.setAnnualSalary(200000);
+            employee.setAnnualLearningBudget(20000);
+            employee.setAnnualBusinessPerformanceBonusMax(100000);
+            employee.setAnnualPersonalPerformanceBonusMax(100000);
+        } else if (jobTitle.toLowerCase().contains("director")) {
+            employee.setAnnualSalary(150000);
+            employee.setAnnualLearningBudget(15000);
+            employee.setAnnualBusinessPerformanceBonusMax(50000);
+            employee.setAnnualPersonalPerformanceBonusMax(50000);
+        } else if (jobTitle.toLowerCase().contains("manager")) {
+            employee.setAnnualSalary(120000);
+            employee.setAnnualLearningBudget(10000);
+            employee.setAnnualBusinessPerformanceBonusMax(30000);
+            employee.setAnnualPersonalPerformanceBonusMax(30000);
+        } else if (jobTitle.toLowerCase().contains("senior")) {
+            employee.setAnnualSalary(100000);
+            employee.setAnnualLearningBudget(8000);
+            employee.setAnnualBusinessPerformanceBonusMax(20000);
+            employee.setAnnualPersonalPerformanceBonusMax(20000);
+        } else {
+            employee.setAnnualSalary(80000);
+            employee.setAnnualLearningBudget(5000);
+            employee.setAnnualBusinessPerformanceBonusMax(10000);
+            employee.setAnnualPersonalPerformanceBonusMax(10000);
+        }
+
+        // Assign up to 3 projects deterministically
+        if (!projects.isEmpty()) {
+            int projectCount = Math.min(3, projects.size());
+            employee.setCurrentProjects(new ArrayList<>(projects.subList(0, projectCount)));
+        }
+        
         return employee;
     }
 
@@ -377,28 +336,13 @@ public class DatabaseInitializer {
 
     private static final Random random = new Random();
 
-    private static String generatePhoneNumber() {
-        return String.format("%09d", random.nextInt(1000000000));
-    }
-
-    private static Project getRandomProject(List<Project> projects) {
-        return projects.get(random.nextInt(projects.size()));
+    private static String generateDeterministicPhone(String name) {
+        // Generate a deterministic 9-digit phone number based on name hash
+        return String.format("%09d", Math.abs(name.hashCode() % 1000000000));
     }
 
     private static RequestStatus getRandomStatus() {
         return RequestStatus.values()[random.nextInt(RequestStatus.values().length)];
-    }
-
-    private static AttendanceRecord createAttendanceRecord(Employee employee, Project project, 
-            LocalDate date, LocalDateTime clockIn, LocalDateTime clockOut, RequestStatus status) {
-        var record = new AttendanceRecord();
-        record.setMember(employee);
-        record.setProject(project);
-        record.setDate(date);
-        record.setClockInTime(clockIn);
-        record.setClockOutTime(clockOut);
-        record.setStatus(status);
-        return record;
     }
 
     private static EmployeeLeaveBalance createLeaveBalance(Long employeeId) {
@@ -426,10 +370,78 @@ public class DatabaseInitializer {
     }
 
     private static void updateProjectManagers(ProjectRepository projectRepository, List<Project> projects, List<Employee> employees) {
-        // Assign random managers from employees to projects
-        projects.forEach(project -> {
-            project.setManager(employees.get(random.nextInt(employees.size())));
-        });
+        projects.forEach(project -> project.setManager(employees.get(random.nextInt(employees.size()))));
         projectRepository.saveAll(projects);
+    }
+
+    private static void createUsersForEmployees(List<Employee> employees, UserService userService) {
+        List<User> users = employees.stream()
+            .map(employee -> {
+                User user = new User();
+                user.setEmail(employee.getEmail());
+                user.setPassword("pass123");
+                user.setEmployee(employee);
+                return user;
+            })
+            .collect(Collectors.toList());
+
+        try {
+            userService.createUsers(users); // Batch insert users
+        } catch (Exception e) {
+            log.error("Failed to create users batch", e);
+        }
+    }
+
+    private static void initializeLearnings(LearningRepository learningRepository,
+                                              EmployeeLearningRepository employeeLearningRepository,
+                                              List<Employee> employees) {
+        // Create common learnings
+        List<Learning> commonLearnings = Arrays.asList(
+            createLearning("Cybersecurity Fundamentals", "https://learning.company.com/security-basics"),
+            createLearning("Business Communication", "https://learning.company.com/business-comm"),
+            createLearning("Project Management Essentials", "https://learning.company.com/pm-basics")
+        );
+        
+        // Create developer-specific learning
+        Learning developerLearning = createLearning("Advanced Microservices Architecture", 
+                "https://learning.company.com/microservices");
+        
+        // Save all learnings
+        learningRepository.saveAll(commonLearnings);
+        learningRepository.save(developerLearning);
+        
+        // Assign common learnings to all employees
+        List<EmployeeLearning> employeeLearnings = new ArrayList<>();
+        for (Employee employee : employees) {
+            for (Learning learning : commonLearnings) {
+                employeeLearnings.add(createEmployeeLearning(employee, learning));
+            }
+            
+            // Assign developer learning only to developers
+            if (employee.getJobTitle().toLowerCase().contains("developer")) {
+                employeeLearnings.add(createEmployeeLearning(employee, developerLearning));
+            }
+        }
+        
+        employeeLearningRepository.saveAll(employeeLearnings);
+    }
+
+    private static Learning createLearning(String name, String link) {
+        Learning learning = new Learning();
+        learning.setName(name);
+        learning.setLink(link);
+        return learning;
+    }
+
+    private static EmployeeLearning createEmployeeLearning(Employee employee, Learning learning) {
+        EmployeeLearning employeeLearning = new EmployeeLearning();
+        EmployeeLearningId id = new EmployeeLearningId();
+        id.setEmployeeId(employee.getEmployeeId());
+        id.setLearningId(learning.getLearningId());
+        employeeLearning.setId(id);
+        employeeLearning.setEmployee(employee);
+        employeeLearning.setLearning(learning);
+        employeeLearning.setDate(LocalDate.now().minusDays(random.nextInt(30))); // Random date within last 30 days
+        return employeeLearning;
     }
 }

@@ -12,8 +12,12 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
+import cz.cvut.fel.pm2.timely_be.model.User;
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -87,6 +91,28 @@ public class EmployeeController {
             @RequestParam(required = false, defaultValue = "") String query,
             @RequestBody(required = false) List<Long> excludeIds) {
         return ResponseEntity.ok(employeeService.autocompleteEmployees(query, excludeIds != null ? excludeIds : List.of()));
+    }
+
+    @GetMapping("/current")
+    @Operation(summary = "Get current employee", description = "Get the currently logged-in employee's details")
+    public ResponseEntity<EmployeeDto> getCurrentEmployee() {
+        try {
+            Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+            if (authentication == null || !authentication.isAuthenticated()) {
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+            }
+
+            // Get the user from the authentication token
+            User user = (User) authentication.getPrincipal();
+            if (user == null || user.getEmployee() == null) {
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
+            }
+
+            Employee employee = employeeService.getEmployee(user.getEmployee().getEmployeeId());
+            return ResponseEntity.ok(toEmployeeDto(employee));
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
     }
 
 }

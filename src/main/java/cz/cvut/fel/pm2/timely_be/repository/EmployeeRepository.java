@@ -11,6 +11,7 @@ import org.springframework.stereotype.Repository;
 import org.springframework.data.domain.Pageable;
 
 import java.util.List;
+import java.util.Optional;
 
 @Repository
 public interface EmployeeRepository extends JpaRepository<Employee, Long> {
@@ -40,4 +41,6 @@ public interface EmployeeRepository extends JpaRepository<Employee, Long> {
     @Override
     @Query("SELECT e FROM Employee e WHERE e.deleted = false")
     List<Employee> findAll();
+
+    Optional<Employee> findByEmail(String email);
 }

@@ -22,4 +22,5 @@ public class EmployeeDto {
 
     private LocalDate dateOfBirth;
     private String internationalBankAccountNumber;
+    private boolean isHR;
 }

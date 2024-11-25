@@ -59,4 +59,15 @@ public interface TeamRepository extends JpaRepository<Team, Long> {
            "LEFT JOIN FETCH t.parentTeam " +
            "WHERE t.id = :teamId AND t.deleted = false")
     Optional<Team> findTeamWithMembersAndParent(@Param("teamId") Long teamId);
+
+    @Query("SELECT CASE WHEN COUNT(t) > 0 THEN true ELSE false END FROM teams t " +
+           "JOIN t.members m WHERE m.employeeId = :employeeId AND t.deleted = false")
+    boolean isEmployeeInAnyTeam(@Param("employeeId") Long employeeId);
+
+    @Query("SELECT t FROM teams t " +
+           "LEFT JOIN FETCH t.members " +
+           "LEFT JOIN FETCH t.parentTeam " +
+           "WHERE :employeeId IN (SELECT m.employeeId FROM t.members m) " +
+           "AND t.deleted = false")
+    Optional<Team> findTeamByEmployeeId(@Param("employeeId") Long employeeId);
 }

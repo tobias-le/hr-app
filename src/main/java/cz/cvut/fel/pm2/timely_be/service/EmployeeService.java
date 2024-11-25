@@ -60,7 +60,7 @@ public class EmployeeService {
 
         employee.setDateOfBirth(employeeDto.getDateOfBirth());
         employee.setInternationalBankAccountNumber(employeeDto.getInternationalBankAccountNumber());
-
+        employee.setHR(employeeDto.isHR());
 
         return employeeRepository.save(employee);
     }
@@ -82,5 +82,10 @@ public class EmployeeService {
             excludeIds = Collections.emptyList();
         }
         return employeeRepository.findEmployeesByNameContaining(namePattern.trim(), excludeIds, PageRequest.of(0, 5));
+    }
+
+    public Employee getEmployeeByEmail(String email) {
+        return employeeRepository.findByEmail(email)
+                .orElseThrow(() -> new IllegalArgumentException("Employee not found"));
     }
 }

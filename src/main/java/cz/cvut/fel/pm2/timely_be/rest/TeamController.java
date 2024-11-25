@@ -66,4 +66,16 @@ public class TeamController {
             @RequestParam(required = false, defaultValue = "") String query) {
         return ResponseEntity.ok(teamService.autocompleteTeams(query));
     }
+
+    @GetMapping("/validate-membership/{employeeId}")
+    @Operation(summary = "Validate team membership", description = "Checks if an employee is already a member of any team")
+    public ResponseEntity<Boolean> validateTeamMembership(@PathVariable Long employeeId) {
+        return ResponseEntity.ok(teamService.validateTeamMembership(employeeId));
+    }
+
+    @GetMapping("/by-employee/{employeeId}")
+    @Operation(summary = "Get team by employee ID", description = "Returns the team details for a specific employee")
+    public ResponseEntity<TeamDTO> getTeamByEmployeeId(@PathVariable Long employeeId) {
+        return ResponseEntity.ok(teamService.getTeamByEmployeeId(employeeId));
+    }
 }
