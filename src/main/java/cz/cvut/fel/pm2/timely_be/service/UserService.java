@@ -63,6 +63,8 @@ public class UserService implements UserDetailsService {
             .collect(Collectors.toList());
 
         // Batch save new users
-        userRepository.saveAll(newUsers);
+        if (!newUsers.isEmpty()) {
+            userRepository.saveAll(newUsers);
+        }
     }
 } 
