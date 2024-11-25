@@ -275,4 +275,31 @@ public class EmployeeServiceTest {
         assertEquals(2, result.size());
         assertEquals(expectedResults, result);
     }
+
+    @Test
+    public void testGetEmployeeByEmail() {
+        // Given
+        var email = "john.doe@example.com";
+        var employee = createEmployee(FULL_TIME);
+        when(employeeRepository.findByEmail(email)).thenReturn(Optional.of(employee));
+
+        // When
+        var result = employeeService.getEmployeeByEmail(email);
+
+        // Then
+        assertNotNull(result);
+        assertEquals(employee.getEmployeeId(), result.getEmployeeId());
+        assertEquals(employee.getEmail(), result.getEmail());
+    }
+
+    @Test
+    public void testGetEmployeeByEmail_NotFound() {
+        // Given
+        var email = "nonexistent@example.com";
+        when(employeeRepository.findByEmail(email)).thenReturn(Optional.empty());
+
+        // When & Then
+        assertThrows(IllegalArgumentException.class, 
+            () -> employeeService.getEmployeeByEmail(email));
+    }
 }
