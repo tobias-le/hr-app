@@ -146,4 +146,22 @@ public class TeamService {
         }
         return teamRepository.findTeamsByNameContaining(namePattern.trim(), PageRequest.of(0, 5));
     }
+
+    public boolean validateTeamMembership(Long employeeId) {
+        if (!employeeRepository.existsById(employeeId)) {
+            throw new IllegalArgumentException("Employee not found");
+        }
+        return teamRepository.isEmployeeInAnyTeam(employeeId);
+    }
+
+    public TeamDTO getTeamByEmployeeId(Long employeeId) {
+        if (!employeeRepository.existsById(employeeId)) {
+            throw new IllegalArgumentException("Employee not found");
+        }
+        
+        Team team = teamRepository.findTeamByEmployeeId(employeeId)
+                .orElseThrow(() -> new IllegalArgumentException("No team found for employee"));
+                
+        return MapperUtils.toTeamDto(team);
+    }
 }

@@ -25,6 +25,7 @@ public class MapperUtils {
         employeeDto.setAnnualLearningBudget(employee.getAnnualLearningBudget());
         employeeDto.setAnnualBusinessPerformanceBonusMax(employee.getAnnualBusinessPerformanceBonusMax());
         employeeDto.setAnnualPersonalPerformanceBonusMax(employee.getAnnualPersonalPerformanceBonusMax());
+        employeeDto.setHR(employee.isHR());
 
         return employeeDto;
     }

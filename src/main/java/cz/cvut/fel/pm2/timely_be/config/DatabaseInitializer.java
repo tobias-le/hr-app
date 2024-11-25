@@ -142,11 +142,13 @@ public class DatabaseInitializer {
         Team qaTeam = createTeam("QA Team", findEmployeeByTitle(employees, "QA Engineer"));
         Team devOpsTeam = createTeam("DevOps Team", findEmployeeByTitle(employees, "DevOps Engineer"));
         Team architectureTeam = createTeam("Architecture Team", findEmployeeByTitle(employees, "Cloud Architect"));
+        Team hrTeam = createTeam("HR Team", findEmployeeByTitle(employees, "HR Director"));
 
-        List<Team> teams = Arrays.asList(
+        // Use ArrayList instead of Arrays.asList to make the list mutable
+        List<Team> teams = new ArrayList<>(Arrays.asList(
             developmentTeam, infrastructureTeam, securityTeam,
-            qaTeam, devOpsTeam, architectureTeam
-        );
+            qaTeam, devOpsTeam, architectureTeam, hrTeam
+        ));
 
         // Assign employees to teams based on their job titles
         assignEmployeesToTeams(employees, teams);
@@ -157,8 +159,20 @@ public class DatabaseInitializer {
     private static void assignEmployeesToTeams(List<Employee> employees, List<Team> teams) {
         for (Employee employee : employees) {
             String title = employee.getJobTitle().toLowerCase();
+            String name = employee.getName().toLowerCase();
             
-            if (title.contains("developer")) {
+            // Ensure CEO (John Smith) is in Development Team
+            if (name.contains("john smith") || title.contains("chief executive officer")) {
+                findTeamByName(teams, "Development Team")
+                    .ifPresent(team -> assignEmployeeToTeam(employee, team));
+            }
+            // Ensure HR Director and HR staff are in HR Team
+            else if (title.contains("hr")) {
+                findTeamByName(teams, "HR Team")
+                    .ifPresent(team -> assignEmployeeToTeam(employee, team));
+            }
+            // Existing team assignments
+            else if (title.contains("developer")) {
                 findTeamByName(teams, "Development Team")
                     .ifPresent(team -> assignEmployeeToTeam(employee, team));
             } else if (title.contains("infrastructure") || title.contains("network")) {
@@ -262,6 +276,13 @@ public class DatabaseInitializer {
         employee.setEmploymentType(type);
         employee.setEmail(email);
         employee.setPhoneNumber(generateDeterministicPhone(name));
+        
+        // Set HR flag based on job title (case-insensitive)
+        if (jobTitle.toLowerCase().contains("hr ") || 
+            jobTitle.toLowerCase().startsWith("hr") || 
+            jobTitle.toLowerCase().endsWith("hr")) {
+            employee.setHR(true);
+        }
         
         // Set new fields based on job title
         if (jobTitle.toLowerCase().contains("chief")) {

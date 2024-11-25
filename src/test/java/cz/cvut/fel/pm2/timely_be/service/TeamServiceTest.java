@@ -268,4 +268,87 @@ public class TeamServiceTest {
         assertNotNull(result);
         assertTrue(result.isEmpty());
     }
+
+    @Test
+    public void testValidateTeamMembership_EmployeeInTeam() {
+        // Given
+        Long employeeId = 1L;
+        when(employeeRepository.existsById(employeeId)).thenReturn(true);
+        when(teamRepository.isEmployeeInAnyTeam(employeeId)).thenReturn(true);
+
+        // When
+        boolean result = teamService.validateTeamMembership(employeeId);
+
+        // Then
+        assertTrue(result);
+        verify(teamRepository).isEmployeeInAnyTeam(employeeId);
+    }
+
+    @Test
+    public void testValidateTeamMembership_EmployeeNotInTeam() {
+        // Given
+        Long employeeId = 1L;
+        when(employeeRepository.existsById(employeeId)).thenReturn(true);
+        when(teamRepository.isEmployeeInAnyTeam(employeeId)).thenReturn(false);
+
+        // When
+        boolean result = teamService.validateTeamMembership(employeeId);
+
+        // Then
+        assertFalse(result);
+        verify(teamRepository).isEmployeeInAnyTeam(employeeId);
+    }
+
+    @Test
+    public void testValidateTeamMembership_EmployeeNotFound() {
+        // Given
+        Long employeeId = 999L;
+        when(employeeRepository.existsById(employeeId)).thenReturn(false);
+
+        // When & Then
+        assertThrows(IllegalArgumentException.class, () -> teamService.validateTeamMembership(employeeId));
+        verify(teamRepository, never()).isEmployeeInAnyTeam(anyLong());
+    }
+
+    @Test
+    public void testGetTeamByEmployeeId() {
+        // Given
+        var employee = createEmployee(FULL_TIME);
+        var team = employee.getTeam();
+        
+        when(employeeRepository.existsById(employee.getEmployeeId())).thenReturn(true);
+        when(teamRepository.findTeamByEmployeeId(employee.getEmployeeId())).thenReturn(Optional.of(team));
+
+        // When
+        var result = teamService.getTeamByEmployeeId(employee.getEmployeeId());
+
+        // Then
+        assertNotNull(result);
+        assertEquals(team.getName(), result.getName());
+        assertEquals(team.getManager().getEmployeeId(), result.getManagerId());
+    }
+
+    @Test
+    public void testGetTeamByEmployeeId_EmployeeNotFound() {
+        // Given
+        Long employeeId = 999L;
+        when(employeeRepository.existsById(employeeId)).thenReturn(false);
+
+        // When & Then
+        assertThrows(IllegalArgumentException.class, 
+                    () -> teamService.getTeamByEmployeeId(employeeId));
+        verify(teamRepository, never()).findTeamByEmployeeId(anyLong());
+    }
+
+    @Test
+    public void testGetTeamByEmployeeId_TeamNotFound() {
+        // Given
+        Long employeeId = 1L;
+        when(employeeRepository.existsById(employeeId)).thenReturn(true);
+        when(teamRepository.findTeamByEmployeeId(employeeId)).thenReturn(Optional.empty());
+
+        // When & Then
+        assertThrows(IllegalArgumentException.class, 
+                    () -> teamService.getTeamByEmployeeId(employeeId));
+    }
 }

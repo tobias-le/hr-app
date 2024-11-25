@@ -45,6 +45,9 @@ public class Employee {
     private Team team;
 
     @Column(nullable = false)
+    private boolean isHR = false;
+
+    @Column(nullable = false)
     private boolean deleted = false;
 
     public void setPhoneNumber(String phoneNumber) {
