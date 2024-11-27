@@ -1,6 +1,7 @@
 package cz.cvut.fel.pm2.timely_be.rest;
 
 import cz.cvut.fel.pm2.timely_be.dto.EmployeeNameWithIdDto;
+import cz.cvut.fel.pm2.timely_be.dto.NewSubmissionDto;
 import cz.cvut.fel.pm2.timely_be.dto.SubmissionDto; // Import SubmissionDto
 import cz.cvut.fel.pm2.timely_be.enums.RequestStatus;
 import cz.cvut.fel.pm2.timely_be.mapper.MapperUtils;
@@ -28,10 +29,10 @@ public class SubmissionController {
     }
 
     @PostMapping
-    public ResponseEntity<SubmissionDto> createSubmission(@RequestParam Long employeeId, @RequestParam String message) {
-        Submission createdSubmission = submissionService.createSubmission(employeeId, message);
+    public ResponseEntity<SubmissionDto> createSubmission(@RequestBody NewSubmissionDto dto) {
+        Submission createdSubmission = submissionService.createSubmission(dto.getEmployeeId(), dto.getMessage());
 
-        EmployeeNameWithIdDto employeeDto = employeeRepository.findById(employeeId)
+        EmployeeNameWithIdDto employeeDto = employeeRepository.findById(dto.getEmployeeId())
                 .map(MapperUtils::toEmployeeNameWithIdDto)
                 .orElseThrow(() -> new IllegalArgumentException("Employee not found"));
 

@@ -1,6 +1,7 @@
 package cz.cvut.fel.pm2.timely_be.rest;
 
 import cz.cvut.fel.pm2.timely_be.dto.LeaveDto;
+import cz.cvut.fel.pm2.timely_be.dto.LeaveRequestDto;
 import cz.cvut.fel.pm2.timely_be.enums.RequestStatus;
 import cz.cvut.fel.pm2.timely_be.enums.LeaveType;
 import cz.cvut.fel.pm2.timely_be.model.Employee;
@@ -17,6 +18,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
@@ -41,13 +43,14 @@ public class LeaveController {
     public ResponseEntity<?> createLeaveRequest(@RequestBody @Valid LeaveDto leaveDto) {
         try {
             Leave leave = new Leave();
-            leave.setEmployeeId(leaveDto.getEmployee().getId());
+            leave.setEmployeeId(leaveDto.getEmployeeId());
             leave.setLeaveType(leaveDto.getLeaveType());
             leave.setStartDate(leaveDto.getStartDate());
             leave.setEndDate(leaveDto.getEndDate());
             leave.setStatus(RequestStatus.PENDING);
             leave.setLeaveAmount(leaveDto.getLeaveAmount());
             leave.setReason(leaveDto.getReason());              //nesetoval se field a vyhazvala se vyjimka
+            leave.setDatetime(LocalDateTime.now());
             Leave createdLeave = leaveService.createLeaveRequest(leave);
             return ResponseEntity.status(HttpStatus.CREATED).body(createdLeave);
         } catch (Exception e) {
@@ -67,8 +70,8 @@ public class LeaveController {
     }
 
     @GetMapping("/pending")
-    public ResponseEntity<List<Leave>> getPendingRequests() {
-        List<Leave> pendingRequests = leaveService.getPendingRequests();
+    public ResponseEntity<List<LeaveRequestDto>> getPendingRequests() {
+        List<LeaveRequestDto> pendingRequests = leaveService.getPendingRequests();
         return ResponseEntity.ok(pendingRequests);
     }
 
@@ -120,7 +123,7 @@ public class LeaveController {
     @Operation(summary = "Get leave requests by employee ID", description = "Retrieves a list of leave requests for a specific employee by their ID.")
     public ResponseEntity<?> getLeaveRequestsByEmployeeId(@PathVariable Long employeeId) {
         try {
-            List<LeaveDto> leaveRequests = leaveService.getLeaveRequestsByEmployeeId(employeeId);
+            List<Leave> leaveRequests = leaveService.getLeaveRequestsByEmployeeId(employeeId);
             return ResponseEntity.ok(leaveRequests);
         } catch (IllegalArgumentException e) {
             return ResponseEntity.notFound().build();

@@ -6,9 +6,11 @@ import lombok.Data;
 
 import java.time.LocalDate;
 
+
+//používalo se pro posílání nových leave, ne jako návratová hodnota
 @Data
 public class LeaveDto {
-    private EmployeeNameWithIdDto employee;
+    private Long employeeId;
     private LeaveType leaveType;
     private LocalDate startDate;
     private LocalDate endDate;
