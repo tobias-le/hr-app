@@ -46,19 +46,19 @@ public class LeaveServiceTest {
         assertEquals(employeeId, result.getEmployeeId());
     }
 
-//    @Test
-//    public void testGetLeaveRequestsByEmployeeId() {
-//        Long employeeId = 1L;
-//        Leave leave = new Leave();
-//        leave.setEmployeeId(employeeId);
-//
-//        when(leaveRepository.findLeaveRequestsByEmployeeId(employeeId)).thenReturn(List.of(leave));
-//
-//        List<Leave> result = leaveService.getLeaveRequestsByEmployeeId(employeeId);
-//        assertNotNull(result);
-//        assertEquals(1, result.size());
-//        assertEquals(employeeId, result.get(0).getEmployeeId());
-//    }
+    @Test
+    public void testGetLeaveRequestsByEmployeeId() {
+        Long employeeId = 1L;
+        Leave leave = new Leave();
+        leave.setEmployeeId(employeeId);
+
+        when(leaveRepository.findLeaveRequestsByEmployeeId(employeeId)).thenReturn(List.of(leave));
+
+        List<Leave> result = leaveService.getLeaveRequestsByEmployeeId(employeeId);
+        assertNotNull(result);
+        assertEquals(1, result.size());
+        assertEquals(employeeId, result.get(0).getEmployeeId());
+    }
 
     @Test
     public void testCreateLeaveRequest() {
@@ -209,10 +209,18 @@ public class LeaveServiceTest {
         Long leaveId = 1L;
         Leave leave = new Leave();
         leave.setId(leaveId);
+        leave.setEmployeeId(leaveId);
+        leave.setLeaveAmount(1);
         leave.setStatus(RequestStatus.PENDING);
+        leave.setLeaveType(LeaveType.PERSONAL_LEAVE);
+        EmployeeLeaveBalance balance = new EmployeeLeaveBalance();
+        balance.setPersonalDaysLeft(1);
+        balance.setVacationDaysLeft(1);
+        balance.setSickDaysLeft(1);
 
         when(leaveRepository.findByLeaveId(leaveId)).thenReturn(leave);
         when(leaveRepository.save(any(Leave.class))).thenReturn(leave);
+        when(leaveBalanceRepository.findLeaveBalanceByEmployeeId(any(Long.class))).thenReturn(balance);
 
         Leave result = leaveService.approveLeaveRequest(leaveId);
 
