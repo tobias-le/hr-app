@@ -129,16 +129,4 @@ public class MapperUtils {
         dto.setStatus(submission.getStatus().name());
         return dto;
     }
-    public static LeaveWithEmployeeDto toLeaveWithEmployeeDto(Leave leave, EmployeeNameWithIdDto employeeDto) {
-        LeaveWithEmployeeDto dto = new LeaveWithEmployeeDto();
-        dto.setId(leave.getId());
-        dto.setEmployee(employeeDto);
-        dto.setLeaveType(leave.getLeaveType());
-        dto.setStartDate(leave.getStartDate());
-        dto.setEndDate(leave.getEndDate());
-        dto.setLeaveAmount(leave.getLeaveAmount());
-        dto.setStatus(leave.getStatus());
-        dto.setReason(leave.getReason());
-        return dto;
-    }
 }
