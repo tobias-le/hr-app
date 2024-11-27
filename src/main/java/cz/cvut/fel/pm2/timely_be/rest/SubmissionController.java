@@ -1,10 +1,8 @@
 package cz.cvut.fel.pm2.timely_be.rest;
 
-import cz.cvut.fel.pm2.timely_be.dto.EmployeeNameWithIdDto;
 import cz.cvut.fel.pm2.timely_be.dto.NewSubmissionDto;
 import cz.cvut.fel.pm2.timely_be.dto.SubmissionDto; // Import SubmissionDto
 import cz.cvut.fel.pm2.timely_be.enums.RequestStatus;
-import cz.cvut.fel.pm2.timely_be.mapper.MapperUtils;
 import cz.cvut.fel.pm2.timely_be.model.Submission;
 import cz.cvut.fel.pm2.timely_be.repository.EmployeeRepository;
 import cz.cvut.fel.pm2.timely_be.service.SubmissionService;
@@ -29,16 +27,12 @@ public class SubmissionController {
     }
 
     @PostMapping
-    public ResponseEntity<SubmissionDto> createSubmission(@RequestBody NewSubmissionDto dto) {
-        Submission createdSubmission = submissionService.createSubmission(dto.getEmployeeId(), dto.getMessage());
-
-        EmployeeNameWithIdDto employeeDto = employeeRepository.findById(dto.getEmployeeId())
-                .map(MapperUtils::toEmployeeNameWithIdDto)
-                .orElseThrow(() -> new IllegalArgumentException("Employee not found"));
-
-        SubmissionDto submissionDto = MapperUtils.toSubmissionDto(createdSubmission, employeeDto);
-
-        return ResponseEntity.status(HttpStatus.CREATED).body(submissionDto);
+    public ResponseEntity<Submission> createSubmission(@RequestBody NewSubmissionDto dto) {
+        if (employeeRepository.findById(dto.getEmployeeId()).isPresent()) {
+            Submission createdSubmission = submissionService.createSubmission(dto.getEmployeeId(), dto.getMessage());
+            return ResponseEntity.status(HttpStatus.CREATED).body(createdSubmission);
+        }
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
     }
 
     @GetMapping("/pending")

@@ -23,7 +23,7 @@ public class Submission {
     @Column(name = "datetime", nullable = false)
     private LocalDateTime datetime;
 
-    @Column(name = "message", nullable = false)
+    @Column(name = "message", nullable = false, columnDefinition = "TEXT")
     private String message;
 
     @Enumerated(EnumType.STRING)

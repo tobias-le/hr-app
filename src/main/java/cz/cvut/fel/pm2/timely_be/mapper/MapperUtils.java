@@ -132,7 +132,7 @@ public class MapperUtils {
         return dto;
     }
 
-    public static LeaveRequestDto leaveRequestDto(Leave leave, Employee employee) {
+    public static LeaveRequestDto leaveRequestDto(Leave leave, Employee employee, EmployeeLeaveBalance balance) {
         LeaveRequestDto dto = new LeaveRequestDto();
         dto.setEmployee(MapperUtils.toEmployeeNameWithIdDto(employee));
         dto.setLeaveAmount(leave.getLeaveAmount());
@@ -142,6 +142,14 @@ public class MapperUtils {
         dto.setMessage(leave.getReason());
         dto.setStatus(leave.getStatus().toString());
         dto.setDatetime(leave.getDatetime());
+        dto.setMessageId(leave.getId());
+        int days = 0;
+        switch (leave.getLeaveType()){
+            case SICK_LEAVE ->  days = balance.getSickDaysLeft();
+            case VACATION_LEAVE -> days = balance.getVacationDaysLeft();
+            case PERSONAL_LEAVE -> days = balance.getPersonalDaysLeft();
+        }
+        dto.setCurrentDaysLeft(days);
         return dto;
     }
 }

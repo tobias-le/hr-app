@@ -37,7 +37,7 @@ public class Leave {
     @Column(name = "leave_status", nullable = false)
     private RequestStatus status;
 
-    @Column(name="reason", nullable = false)
+    @Column(name="reason", nullable = false, columnDefinition = "TEXT")
     private String reason;
 
     @Column(nullable = false)

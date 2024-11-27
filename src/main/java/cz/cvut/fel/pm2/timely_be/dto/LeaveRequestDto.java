@@ -10,4 +10,5 @@ public class LeaveRequestDto extends SubmissionDto {
     private LocalDate endDate;
     private LeaveType leaveType;
     private Number leaveAmount;
+    private int currentDaysLeft;
 }

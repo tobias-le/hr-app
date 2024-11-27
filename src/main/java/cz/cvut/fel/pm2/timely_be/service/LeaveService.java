@@ -37,7 +37,7 @@ public class LeaveService {
 
     public List<LeaveRequestDto> getPendingRequests() {
         return leaveRepository.findByPendingStatus(RequestStatus.PENDING).stream().map(leave ->
-            MapperUtils.leaveRequestDto(leave, employeeRepository.findById(leave.getEmployeeId()).get())).collect(Collectors.toList());
+            MapperUtils.leaveRequestDto(leave, employeeRepository.findById(leave.getEmployeeId()).get(), leaveBalanceRepository.findLeaveBalanceByEmployeeId(leave.getEmployeeId()))).collect(Collectors.toList());
     }
 
     public Leave getLeaveRequestById(Long id) {
