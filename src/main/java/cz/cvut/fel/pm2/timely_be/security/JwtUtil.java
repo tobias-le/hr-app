@@ -28,7 +28,7 @@ public class JwtUtil {
         this.key = Keys.hmacShaKeyFor(keyBytes);
     }
 
-    private static final long JWT_TOKEN_VALIDITY = 24 * 60 * 60 * 1000 * 365; // year
+    private static final long JWT_TOKEN_VALIDITY = 24L * 60 * 60 * 1000 * 365; // year
 
     public String extractUsername(String token) {
         return extractClaim(token, Claims::getSubject);
