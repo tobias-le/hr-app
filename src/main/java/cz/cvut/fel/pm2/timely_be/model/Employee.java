@@ -5,6 +5,7 @@ import jakarta.persistence.*;
 import lombok.Data;
 import lombok.ToString;
 
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Objects;
 
@@ -37,7 +38,11 @@ public class Employee {
     private Integer annualBusinessPerformanceBonusMax;
     private Integer annualPersonalPerformanceBonusMax;
 
+    private LocalDate dateOfBirth;
+    private String internationalBankAccountNumber;
+
     @ManyToMany(fetch = FetchType.LAZY)
+
     private List<Project> currentProjects;
 
     @ManyToOne(fetch = FetchType.LAZY)
