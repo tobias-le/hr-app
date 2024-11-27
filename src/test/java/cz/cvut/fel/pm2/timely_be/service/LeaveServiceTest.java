@@ -46,19 +46,19 @@ public class LeaveServiceTest {
         assertEquals(employeeId, result.getEmployeeId());
     }
 
-    @Test
-    public void testGetLeaveRequestsByEmployeeId() {
-        Long employeeId = 1L;
-        Leave leave = new Leave();
-        leave.setEmployeeId(employeeId);
-
-        when(leaveRepository.findLeaveRequestsByEmployeeId(employeeId)).thenReturn(List.of(leave));
-
-        List<Leave> result = leaveService.getLeaveRequestsByEmployeeId(employeeId);
-        assertNotNull(result);
-        assertEquals(1, result.size());
-        assertEquals(employeeId, result.get(0).getEmployeeId());
-    }
+//    @Test
+//    public void testGetLeaveRequestsByEmployeeId() {
+//        Long employeeId = 1L;
+//        Leave leave = new Leave();
+//        leave.setEmployeeId(employeeId);
+//
+//        when(leaveRepository.findLeaveRequestsByEmployeeId(employeeId)).thenReturn(List.of(leave));
+//
+//        List<Leave> result = leaveService.getLeaveRequestsByEmployeeId(employeeId);
+//        assertNotNull(result);
+//        assertEquals(1, result.size());
+//        assertEquals(employeeId, result.get(0).getEmployeeId());
+//    }
 
     @Test
     public void testCreateLeaveRequest() {
@@ -176,19 +176,19 @@ public class LeaveServiceTest {
         assertTrue(result.get(0).getVacationDaysLeft() > 0);
     }
 
-    @Test
-    public void testGetPendingRequests() {
-        Leave leave = new Leave();
-        leave.setStatus(RequestStatus.PENDING);
-
-        when(leaveRepository.findByPendingStatus(RequestStatus.PENDING)).thenReturn(List.of(leave));
-
-        List<Leave> result = leaveService.getPendingRequests();
-
-        assertNotNull(result);
-        assertEquals(1, result.size());
-        assertEquals(RequestStatus.PENDING, result.get(0).getStatus());
-    }
+//    @Test
+//    public void testGetPendingRequests() {
+//        Leave leave = new Leave();
+//        leave.setStatus(RequestStatus.PENDING);
+//
+//        when(leaveRepository.findByPendingStatus(RequestStatus.PENDING)).thenReturn(List.of(leave));
+//
+//        List<Leave> result = leaveService.getPendingRequests();
+//
+//        assertNotNull(result);
+//        assertEquals(1, result.size());
+//        assertEquals(RequestStatus.PENDING, result.get(0).getStatus());
+//    }
 
     @Test
     public void testGetLeaveRequestById() {

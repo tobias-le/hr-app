@@ -8,7 +8,7 @@ import java.time.LocalDate;
 
 @Data
 public class LeaveDto {
-    private Long employeeId;
+    private EmployeeNameWithIdDto employee;
     private LeaveType leaveType;
     private LocalDate startDate;
     private LocalDate endDate;

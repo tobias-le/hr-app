@@ -8,4 +8,4 @@ import lombok.Data;
 public class AuthResponseDto {
     private String token;
     private EmployeeDto employee;
-} 
+}

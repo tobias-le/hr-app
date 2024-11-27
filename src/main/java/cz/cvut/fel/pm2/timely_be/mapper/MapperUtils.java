@@ -116,4 +116,29 @@ public class MapperUtils {
         learningDto.setLink(learning.getLink());
         return learningDto;
     }
+    public static EmployeeNameWithIdDto toEmployeeNameWithIdDto(Employee employee) {
+        return new EmployeeNameWithIdDto(employee.getEmployeeId(), employee.getName());
+    }
+
+    public static SubmissionDto toSubmissionDto(Submission submission, EmployeeNameWithIdDto employee) {
+        SubmissionDto dto = new SubmissionDto();
+        dto.setMessageId(submission.getMessageId());
+        dto.setEmployee(employee);
+        dto.setDatetime(submission.getDatetime());
+        dto.setMessage(submission.getMessage());
+        dto.setStatus(submission.getStatus().name());
+        return dto;
+    }
+    public static LeaveWithEmployeeDto toLeaveWithEmployeeDto(Leave leave, EmployeeNameWithIdDto employeeDto) {
+        LeaveWithEmployeeDto dto = new LeaveWithEmployeeDto();
+        dto.setId(leave.getId());
+        dto.setEmployee(employeeDto);
+        dto.setLeaveType(leave.getLeaveType());
+        dto.setStartDate(leave.getStartDate());
+        dto.setEndDate(leave.getEndDate());
+        dto.setLeaveAmount(leave.getLeaveAmount());
+        dto.setStatus(leave.getStatus());
+        dto.setReason(leave.getReason());
+        return dto;
+    }
 }

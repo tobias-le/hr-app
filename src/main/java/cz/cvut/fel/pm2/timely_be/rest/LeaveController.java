@@ -6,6 +6,7 @@ import cz.cvut.fel.pm2.timely_be.enums.LeaveType;
 import cz.cvut.fel.pm2.timely_be.model.Employee;
 import cz.cvut.fel.pm2.timely_be.model.EmployeeLeaveBalance;
 import cz.cvut.fel.pm2.timely_be.model.Leave;
+import cz.cvut.fel.pm2.timely_be.repository.EmployeeRepository;
 import cz.cvut.fel.pm2.timely_be.service.EmployeeService;
 import cz.cvut.fel.pm2.timely_be.service.LeaveService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -32,12 +33,15 @@ public class LeaveController {
     @Autowired
     private EmployeeService employeeService;
 
+    @Autowired
+    private EmployeeRepository employeeRepository;
+
     @PostMapping
     @Operation(summary = "Create a new leave request", description = "Creates a new leave request for an employee with the specified details.")
     public ResponseEntity<?> createLeaveRequest(@RequestBody @Valid LeaveDto leaveDto) {
         try {
             Leave leave = new Leave();
-            leave.setEmployeeId(leaveDto.getEmployeeId());
+            leave.setEmployeeId(leaveDto.getEmployee().getId());
             leave.setLeaveType(leaveDto.getLeaveType());
             leave.setStartDate(leaveDto.getStartDate());
             leave.setEndDate(leaveDto.getEndDate());
@@ -116,11 +120,10 @@ public class LeaveController {
     @Operation(summary = "Get leave requests by employee ID", description = "Retrieves a list of leave requests for a specific employee by their ID.")
     public ResponseEntity<?> getLeaveRequestsByEmployeeId(@PathVariable Long employeeId) {
         try {
-            Employee employee = employeeService.getEmployee(employeeId);
-            List<Leave> leaveRequests = leaveService.getLeaveRequestsByEmployeeId(employeeId);
+            List<LeaveDto> leaveRequests = leaveService.getLeaveRequestsByEmployeeId(employeeId);
             return ResponseEntity.ok(leaveRequests);
         } catch (IllegalArgumentException e) {
-          return ResponseEntity.notFound().build();
+            return ResponseEntity.notFound().build();
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Error retrieving leave requests by employee ID");
         }
