@@ -27,6 +27,8 @@ public class MapperUtils {
         employeeDto.setAnnualPersonalPerformanceBonusMax(employee.getAnnualPersonalPerformanceBonusMax());
         employeeDto.setHR(employee.isHR());
 
+        employeeDto.setDateOfBirth(employee.getDateOfBirth());
+        employeeDto.setInternationalBankAccountNumber(employee.getInternationalBankAccountNumber());
         return employeeDto;
     }
 

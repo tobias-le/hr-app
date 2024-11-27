@@ -2,6 +2,7 @@ package cz.cvut.fel.pm2.timely_be.dto;
 
 import lombok.Data;
 
+import java.time.LocalDate;
 import java.util.List;
 
 @Data
@@ -18,5 +19,8 @@ public class EmployeeDto {
     private Integer annualLearningBudget;
     private Integer annualBusinessPerformanceBonusMax;
     private Integer annualPersonalPerformanceBonusMax;
+
+    private LocalDate dateOfBirth;
+    private String internationalBankAccountNumber;
     private boolean isHR;
 }
