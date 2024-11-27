@@ -1,15 +1,20 @@
 package cz.cvut.fel.pm2.timely_be.service;
 
+import cz.cvut.fel.pm2.timely_be.dto.EmployeeNameWithIdDto;
+import cz.cvut.fel.pm2.timely_be.dto.LeaveDto;
 import cz.cvut.fel.pm2.timely_be.enums.RequestStatus;
 import cz.cvut.fel.pm2.timely_be.enums.LeaveType;
+import cz.cvut.fel.pm2.timely_be.model.Employee;
 import cz.cvut.fel.pm2.timely_be.model.EmployeeLeaveBalance;
 import cz.cvut.fel.pm2.timely_be.model.Leave;
 import cz.cvut.fel.pm2.timely_be.repository.EmployeeLeaveBalanceRepository;
+import cz.cvut.fel.pm2.timely_be.repository.EmployeeRepository;
 import cz.cvut.fel.pm2.timely_be.repository.LeaveRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 public class LeaveService {
@@ -19,6 +24,9 @@ public class LeaveService {
 
     @Autowired
     private EmployeeLeaveBalanceRepository leaveBalanceRepository;
+
+    @Autowired
+    private EmployeeRepository employeeRepository;
 
     @Autowired
     public LeaveService(LeaveRepository leaveRepository, EmployeeLeaveBalanceRepository leaveBalanceRepository) {
@@ -50,8 +58,22 @@ public class LeaveService {
         return leaveBalanceRepository.findLeaveBalanceByEmployeeId(employeeId);
     }
 
-    public List<Leave> getLeaveRequestsByEmployeeId(Long employeeId) {
-        return leaveRepository.findLeaveRequestsByEmployeeId(employeeId);
+    public List<LeaveDto> getLeaveRequestsByEmployeeId(Long employeeId) {
+        List<Leave> leaves = leaveRepository.findLeaveRequestsByEmployeeId(employeeId);
+        return leaves.stream()
+                .map(leave -> {
+                    LeaveDto leaveDto = new LeaveDto();
+                    Employee employee = employeeRepository.findById(employeeId).orElseThrow(() -> new IllegalArgumentException("Employee not found"));
+                    leaveDto.setEmployee(new EmployeeNameWithIdDto(employee.getEmployeeId(), employee.getName()));
+                    leaveDto.setLeaveType(leave.getLeaveType());
+                    leaveDto.setStartDate(leave.getStartDate());
+                    leaveDto.setEndDate(leave.getEndDate());
+                    leaveDto.setLeaveStatus(leave.getStatus());
+                    leaveDto.setLeaveAmount(leave.getLeaveAmount());
+                    leaveDto.setReason(leave.getReason());
+                    return leaveDto;
+                })
+                .collect(Collectors.toList());
     }
 
     public Leave createLeaveRequest(Leave leave) {
