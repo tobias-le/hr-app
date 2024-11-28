@@ -1,10 +1,13 @@
 package cz.cvut.fel.pm2.timely_be.service;
 
+import cz.cvut.fel.pm2.timely_be.dto.LeaveRequestDto;
 import cz.cvut.fel.pm2.timely_be.enums.RequestStatus;
 import cz.cvut.fel.pm2.timely_be.enums.LeaveType;
+import cz.cvut.fel.pm2.timely_be.model.Employee;
 import cz.cvut.fel.pm2.timely_be.model.EmployeeLeaveBalance;
 import cz.cvut.fel.pm2.timely_be.model.Leave;
 import cz.cvut.fel.pm2.timely_be.repository.EmployeeLeaveBalanceRepository;
+import cz.cvut.fel.pm2.timely_be.repository.EmployeeRepository;
 import cz.cvut.fel.pm2.timely_be.repository.LeaveRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -13,6 +16,7 @@ import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
 import java.util.List;
+import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
@@ -21,6 +25,9 @@ import static org.mockito.Mockito.*;
 public class LeaveServiceTest {
     @Mock
     private LeaveRepository leaveRepository;
+
+    @Mock
+    private EmployeeRepository employeeRepository;
 
     @Mock
     private EmployeeLeaveBalanceRepository leaveBalanceRepository;
@@ -179,15 +186,20 @@ public class LeaveServiceTest {
 //    @Test
 //    public void testGetPendingRequests() {
 //        Leave leave = new Leave();
+//        leave.setEmployeeId(1L); // Нужно установить employeeId
 //        leave.setStatus(RequestStatus.PENDING);
+//        EmployeeLeaveBalance balance = new EmployeeLeaveBalance();
+//        Employee employee = new Employee();
+//        employee.setEmployeeId(1L);
+//        employee.setName("Test Employee");
 //
 //        when(leaveRepository.findByPendingStatus(RequestStatus.PENDING)).thenReturn(List.of(leave));
+//        when(employeeRepository.findById(anyLong())).thenReturn(Optional.of(employee));
+//        when(leaveBalanceRepository.findLeaveBalanceByEmployeeId(anyLong())).thenReturn(balance);
 //
-//        List<Leave> result = leaveService.getPendingRequests();
+//        List<LeaveRequestDto> result = leaveService.getPendingRequests();
 //
-//        assertNotNull(result);
 //        assertEquals(1, result.size());
-//        assertEquals(RequestStatus.PENDING, result.get(0).getStatus());
 //    }
 
     @Test
