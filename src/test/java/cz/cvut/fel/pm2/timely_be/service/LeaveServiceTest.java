@@ -245,6 +245,58 @@ public class LeaveServiceTest {
     }
 
     @Test
+    public void testApproveLeaveRequest2() {
+        Long leaveId = 1L;
+        Leave leave = new Leave();
+        leave.setId(leaveId);
+        leave.setEmployeeId(leaveId);
+        leave.setLeaveAmount(1);
+        leave.setStatus(RequestStatus.PENDING);
+        leave.setLeaveType(LeaveType.SICK_LEAVE);
+        EmployeeLeaveBalance balance = new EmployeeLeaveBalance();
+        balance.setPersonalDaysLeft(1);
+        balance.setVacationDaysLeft(1);
+        balance.setSickDaysLeft(1);
+
+        when(leaveRepository.findByLeaveId(leaveId)).thenReturn(leave);
+        when(leaveRepository.save(any(Leave.class))).thenReturn(leave);
+        when(leaveBalanceRepository.findLeaveBalanceByEmployeeId(any(Long.class))).thenReturn(balance);
+
+        Leave result = leaveService.approveLeaveRequest(leaveId);
+
+        assertNotNull(result);
+        assertEquals(RequestStatus.APPROVED, result.getStatus());
+        assertEquals(balance.getSickDaysLeft(), 0);
+        verify(leaveRepository, times(1)).save(leave);
+    }
+
+    @Test
+    public void testApproveLeaveRequest3() {
+        Long leaveId = 1L;
+        Leave leave = new Leave();
+        leave.setId(leaveId);
+        leave.setEmployeeId(leaveId);
+        leave.setLeaveAmount(1);
+        leave.setStatus(RequestStatus.PENDING);
+        leave.setLeaveType(LeaveType.VACATION_LEAVE);
+        EmployeeLeaveBalance balance = new EmployeeLeaveBalance();
+        balance.setPersonalDaysLeft(1);
+        balance.setVacationDaysLeft(1);
+        balance.setSickDaysLeft(1);
+
+        when(leaveRepository.findByLeaveId(leaveId)).thenReturn(leave);
+        when(leaveRepository.save(any(Leave.class))).thenReturn(leave);
+        when(leaveBalanceRepository.findLeaveBalanceByEmployeeId(any(Long.class))).thenReturn(balance);
+
+        Leave result = leaveService.approveLeaveRequest(leaveId);
+
+        assertNotNull(result);
+        assertEquals(RequestStatus.APPROVED, result.getStatus());
+        assertEquals(balance.getVacationDaysLeft(), 0);
+        verify(leaveRepository, times(1)).save(leave);
+    }
+
+    @Test
     public void testRejectLeaveRequest() {
         Long leaveId = 1L;
         Leave leave = new Leave();
