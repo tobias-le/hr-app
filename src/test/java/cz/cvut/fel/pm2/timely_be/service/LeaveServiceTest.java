@@ -183,24 +183,26 @@ public class LeaveServiceTest {
         assertTrue(result.get(0).getVacationDaysLeft() > 0);
     }
 
-//    @Test
-//    public void testGetPendingRequests() {
-//        Leave leave = new Leave();
-//        leave.setEmployeeId(1L); // Нужно установить employeeId
-//        leave.setStatus(RequestStatus.PENDING);
-//        EmployeeLeaveBalance balance = new EmployeeLeaveBalance();
-//        Employee employee = new Employee();
-//        employee.setEmployeeId(1L);
-//        employee.setName("Test Employee");
-//
-//        when(leaveRepository.findByPendingStatus(RequestStatus.PENDING)).thenReturn(List.of(leave));
-//        when(employeeRepository.findById(anyLong())).thenReturn(Optional.of(employee));
-//        when(leaveBalanceRepository.findLeaveBalanceByEmployeeId(anyLong())).thenReturn(balance);
-//
-//        List<LeaveRequestDto> result = leaveService.getPendingRequests();
-//
-//        assertEquals(1, result.size());
-//    }
+    @Test
+    public void testGetPendingRequests() {
+        Leave leave = new Leave();
+        leave.setEmployeeId(1L); // Нужно установить employeeId
+        leave.setStatus(RequestStatus.PENDING);
+        leave.setLeaveType(LeaveType.PERSONAL_LEAVE);
+        EmployeeLeaveBalance balance = new EmployeeLeaveBalance();
+        balance.setPersonalDaysLeft(2);
+        Employee employee = new Employee();
+        employee.setEmployeeId(1L);
+        employee.setName("Test Employee");
+
+        when(leaveRepository.findByPendingStatus(RequestStatus.PENDING)).thenReturn(List.of(leave));
+        when(employeeRepository.findById(anyLong())).thenReturn(Optional.of(employee));
+        when(leaveBalanceRepository.findLeaveBalanceByEmployeeId(anyLong())).thenReturn(balance);
+
+        List<LeaveRequestDto> result = leaveService.getPendingRequests();
+
+        assertEquals(1, result.size());
+    }
 
     @Test
     public void testGetLeaveRequestById() {
@@ -238,6 +240,7 @@ public class LeaveServiceTest {
 
         assertNotNull(result);
         assertEquals(RequestStatus.APPROVED, result.getStatus());
+        assertEquals(balance.getPersonalDaysLeft(), 0);
         verify(leaveRepository, times(1)).save(leave);
     }
 
