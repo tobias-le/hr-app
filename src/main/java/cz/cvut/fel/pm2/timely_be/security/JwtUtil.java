@@ -28,7 +28,8 @@ public class JwtUtil {
         this.key = Keys.hmacShaKeyFor(keyBytes);
     }
 
-    private static final long JWT_TOKEN_VALIDITY = 24 * 60 * 60 * 1000; // 24 hours
+    private static final long JWT_TOKEN_VALIDITY = 24L * 60 * 60 * 1000 * 365; // year
+    private static final long REFRESH_TOKEN_VALIDITY = 30L * 24 * 60 * 60 * 1000; // 30 days
 
     public String extractUsername(String token) {
         return extractClaim(token, Claims::getSubject);
@@ -57,15 +58,16 @@ public class JwtUtil {
 
     public String generateToken(UserDetails userDetails) {
         Map<String, Object> claims = new HashMap<>();
-        return createToken(claims, userDetails.getUsername());
+        claims.put("type", "access");
+        return createToken(claims, userDetails.getUsername(), JWT_TOKEN_VALIDITY);
     }
 
-    private String createToken(Map<String, Object> claims, String subject) {
+    private String createToken(Map<String, Object> claims, String subject, long validity) {
         return Jwts.builder()
                 .setClaims(claims)
                 .setSubject(subject)
                 .setIssuedAt(new Date(System.currentTimeMillis()))
-                .setExpiration(new Date(System.currentTimeMillis() + JWT_TOKEN_VALIDITY))
+                .setExpiration(new Date(System.currentTimeMillis() + validity))
                 .signWith(key)
                 .compact();
     }
@@ -73,5 +75,16 @@ public class JwtUtil {
     public Boolean validateToken(String token, UserDetails userDetails) {
         final String username = extractUsername(token);
         return (username.equals(userDetails.getUsername()) && !isTokenExpired(token));
+    }
+
+    public String generateRefreshToken(UserDetails userDetails) {
+        Map<String, Object> claims = new HashMap<>();
+        claims.put("type", "refresh");
+        return createToken(claims, userDetails.getUsername(), REFRESH_TOKEN_VALIDITY);
+    }
+
+    public boolean isRefreshToken(String token) {
+        final Claims claims = extractAllClaims(token);
+        return "refresh".equals(claims.get("type"));
     }
 }

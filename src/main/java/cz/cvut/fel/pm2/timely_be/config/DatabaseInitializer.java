@@ -12,11 +12,9 @@ import org.springframework.boot.CommandLineRunner;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
-import java.time.DayOfWeek;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
-import java.time.temporal.TemporalAdjusters;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -208,7 +206,7 @@ public class DatabaseInitializer {
     private static void initializeAttendanceRecords(AttendanceRecordRepository attendanceRecordRepository,
                                                   List<Employee> employees) {
         // Get next Monday's date
-        LocalDate nextMonday = LocalDate.now().with(TemporalAdjusters.next(DayOfWeek.MONDAY));
+        LocalDate now = LocalDate.now();
         
         // Create records in batches to reduce memory usage
         int batchSize = 100;
@@ -219,7 +217,7 @@ public class DatabaseInitializer {
             
             List<Project> employeeProjects = employee.getCurrentProjects();
             for (int i = 0; i < 5; i++) { // Monday to Friday
-                LocalDate date = nextMonday.plusDays(i);
+                LocalDate date = now.plusDays(i);
                 Project randomProject = employeeProjects.get(random.nextInt(employeeProjects.size()));
                 
                 AttendanceRecord record = new AttendanceRecord();
