@@ -70,4 +70,11 @@ public interface TeamRepository extends JpaRepository<Team, Long> {
            "WHERE :employeeId IN (SELECT m.employeeId FROM t.members m) " +
            "AND t.deleted = false")
     Optional<Team> findTeamByEmployeeId(@Param("employeeId") Long employeeId);
+
+    @Query("SELECT t FROM teams t " +
+           "LEFT JOIN FETCH t.members " +
+           "LEFT JOIN FETCH t.parentTeam " +
+           "WHERE t.manager.employeeId = :managerId " +
+           "AND t.deleted = false")
+    Optional<Team> findTeamByManagerId(@Param("managerId") Long managerId);
 }

@@ -74,8 +74,14 @@ public class TeamController {
     }
 
     @GetMapping("/by-employee/{employeeId}")
-    @Operation(summary = "Get team by employee ID", description = "Returns the team details for a specific employee")
+    @Operation(summary = "Get team by employee ID", description = "Returns the team details for a specific employee returns null if the employee is not in a team")
     public ResponseEntity<TeamDTO> getTeamByEmployeeId(@PathVariable Long employeeId) {
         return ResponseEntity.ok(teamService.getTeamByEmployeeId(employeeId));
+    }
+
+    @GetMapping("/by-manager/{managerId}")
+    @Operation(summary = "Get team by manager ID", description = "Returns the team details for a specific manager returns null if the manager is not in a team")
+    public ResponseEntity<TeamDTO> getTeamByManagerId(@PathVariable Long managerId) {
+        return ResponseEntity.ok(teamService.getTeamByManagerId(managerId));
     }
 }

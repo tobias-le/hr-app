@@ -155,12 +155,26 @@ public class TeamService {
     }
 
     public TeamDTO getTeamByEmployeeId(Long employeeId) {
-        if (!employeeRepository.existsById(employeeId)) {
-            throw new IllegalArgumentException("Employee not found");
+        var employee = employeeRepository.findById(employeeId)
+                .orElseThrow(() -> new IllegalArgumentException("Employee not found"));
+
+        if (employee.getTeam() == null) {
+            return null;
         }
         
         Team team = teamRepository.findTeamByEmployeeId(employeeId)
                 .orElseThrow(() -> new IllegalArgumentException("No team found for employee"));
+                
+        return MapperUtils.toTeamDto(team);
+    }
+
+    public TeamDTO getTeamByManagerId(Long managerId) {
+        if (!employeeRepository.existsById(managerId)) {
+            throw new IllegalArgumentException("Employee not found");
+        }
+        
+        Team team = teamRepository.findTeamByManagerId(managerId)
+                .orElse(null);
                 
         return MapperUtils.toTeamDto(team);
     }
