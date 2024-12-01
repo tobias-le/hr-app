@@ -9,5 +9,4 @@ public class TimelyBeApplication {
     public static void main(String[] args) {
         SpringApplication.run(TimelyBeApplication.class, args);
     }
-
 }

@@ -1,10 +1,13 @@
 package cz.cvut.fel.pm2.timely_be.service;
 
+import cz.cvut.fel.pm2.timely_be.dto.LeaveRequestDto;
 import cz.cvut.fel.pm2.timely_be.enums.RequestStatus;
 import cz.cvut.fel.pm2.timely_be.enums.LeaveType;
+import cz.cvut.fel.pm2.timely_be.model.Employee;
 import cz.cvut.fel.pm2.timely_be.model.EmployeeLeaveBalance;
 import cz.cvut.fel.pm2.timely_be.model.Leave;
 import cz.cvut.fel.pm2.timely_be.repository.EmployeeLeaveBalanceRepository;
+import cz.cvut.fel.pm2.timely_be.repository.EmployeeRepository;
 import cz.cvut.fel.pm2.timely_be.repository.LeaveRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -13,6 +16,7 @@ import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
 import java.util.List;
+import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
@@ -21,6 +25,9 @@ import static org.mockito.Mockito.*;
 public class LeaveServiceTest {
     @Mock
     private LeaveRepository leaveRepository;
+
+    @Mock
+    private EmployeeRepository employeeRepository;
 
     @Mock
     private EmployeeLeaveBalanceRepository leaveBalanceRepository;
@@ -179,15 +186,22 @@ public class LeaveServiceTest {
     @Test
     public void testGetPendingRequests() {
         Leave leave = new Leave();
+        leave.setEmployeeId(1L); // Нужно установить employeeId
         leave.setStatus(RequestStatus.PENDING);
+        leave.setLeaveType(LeaveType.PERSONAL_LEAVE);
+        EmployeeLeaveBalance balance = new EmployeeLeaveBalance();
+        balance.setPersonalDaysLeft(2);
+        Employee employee = new Employee();
+        employee.setEmployeeId(1L);
+        employee.setName("Test Employee");
 
         when(leaveRepository.findByPendingStatus(RequestStatus.PENDING)).thenReturn(List.of(leave));
+        when(employeeRepository.findById(anyLong())).thenReturn(Optional.of(employee));
+        when(leaveBalanceRepository.findLeaveBalanceByEmployeeId(anyLong())).thenReturn(balance);
 
-        List<Leave> result = leaveService.getPendingRequests();
+        List<LeaveRequestDto> result = leaveService.getPendingRequests();
 
-        assertNotNull(result);
         assertEquals(1, result.size());
-        assertEquals(RequestStatus.PENDING, result.get(0).getStatus());
     }
 
     @Test
@@ -209,15 +223,76 @@ public class LeaveServiceTest {
         Long leaveId = 1L;
         Leave leave = new Leave();
         leave.setId(leaveId);
+        leave.setEmployeeId(leaveId);
+        leave.setLeaveAmount(1);
         leave.setStatus(RequestStatus.PENDING);
+        leave.setLeaveType(LeaveType.PERSONAL_LEAVE);
+        EmployeeLeaveBalance balance = new EmployeeLeaveBalance();
+        balance.setPersonalDaysLeft(1);
+        balance.setVacationDaysLeft(1);
+        balance.setSickDaysLeft(1);
 
         when(leaveRepository.findByLeaveId(leaveId)).thenReturn(leave);
         when(leaveRepository.save(any(Leave.class))).thenReturn(leave);
+        when(leaveBalanceRepository.findLeaveBalanceByEmployeeId(any(Long.class))).thenReturn(balance);
 
         Leave result = leaveService.approveLeaveRequest(leaveId);
 
         assertNotNull(result);
         assertEquals(RequestStatus.APPROVED, result.getStatus());
+        assertEquals(balance.getPersonalDaysLeft(), 0);
+        verify(leaveRepository, times(1)).save(leave);
+    }
+
+    @Test
+    public void testApproveLeaveRequest2() {
+        Long leaveId = 1L;
+        Leave leave = new Leave();
+        leave.setId(leaveId);
+        leave.setEmployeeId(leaveId);
+        leave.setLeaveAmount(1);
+        leave.setStatus(RequestStatus.PENDING);
+        leave.setLeaveType(LeaveType.SICK_LEAVE);
+        EmployeeLeaveBalance balance = new EmployeeLeaveBalance();
+        balance.setPersonalDaysLeft(1);
+        balance.setVacationDaysLeft(1);
+        balance.setSickDaysLeft(1);
+
+        when(leaveRepository.findByLeaveId(leaveId)).thenReturn(leave);
+        when(leaveRepository.save(any(Leave.class))).thenReturn(leave);
+        when(leaveBalanceRepository.findLeaveBalanceByEmployeeId(any(Long.class))).thenReturn(balance);
+
+        Leave result = leaveService.approveLeaveRequest(leaveId);
+
+        assertNotNull(result);
+        assertEquals(RequestStatus.APPROVED, result.getStatus());
+        assertEquals(balance.getSickDaysLeft(), 0);
+        verify(leaveRepository, times(1)).save(leave);
+    }
+
+    @Test
+    public void testApproveLeaveRequest3() {
+        Long leaveId = 1L;
+        Leave leave = new Leave();
+        leave.setId(leaveId);
+        leave.setEmployeeId(leaveId);
+        leave.setLeaveAmount(1);
+        leave.setStatus(RequestStatus.PENDING);
+        leave.setLeaveType(LeaveType.VACATION_LEAVE);
+        EmployeeLeaveBalance balance = new EmployeeLeaveBalance();
+        balance.setPersonalDaysLeft(1);
+        balance.setVacationDaysLeft(1);
+        balance.setSickDaysLeft(1);
+
+        when(leaveRepository.findByLeaveId(leaveId)).thenReturn(leave);
+        when(leaveRepository.save(any(Leave.class))).thenReturn(leave);
+        when(leaveBalanceRepository.findLeaveBalanceByEmployeeId(any(Long.class))).thenReturn(balance);
+
+        Leave result = leaveService.approveLeaveRequest(leaveId);
+
+        assertNotNull(result);
+        assertEquals(RequestStatus.APPROVED, result.getStatus());
+        assertEquals(balance.getVacationDaysLeft(), 0);
         verify(leaveRepository, times(1)).save(leave);
     }
 
