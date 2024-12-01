@@ -1,5 +1,6 @@
 package cz.cvut.fel.pm2.timely_be.service;
 
+import cz.cvut.fel.pm2.timely_be.dto.EmployeeDto;
 import cz.cvut.fel.pm2.timely_be.dto.TeamDTO;
 import cz.cvut.fel.pm2.timely_be.dto.TeamNameWithIdDto;
 import cz.cvut.fel.pm2.timely_be.mapper.MapperUtils;
@@ -83,6 +84,21 @@ public class TeamService {
     public Team updateTeam(Long teamId, TeamDTO teamDTO) {
         Team team = teamRepository.findById(teamId)
                 .orElseThrow(() -> new IllegalArgumentException("Team not found"));
+        
+        // Remove team association from previous members who are not in the new member list
+        if (team.getMembers() != null) {
+            Set<Long> newMemberIds = teamDTO.getMembers().stream()
+                    .map(EmployeeDto::getId)
+                    .collect(Collectors.toSet());
+            
+            team.getMembers().stream()
+                    .filter(member -> !newMemberIds.contains(member.getEmployeeId()))
+                    .forEach(member -> {
+                        member.setTeam(null);
+                        employeeRepository.save(member);
+                    });
+        }
+
         toTeam(teamDTO, team);
         return teamRepository.save(team);
     }
@@ -108,6 +124,16 @@ public class TeamService {
                 employeeRepository.save(member);
             });
         }
+        
+        // Clear the manager reference
+        Employee manager = team.getManager();
+        if (manager != null) {
+            team.setManager(null);
+            employeeRepository.save(manager);
+        }
+        
+        // Clear the members set
+        team.setMembers(null);
         
         team.setDeleted(true);
         teamRepository.save(team);
