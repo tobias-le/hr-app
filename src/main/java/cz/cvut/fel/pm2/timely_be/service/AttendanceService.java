@@ -165,6 +165,7 @@ public class AttendanceService {
         attendanceRecord.setDate(attendanceRecordDto.getDate());
         attendanceRecord.setClockInTime(attendanceRecordDto.getClockInTime());
         attendanceRecord.setClockOutTime(attendanceRecordDto.getClockOutTime());
+        attendanceRecord.setDescription(attendanceRecordDto.getDescription());
         attendanceRecord.setStatus(RequestStatus.requestStatusFromString(attendanceRecordDto.getStatus()));
         return attendanceRecordRepository.save(attendanceRecord);
     }
