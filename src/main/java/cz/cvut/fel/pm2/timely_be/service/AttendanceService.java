@@ -165,6 +165,7 @@ public class AttendanceService {
         attendanceRecord.setDate(attendanceRecordDto.getDate());
         attendanceRecord.setClockInTime(attendanceRecordDto.getClockInTime());
         attendanceRecord.setClockOutTime(attendanceRecordDto.getClockOutTime());
+        attendanceRecord.setDescription(attendanceRecordDto.getDescription());
         attendanceRecord.setStatus(RequestStatus.requestStatusFromString(attendanceRecordDto.getStatus()));
         attendanceRecord.setDescription(attendanceRecordDto.getDescription());      //tady chybělo přepsání fieldu
         return attendanceRecordRepository.save(attendanceRecord);

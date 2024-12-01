@@ -296,4 +296,122 @@ public class ProjectServiceTest {
         assertTrue(newMember.getCurrentProjects().contains(result));
     }
 
+    @Test
+    public void testCreateProject_DuplicateNameThrowsException() {
+        // Given
+        var projectDto = new ProjectDto();
+        projectDto.setName("Existing Project");
+        
+        when(projectRepository.findByNameAndDeletedFalse(projectDto.getName()))
+                .thenReturn(Optional.of(new Project()));
+
+        // When & Then
+        Exception exception = assertThrows(IllegalArgumentException.class, 
+                () -> projectService.createProject(projectDto));
+        assertEquals("Project with name 'Existing Project' already exists", exception.getMessage());
+    }
+
+    @Test
+    public void testCreateProject_ReusesDeletedProject() {
+        // Given
+        var manager = createEmployee(FULL_TIME);
+        manager.setEmployeeId(1L);  // Manager ID from projectDto
+        
+        var member = createEmployee(FULL_TIME);
+        member.setEmployeeId(2L);   // Member ID from setUp()
+        
+        var deletedProject = createProject();
+        deletedProject.setDeleted(true);
+        
+        projectDto.setManagerId(manager.getEmployeeId());
+        projectDto.setMembers(Set.of(toEmployeeDto(member)));
+        
+        when(projectRepository.findByNameAndDeletedFalse(projectDto.getName()))
+                .thenReturn(Optional.empty());
+        when(projectRepository.findByNameAndDeletedTrue(projectDto.getName()))
+                .thenReturn(Optional.of(deletedProject));
+        when(employeeRepository.findById(manager.getEmployeeId()))
+                .thenReturn(Optional.of(manager));
+        when(employeeRepository.findById(member.getEmployeeId()))
+                .thenReturn(Optional.of(member));
+        when(projectRepository.save(any(Project.class)))
+                .thenAnswer(i -> i.getArgument(0));
+
+        // When
+        var result = projectService.createProject(projectDto);
+
+        // Then
+        assertNotNull(result);
+        assertEquals(projectDto.getName(), result.getName());
+        assertFalse(result.isDeleted());
+        assertTrue(result.getMembers().contains(manager), "Manager should be automatically added as a member");
+        assertTrue(result.getMembers().contains(member), "Original member should be present");
+    }
+
+    @Test
+    public void testUpdateProject_DuplicateNameThrowsException() {
+        // Given
+        var existingProject = createProject();
+        existingProject.setProjectId(1L);
+        
+        var anotherProject = createProject();
+        anotherProject.setProjectId(2L);
+        
+        projectDto.setName("Another Project");
+        
+        when(projectRepository.findById(1L)).thenReturn(Optional.of(existingProject));
+        when(projectRepository.findByNameAndDeletedFalse(projectDto.getName()))
+                .thenReturn(Optional.of(anotherProject));
+
+        // When & Then
+        Exception exception = assertThrows(IllegalArgumentException.class, 
+                () -> projectService.updateProject(1L, projectDto));
+        assertEquals("Project with name 'Another Project' already exists", exception.getMessage());
+    }
+
+    @Test
+    public void testGetProjectsByEmployeeId_EmployeeNotFound() {
+        // Given
+        when(employeeRepository.findById(anyLong())).thenReturn(Optional.empty());
+
+        // When & Then
+        Exception exception = assertThrows(IllegalArgumentException.class, 
+                () -> projectService.getProjectsByEmployeeId(1L));
+        assertEquals("Employee not found", exception.getMessage());
+    }
+
+    @Test
+    public void testDeleteProject_WithNullMembers() {
+        // Given
+        var project = createProject();
+        project.setMembers(null);
+        
+        when(projectRepository.findById(anyLong())).thenReturn(Optional.of(project));
+        when(projectRepository.save(any(Project.class))).thenReturn(project);
+
+        // When & Then
+        assertDoesNotThrow(() -> projectService.deleteProject(1L));
+        assertTrue(project.isDeleted());
+    }
+
+    @Test
+    public void testDeleteProject_WithMembers() {
+        // Given
+        var project = createProject();
+        var member = createEmployee(FULL_TIME);
+        member.setCurrentProjects(new ArrayList<>(List.of(project)));
+        project.setMembers(Set.of(member));
+        
+        when(projectRepository.findById(anyLong())).thenReturn(Optional.of(project));
+        when(projectRepository.save(any(Project.class))).thenReturn(project);
+        when(employeeRepository.save(any(Employee.class))).thenReturn(member);
+
+        // When
+        projectService.deleteProject(1L);
+
+        // Then
+        assertTrue(project.isDeleted());
+        assertFalse(member.getCurrentProjects().contains(project));
+    }
+
 }

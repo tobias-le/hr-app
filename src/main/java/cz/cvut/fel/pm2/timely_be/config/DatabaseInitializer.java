@@ -134,57 +134,56 @@ public class DatabaseInitializer {
     }
 
     private static void initializeTeams(TeamRepository teamRepository, List<Employee> employees) {
-        // Create main departments under CTO
-        Team technologyDepartment = createTeam("Technology Department", findEmployeeByTitle(employees, "Chief Technology Officer"));
-        Team hrDepartment = createTeam("HR Department", findEmployeeByTitle(employees, "HR Director"));
-        Team financeDepartment = createTeam("Finance Department", findEmployeeByTitle(employees, "Chief Financial Officer"));
+        // Create main departments under CEO
+        Team executiveTeam = createTeam("Executive Team", findEmployeeByTitle(employees, "Chief Executive Officer"));
+        Team operationsTeam = createTeam("Operations Department", findEmployeeByTitle(employees, "Chief Operations Officer"));
+        Team technologyTeam = createTeam("Technology Department", findEmployeeByTitle(employees, "Chief Technology Officer"));
         
-        // Create sub-teams under Technology Department
+        // Create sub-teams
         Team developmentTeam = createTeam("Development Team", findEmployeeByTitle(employees, "Development Director"));
-        developmentTeam.setParentTeam(technologyDepartment);
+        developmentTeam.setParentTeam(technologyTeam);
         
         Team infrastructureTeam = createTeam("Infrastructure Team", findEmployeeByTitle(employees, "Infrastructure Manager"));
-        infrastructureTeam.setParentTeam(technologyDepartment);
+        infrastructureTeam.setParentTeam(technologyTeam);
         
-        Team securityTeam = createTeam("Security Team", findEmployeeByTitle(employees, "Security Specialist"));
-        securityTeam.setParentTeam(infrastructureTeam);  // Security reports to Infrastructure
+        Team hrTeam = createTeam("HR Team", findEmployeeByTitle(employees, "HR Director"));
+        hrTeam.setParentTeam(operationsTeam);
         
-        // Use ArrayList to make the list mutable
+        Team financeTeam = createTeam("Finance Team", findEmployeeByTitle(employees, "Finance Director"));
+        financeTeam.setParentTeam(operationsTeam);
+        
         List<Team> teams = new ArrayList<>(Arrays.asList(
-            technologyDepartment, hrDepartment, financeDepartment,
-            developmentTeam, infrastructureTeam, securityTeam
+            executiveTeam, operationsTeam, technologyTeam,
+            developmentTeam, infrastructureTeam, hrTeam, financeTeam
         ));
 
         // Assign employees to teams based on their job titles
         for (Employee employee : employees) {
             String title = employee.getJobTitle().toLowerCase();
-            String name = employee.getName().toLowerCase();
             
-            // C-Suite assignments
-            if (title.contains("chief technology officer")) {
-                assignEmployeeToTeam(employee, technologyDepartment);
-            } else if (title.contains("chief financial officer")) {
-                assignEmployeeToTeam(employee, financeDepartment);
+            // Executive Team assignments
+            if (title.contains("chief")) {
+                assignEmployeeToTeam(employee, executiveTeam);
             }
-            // Department-level assignments
-            else if (title.contains("hr")) {
-                assignEmployeeToTeam(employee, hrDepartment);
-            } else if (title.contains("finance") || title.contains("accountant") || title.contains("payroll")) {
-                assignEmployeeToTeam(employee, financeDepartment);
-            }
-            // Technology sub-team assignments
-            else if (title.contains("developer") || title.contains("frontend") || title.contains("backend") || 
-                     title.contains("qa engineer") || title.contains("development director")) {
+            // Technology Department assignments
+            else if (title.contains("developer") || title.contains("frontend") || 
+                    title.contains("backend") || title.contains("qa") || 
+                    title.contains("devops") || title.contains("development director")) {
                 assignEmployeeToTeam(employee, developmentTeam);
-            } else if (title.contains("infrastructure") || title.contains("network") || 
-                       title.contains("cloud architect") || title.contains("system admin")) {
-                assignEmployeeToTeam(employee, infrastructureTeam);
-            } else if (title.contains("security")) {
-                assignEmployeeToTeam(employee, securityTeam);
             }
-            // CEO assignment
-            else if (name.contains("john smith") || title.contains("chief executive officer")) {
-                assignEmployeeToTeam(employee, technologyDepartment);  // CEO joins Technology Department
+            else if (title.contains("infrastructure") || title.contains("network") || 
+                    title.contains("cloud") || title.contains("system") || 
+                    title.contains("security")) {
+                assignEmployeeToTeam(employee, infrastructureTeam);
+            }
+            // Operations Department assignments
+            else if (title.contains("hr") || title.contains("recruitment") || 
+                    title.contains("training")) {
+                assignEmployeeToTeam(employee, hrTeam);
+            }
+            else if (title.contains("finance") || title.contains("accountant") || 
+                    title.contains("payroll") || title.contains("financial")) {
+                assignEmployeeToTeam(employee, financeTeam);
             }
         }
 

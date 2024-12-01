@@ -1,5 +1,6 @@
 package cz.cvut.fel.pm2.timely_be.service;
 
+import cz.cvut.fel.pm2.timely_be.dto.EmployeeDto;
 import cz.cvut.fel.pm2.timely_be.dto.TeamDTO;
 import cz.cvut.fel.pm2.timely_be.dto.TeamNameWithIdDto;
 import cz.cvut.fel.pm2.timely_be.mapper.MapperUtils;
@@ -17,6 +18,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -34,8 +36,17 @@ public class TeamService {
 
     @Transactional
     public Team createTeam(TeamDTO teamDTO) {
-        Team team = new Team();
+        // Check if active team with same name exists
+        if (teamRepository.findByNameAndDeletedFalse(teamDTO.getName()).isPresent()) {
+            throw new IllegalArgumentException("Team with name '" + teamDTO.getName() + "' already exists");
+        }
+
+        // Check if deleted team with same name exists and reuse it
+        Optional<Team> deletedTeam = teamRepository.findByNameAndDeletedTrue(teamDTO.getName());
+        Team team = deletedTeam.orElse(new Team());
+        
         toTeam(teamDTO, team);
+        team.setDeleted(false);
         return teamRepository.save(team);
     }
 
@@ -83,6 +94,27 @@ public class TeamService {
     public Team updateTeam(Long teamId, TeamDTO teamDTO) {
         Team team = teamRepository.findById(teamId)
                 .orElseThrow(() -> new IllegalArgumentException("Team not found"));
+        
+        // Check if another active team with same name exists
+        Optional<Team> existingTeam = teamRepository.findByNameAndDeletedFalse(teamDTO.getName());
+        if (existingTeam.isPresent() && !existingTeam.get().getId().equals(teamId)) {
+            throw new IllegalArgumentException("Team with name '" + teamDTO.getName() + "' already exists");
+        }
+        
+        // Remove team association from previous members who are not in the new member list
+        if (team.getMembers() != null) {
+            Set<Long> newMemberIds = teamDTO.getMembers().stream()
+                    .map(EmployeeDto::getId)
+                    .collect(Collectors.toSet());
+            
+            team.getMembers().stream()
+                    .filter(member -> !newMemberIds.contains(member.getEmployeeId()))
+                    .forEach(member -> {
+                        member.setTeam(null);
+                        employeeRepository.save(member);
+                    });
+        }
+
         toTeam(teamDTO, team);
         return teamRepository.save(team);
     }
@@ -109,11 +141,22 @@ public class TeamService {
             });
         }
         
+        // Clear the manager reference
+        Employee manager = team.getManager();
+        if (manager != null) {
+            team.setManager(null);
+            employeeRepository.save(manager);
+        }
+        
+        // Clear the members set
+        team.setMembers(null);
+        
         team.setDeleted(true);
         teamRepository.save(team);
         log.info("Successfully soft-deleted team with ID: {}", teamId);
     }
 
+    @Transactional
     private void toTeam(TeamDTO teamDTO, Team team) {
         team.setName(teamDTO.getName());
         
@@ -128,6 +171,9 @@ public class TeamService {
                 .map(employeeDto -> employeeRepository.findById(employeeDto.getId())
                         .orElseThrow(() -> new IllegalArgumentException("Employee with ID " + employeeDto.getId() + " not found")))
                 .collect(Collectors.toSet());
+        
+        // Update team reference for all members
+        newMembers.forEach(member -> member.setTeam(team));
         team.setMembers(newMembers);
 
         // Set parent team if provided
@@ -136,7 +182,7 @@ public class TeamService {
                     .orElseThrow(() -> new IllegalArgumentException("Parent team not found"));
             team.setParentTeam(parentTeam);
         } else {
-            team.setParentTeam(null);  // Clear parent team if none provided
+            team.setParentTeam(null);
         }
     }
 
@@ -155,13 +201,27 @@ public class TeamService {
     }
 
     public TeamDTO getTeamByEmployeeId(Long employeeId) {
-        if (!employeeRepository.existsById(employeeId)) {
-            throw new IllegalArgumentException("Employee not found");
+        var employee = employeeRepository.findById(employeeId)
+                .orElseThrow(() -> new IllegalArgumentException("Employee not found"));
+
+        if (employee.getTeam() == null) {
+            return null;
         }
         
         Team team = teamRepository.findTeamByEmployeeId(employeeId)
                 .orElseThrow(() -> new IllegalArgumentException("No team found for employee"));
                 
         return MapperUtils.toTeamDto(team);
+    }
+
+    public TeamDTO getTeamByManagerId(Long managerId) {
+        if (!employeeRepository.existsById(managerId)) {
+            throw new IllegalArgumentException("Employee not found");
+        }
+        
+        Team team = teamRepository.findTeamByManagerId(managerId)
+                .orElse(null);
+                
+        return team != null ? MapperUtils.toTeamDto(team) : null;
     }
 }

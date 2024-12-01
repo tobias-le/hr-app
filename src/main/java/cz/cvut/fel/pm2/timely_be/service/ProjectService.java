@@ -11,6 +11,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 import static cz.cvut.fel.pm2.timely_be.mapper.MapperUtils.toProjectDto;
@@ -29,8 +30,17 @@ public class ProjectService {
 
     @Transactional
     public Project createProject(ProjectDto projectDto) {
-        Project project = new Project();
+        // Check if active project with same name exists
+        if (projectRepository.findByNameAndDeletedFalse(projectDto.getName()).isPresent()) {
+            throw new IllegalArgumentException("Project with name '" + projectDto.getName() + "' already exists");
+        }
+
+        // Check if deleted project with same name exists and reuse it
+        Optional<Project> deletedProject = projectRepository.findByNameAndDeletedTrue(projectDto.getName());
+        Project project = deletedProject.orElse(new Project());
+        
         toProject(projectDto, project);
+        project.setDeleted(false);
         return projectRepository.save(project);
     }
 
@@ -60,8 +70,15 @@ public class ProjectService {
 
     @Transactional
     public Project updateProject(Long projectId, ProjectDto projectDto) {
-        var project = projectRepository.findById(projectId)
+        Project project = projectRepository.findById(projectId)
                 .orElseThrow(() -> new IllegalArgumentException("Project not found"));
+        
+        // Check if another active project with same name exists
+        Optional<Project> existingProject = projectRepository.findByNameAndDeletedFalse(projectDto.getName());
+        if (existingProject.isPresent() && !existingProject.get().getProjectId().equals(projectId)) {
+            throw new IllegalArgumentException("Project with name '" + projectDto.getName() + "' already exists");
+        }
+        
         toProject(projectDto, project);
         return projectRepository.save(project);
     }
@@ -85,15 +102,18 @@ public class ProjectService {
             newMembers.add(manager);
         }
         
+        // Remove project from old members that are not in new members list
         if (project.getMembers() != null) {
             project.getMembers().stream()
                     .filter(oldMember -> !newMembers.contains(oldMember))
                     .forEach(removedMember -> removedMember.getCurrentProjects().remove(project));
         }
         
+        // Add project to all new members
         newMembers.forEach(member -> {
             if (!member.getCurrentProjects().contains(project)) {
                 member.getCurrentProjects().add(project);
+                employeeRepository.save(member);  // Save the updated employee
             }
         });
         

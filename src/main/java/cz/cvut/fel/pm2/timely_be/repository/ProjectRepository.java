@@ -19,4 +19,10 @@ public interface ProjectRepository extends JpaRepository<Project, Long> {
     @NonNull
     @Query("SELECT p FROM projects p WHERE p.deleted = false")
     List<Project> findAll();
+
+    @Query("SELECT p FROM projects p WHERE p.name = :name AND p.deleted = false")
+    Optional<Project> findByNameAndDeletedFalse(@Param("name") String name);
+
+    @Query("SELECT p FROM projects p WHERE p.name = :name AND p.deleted = true")
+    Optional<Project> findByNameAndDeletedTrue(@Param("name") String name);
 }
