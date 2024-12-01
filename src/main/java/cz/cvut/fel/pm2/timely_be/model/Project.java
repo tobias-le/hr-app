@@ -9,6 +9,9 @@ import java.util.Set;
 import static jakarta.persistence.GenerationType.IDENTITY;
 
 @Entity(name = "projects")
+@Table(name = "projects", uniqueConstraints = {
+    @UniqueConstraint(columnNames = {"name"}, name = "uk_project_name")
+})
 @Data
 @ToString(exclude = {"members", "manager"})
 public class Project {

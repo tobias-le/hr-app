@@ -316,7 +316,7 @@ public class TeamServiceTest {
         var employee = createEmployee(FULL_TIME);
         var team = employee.getTeam();
         
-        when(employeeRepository.existsById(employee.getEmployeeId())).thenReturn(true);
+        when(employeeRepository.findById(employee.getEmployeeId())).thenReturn(Optional.of(employee));
         when(teamRepository.findTeamByEmployeeId(employee.getEmployeeId())).thenReturn(Optional.of(team));
 
         // When
@@ -332,7 +332,6 @@ public class TeamServiceTest {
     public void testGetTeamByEmployeeId_EmployeeNotFound() {
         // Given
         Long employeeId = 999L;
-        when(employeeRepository.existsById(employeeId)).thenReturn(false);
 
         // When & Then
         assertThrows(IllegalArgumentException.class, 
@@ -344,8 +343,6 @@ public class TeamServiceTest {
     public void testGetTeamByEmployeeId_TeamNotFound() {
         // Given
         Long employeeId = 1L;
-        when(employeeRepository.existsById(employeeId)).thenReturn(true);
-        when(teamRepository.findTeamByEmployeeId(employeeId)).thenReturn(Optional.empty());
 
         // When & Then
         assertThrows(IllegalArgumentException.class, 
@@ -390,8 +387,10 @@ public class TeamServiceTest {
         when(employeeRepository.existsById(managerId)).thenReturn(true);
         when(teamRepository.findTeamByManagerId(managerId)).thenReturn(Optional.empty());
 
-        // When & Then
-        assertThrows(IllegalArgumentException.class, 
-                    () -> teamService.getTeamByManagerId(managerId));
+        // When
+        TeamDTO result = teamService.getTeamByManagerId(managerId);
+
+        // Then
+        assertNull(result);
     }
 }

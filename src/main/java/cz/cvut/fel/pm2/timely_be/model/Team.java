@@ -10,7 +10,9 @@ import java.util.*;
 import static jakarta.persistence.GenerationType.IDENTITY;
 
 @Entity(name = "teams")
-@Table(name = "teams")
+@Table(name = "teams", uniqueConstraints = {
+    @UniqueConstraint(columnNames = {"name"}, name = "uk_team_name")
+})
 @Data
 @AllArgsConstructor
 @NoArgsConstructor

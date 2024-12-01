@@ -18,6 +18,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -35,8 +36,17 @@ public class TeamService {
 
     @Transactional
     public Team createTeam(TeamDTO teamDTO) {
-        Team team = new Team();
+        // Check if active team with same name exists
+        if (teamRepository.findByNameAndDeletedFalse(teamDTO.getName()).isPresent()) {
+            throw new IllegalArgumentException("Team with name '" + teamDTO.getName() + "' already exists");
+        }
+
+        // Check if deleted team with same name exists and reuse it
+        Optional<Team> deletedTeam = teamRepository.findByNameAndDeletedTrue(teamDTO.getName());
+        Team team = deletedTeam.orElse(new Team());
+        
         toTeam(teamDTO, team);
+        team.setDeleted(false);
         return teamRepository.save(team);
     }
 
@@ -84,6 +94,12 @@ public class TeamService {
     public Team updateTeam(Long teamId, TeamDTO teamDTO) {
         Team team = teamRepository.findById(teamId)
                 .orElseThrow(() -> new IllegalArgumentException("Team not found"));
+        
+        // Check if another active team with same name exists
+        Optional<Team> existingTeam = teamRepository.findByNameAndDeletedFalse(teamDTO.getName());
+        if (existingTeam.isPresent() && !existingTeam.get().getId().equals(teamId)) {
+            throw new IllegalArgumentException("Team with name '" + teamDTO.getName() + "' already exists");
+        }
         
         // Remove team association from previous members who are not in the new member list
         if (team.getMembers() != null) {
@@ -202,6 +218,6 @@ public class TeamService {
         Team team = teamRepository.findTeamByManagerId(managerId)
                 .orElse(null);
                 
-        return MapperUtils.toTeamDto(team);
+        return team != null ? MapperUtils.toTeamDto(team) : null;
     }
 }

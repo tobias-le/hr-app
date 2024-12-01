@@ -77,4 +77,10 @@ public interface TeamRepository extends JpaRepository<Team, Long> {
            "WHERE t.manager.employeeId = :managerId " +
            "AND t.deleted = false")
     Optional<Team> findTeamByManagerId(@Param("managerId") Long managerId);
+
+    @Query("SELECT t FROM teams t WHERE t.name = :name AND t.deleted = false")
+    Optional<Team> findByNameAndDeletedFalse(@Param("name") String name);
+
+    @Query("SELECT t FROM teams t WHERE t.name = :name AND t.deleted = true")
+    Optional<Team> findByNameAndDeletedTrue(@Param("name") String name);
 }
