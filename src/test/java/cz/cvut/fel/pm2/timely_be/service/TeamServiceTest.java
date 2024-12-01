@@ -15,6 +15,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.data.domain.PageRequest;
 
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
@@ -392,5 +393,217 @@ public class TeamServiceTest {
 
         // Then
         assertNull(result);
+    }
+
+    @Test
+    public void testCreateTeam_WithExistingName() {
+        // Given
+        var teamDTO = new TeamDTO();
+        teamDTO.setName("Existing Team");
+        
+        when(teamRepository.findByNameAndDeletedFalse(teamDTO.getName()))
+            .thenReturn(Optional.of(new Team()));
+
+        // When & Then
+        assertThrows(IllegalArgumentException.class, () -> teamService.createTeam(teamDTO));
+    }
+
+    @Test
+    public void testCreateTeam_ReuseDeletedTeam() {
+        // Given
+        var manager = createEmployee(FULL_TIME);
+        var deletedTeam = new Team();
+        deletedTeam.setId(1L);
+        deletedTeam.setDeleted(true);
+        
+        var teamDTO = new TeamDTO();
+        teamDTO.setName("Reused Team");
+        teamDTO.setManagerId(manager.getEmployeeId());
+        teamDTO.setMembers(Collections.emptySet());
+
+        when(teamRepository.findByNameAndDeletedFalse(teamDTO.getName()))
+            .thenReturn(Optional.empty());
+        when(teamRepository.findByNameAndDeletedTrue(teamDTO.getName()))
+            .thenReturn(Optional.of(deletedTeam));
+        when(employeeRepository.findById(manager.getEmployeeId()))
+            .thenReturn(Optional.of(manager));
+        when(teamRepository.save(any(Team.class)))
+            .thenAnswer(i -> i.getArgument(0));
+
+        // When
+        var result = teamService.createTeam(teamDTO);
+
+        // Then
+        assertNotNull(result);
+        assertEquals(1L, result.getId());
+        assertFalse(result.isDeleted());
+    }
+
+    @Test
+    public void testUpdateTeam_WithSameNameDifferentTeam() {
+        // Given
+        var existingTeam = new Team();
+        existingTeam.setId(2L);
+        existingTeam.setName("Existing Name");
+        
+        var teamDTO = new TeamDTO();
+        teamDTO.setName("Existing Name");
+
+        when(teamRepository.findById(1L))
+            .thenReturn(Optional.of(new Team()));
+        when(teamRepository.findByNameAndDeletedFalse(teamDTO.getName()))
+            .thenReturn(Optional.of(existingTeam));
+
+        // When & Then
+        assertThrows(IllegalArgumentException.class, 
+                    () -> teamService.updateTeam(1L, teamDTO));
+    }
+
+    @Test
+    public void testUpdateTeam_WithSameNameSameTeam() {
+        // Given
+        var manager = createEmployee(FULL_TIME);
+        var team = new Team();
+        team.setId(1L);
+        team.setName("Same Name");
+        
+        var teamDTO = new TeamDTO();
+        teamDTO.setName("Same Name");
+        teamDTO.setManagerId(manager.getEmployeeId());
+        teamDTO.setMembers(Collections.emptySet());
+
+        when(teamRepository.findById(1L))
+            .thenReturn(Optional.of(team));
+        when(teamRepository.findByNameAndDeletedFalse(teamDTO.getName()))
+            .thenReturn(Optional.of(team));
+        when(employeeRepository.findById(manager.getEmployeeId()))
+            .thenReturn(Optional.of(manager));
+        when(teamRepository.save(any(Team.class)))
+            .thenAnswer(i -> i.getArgument(0));
+
+        // When
+        var result = teamService.updateTeam(1L, teamDTO);
+
+        // Then
+        assertNotNull(result);
+        assertEquals("Same Name", result.getName());
+    }
+
+    @Test
+    public void testGetTeamDetails_WithComplexHierarchy() {
+        // Given
+        var grandparent = new Team();
+        grandparent.setId(1L);
+        grandparent.setName("Grandparent Team");
+
+        var parent = new Team();
+        parent.setId(2L);
+        parent.setName("Parent Team");
+        parent.setParentTeam(grandparent);
+
+        var child = new Team();
+        child.setId(3L);
+        child.setName("Child Team");
+        child.setParentTeam(parent);
+
+        when(teamRepository.findTeamWithMembersAndParent(3L))
+            .thenReturn(Optional.of(child));
+        when(teamRepository.findTeamWithCompleteHierarchy(3L))
+            .thenReturn(Arrays.asList(grandparent, parent, child));
+
+        // When
+        var result = teamService.getTeamDetails(3L);
+
+        // Then
+        assertNotNull(result);
+        assertEquals("Child Team", result.getName());
+        assertEquals("Parent Team", result.getParentTeam().getName());
+    }
+
+    @Test
+    public void testAutocompleteTeams_NullPattern() {
+        // When
+        var result = teamService.autocompleteTeams(null);
+
+        // Then
+        assertTrue(result.isEmpty());
+    }
+
+    @Test
+    public void testGetTeamByEmployeeId_EmployeeWithoutTeam() {
+        // Given
+        var employee = createEmployee(FULL_TIME);
+        employee.setTeam(null);
+
+        when(employeeRepository.findById(employee.getEmployeeId()))
+            .thenReturn(Optional.of(employee));
+
+        // When
+        var result = teamService.getTeamByEmployeeId(employee.getEmployeeId());
+
+        // Then
+        assertNull(result);
+    }
+
+    @Test
+    public void testUpdateTeam_WithParentTeam() {
+        // Given
+        var manager = createEmployee(FULL_TIME);
+        var parentTeam = new Team();
+        parentTeam.setId(1L);
+        
+        var teamDTO = new TeamDTO();
+        teamDTO.setName("Child Team");
+        teamDTO.setManagerId(manager.getEmployeeId());
+        teamDTO.setMembers(Collections.emptySet());
+        var parentTeamDto = new TeamDTO();
+        parentTeamDto.setTeamId(1L);
+        parentTeamDto.setName("Parent Team");
+        teamDTO.setParentTeam(parentTeamDto);
+
+        when(teamRepository.findById(2L))
+            .thenReturn(Optional.of(new Team()));
+        when(teamRepository.findById(1L))
+            .thenReturn(Optional.of(parentTeam));
+        when(employeeRepository.findById(manager.getEmployeeId()))
+            .thenReturn(Optional.of(manager));
+        when(teamRepository.save(any(Team.class)))
+            .thenAnswer(i -> i.getArgument(0));
+
+        // When
+        var result = teamService.updateTeam(2L, teamDTO);
+
+        // Then
+        assertNotNull(result);
+        assertEquals(parentTeam, result.getParentTeam());
+    }
+
+    @Test
+    public void testUpdateTeam_RemoveParentTeam() {
+        // Given
+        var manager = createEmployee(FULL_TIME);
+        var team = new Team();
+        team.setId(1L);
+        team.setParentTeam(new Team());
+        
+        var teamDTO = new TeamDTO();
+        teamDTO.setName("Updated Team");
+        teamDTO.setManagerId(manager.getEmployeeId());
+        teamDTO.setMembers(Collections.emptySet());
+        teamDTO.setParentTeam(null);
+
+        when(teamRepository.findById(1L))
+            .thenReturn(Optional.of(team));
+        when(employeeRepository.findById(manager.getEmployeeId()))
+            .thenReturn(Optional.of(manager));
+        when(teamRepository.save(any(Team.class)))
+            .thenAnswer(i -> i.getArgument(0));
+
+        // When
+        var result = teamService.updateTeam(1L, teamDTO);
+
+        // Then
+        assertNotNull(result);
+        assertNull(result.getParentTeam());
     }
 }
