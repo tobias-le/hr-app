@@ -156,6 +156,7 @@ public class TeamService {
         log.info("Successfully soft-deleted team with ID: {}", teamId);
     }
 
+    @Transactional
     private void toTeam(TeamDTO teamDTO, Team team) {
         team.setName(teamDTO.getName());
         
@@ -170,6 +171,9 @@ public class TeamService {
                 .map(employeeDto -> employeeRepository.findById(employeeDto.getId())
                         .orElseThrow(() -> new IllegalArgumentException("Employee with ID " + employeeDto.getId() + " not found")))
                 .collect(Collectors.toSet());
+        
+        // Update team reference for all members
+        newMembers.forEach(member -> member.setTeam(team));
         team.setMembers(newMembers);
 
         // Set parent team if provided
@@ -178,7 +182,7 @@ public class TeamService {
                     .orElseThrow(() -> new IllegalArgumentException("Parent team not found"));
             team.setParentTeam(parentTeam);
         } else {
-            team.setParentTeam(null);  // Clear parent team if none provided
+            team.setParentTeam(null);
         }
     }
 

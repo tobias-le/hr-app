@@ -102,15 +102,18 @@ public class ProjectService {
             newMembers.add(manager);
         }
         
+        // Remove project from old members that are not in new members list
         if (project.getMembers() != null) {
             project.getMembers().stream()
                     .filter(oldMember -> !newMembers.contains(oldMember))
                     .forEach(removedMember -> removedMember.getCurrentProjects().remove(project));
         }
         
+        // Add project to all new members
         newMembers.forEach(member -> {
             if (!member.getCurrentProjects().contains(project)) {
                 member.getCurrentProjects().add(project);
+                employeeRepository.save(member);  // Save the updated employee
             }
         });
         
