@@ -31,19 +31,6 @@ public class UserService implements UserDetailsService {
                 user.getEmail(), user.getPassword(), new ArrayList<>());
     }
 
-//    public User createUser(User user) {
-//        // Check if user already exists
-//        if (userRepository.findByEmail(user.getEmail()).isPresent()) {
-//            throw new RuntimeException("User already exists with email: " + user.getEmail());
-//        }
-//
-//        // Encode password
-//        user.setPassword(passwordEncoder.encode(user.getPassword()));
-//
-//        // Save user
-//        return userRepository.save(user);
-//    }
-
     @Transactional
     public void createUsers(List<User> users) {
         // Encode passwords for all users

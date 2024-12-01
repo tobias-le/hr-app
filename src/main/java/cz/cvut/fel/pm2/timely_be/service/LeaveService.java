@@ -1,15 +1,20 @@
 package cz.cvut.fel.pm2.timely_be.service;
 
+import cz.cvut.fel.pm2.timely_be.dto.LeaveRequestDto;
 import cz.cvut.fel.pm2.timely_be.enums.RequestStatus;
 import cz.cvut.fel.pm2.timely_be.enums.LeaveType;
+import cz.cvut.fel.pm2.timely_be.mapper.MapperUtils;
 import cz.cvut.fel.pm2.timely_be.model.EmployeeLeaveBalance;
 import cz.cvut.fel.pm2.timely_be.model.Leave;
 import cz.cvut.fel.pm2.timely_be.repository.EmployeeLeaveBalanceRepository;
+import cz.cvut.fel.pm2.timely_be.repository.EmployeeRepository;
 import cz.cvut.fel.pm2.timely_be.repository.LeaveRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 public class LeaveService {
@@ -21,22 +26,34 @@ public class LeaveService {
     private EmployeeLeaveBalanceRepository leaveBalanceRepository;
 
     @Autowired
-    public LeaveService(LeaveRepository leaveRepository, EmployeeLeaveBalanceRepository leaveBalanceRepository) {
+    private EmployeeRepository employeeRepository;
+
+    @Autowired
+    public LeaveService(LeaveRepository leaveRepository, EmployeeLeaveBalanceRepository leaveBalanceRepository, EmployeeRepository employeeRepository) {
         this.leaveRepository = leaveRepository;
         this.leaveBalanceRepository = leaveBalanceRepository;
+        this.employeeRepository = employeeRepository;
     }
 
-    public List<Leave> getPendingRequests() {
-        return leaveRepository.findByPendingStatus(RequestStatus.PENDING);
+    public List<LeaveRequestDto> getPendingRequests() {
+        return leaveRepository.findByPendingStatus(RequestStatus.PENDING).stream().map(leave ->
+            MapperUtils.leaveRequestDto(leave, employeeRepository.findById(leave.getEmployeeId()).get(), leaveBalanceRepository.findLeaveBalanceByEmployeeId(leave.getEmployeeId()))).collect(Collectors.toList());
     }
 
     public Leave getLeaveRequestById(Long id) {
         return leaveRepository.findByLeaveId(id);
     }
 
+    @Transactional
     public Leave approveLeaveRequest(Long id) {
         Leave leave = leaveRepository.findByLeaveId(id);
         leave.setStatus(RequestStatus.APPROVED);
+        EmployeeLeaveBalance balance  = leaveBalanceRepository.findLeaveBalanceByEmployeeId(leave.getEmployeeId());
+        switch (leave.getLeaveType()) {
+            case SICK_LEAVE -> balance.setSickDaysLeft(balance.getSickDaysLeft() - leave.getLeaveAmount());
+            case PERSONAL_LEAVE -> balance.setPersonalDaysLeft(balance.getPersonalDaysLeft() - leave.getLeaveAmount());
+            case VACATION_LEAVE -> balance.setVacationDaysLeft(balance.getVacationDaysLeft() - leave.getLeaveAmount());
+        }
         return leaveRepository.save(leave);
     }
 

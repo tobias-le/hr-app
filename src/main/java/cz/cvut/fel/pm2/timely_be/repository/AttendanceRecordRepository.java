@@ -11,7 +11,7 @@ import java.time.LocalDate;
 import java.util.List;
 
 public interface AttendanceRecordRepository extends JpaRepository<AttendanceRecord, Long> {
-    @Query("SELECT ar FROM AttendanceRecord ar WHERE ar.member = :member")
+    @Query("SELECT ar FROM AttendanceRecord ar WHERE ar.member = :member ORDER BY ar.date ASC")     //order by
     List<AttendanceRecord> findByMember(@Param("member") Employee member);
     @Query("SELECT ar FROM AttendanceRecord ar WHERE ar.member.team = :team AND ar.date BETWEEN :startDate AND :endDate")
     List<AttendanceRecord> findByTeamAndDateBetween(@Param("team") Team team, @Param("startDate") LocalDate startDate, @Param("endDate") LocalDate endDate);

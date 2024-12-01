@@ -361,6 +361,7 @@ public class DatabaseInitializer {
         int duration = 1 + random.nextInt(5);
         leave.setStartDate(startDate);
         leave.setEndDate(startDate.plusDays(duration));
+        leave.setDatetime(LocalDateTime.now());
         leave.setLeaveAmount(duration);
         leave.setStatus(RequestStatus.values()[random.nextInt(RequestStatus.values().length)]);
         leave.setReason("Sample leave request");
