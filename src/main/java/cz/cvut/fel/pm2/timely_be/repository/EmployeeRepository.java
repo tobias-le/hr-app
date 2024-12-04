@@ -43,4 +43,11 @@ public interface EmployeeRepository extends JpaRepository<Employee, Long> {
     List<Employee> findAll();
 
     Optional<Employee> findByEmail(String email);
+
+    @Query("SELECT e FROM Employee e WHERE e.email = :email")
+    Optional<Employee> findByEmailIncludingDeleted(@Param("email") String email);
+
+    @Override
+    @Query("SELECT e FROM Employee e WHERE e.deleted = false AND e.employeeId = :id")
+    Optional<Employee> findById(@Param("id") Long id);
 }

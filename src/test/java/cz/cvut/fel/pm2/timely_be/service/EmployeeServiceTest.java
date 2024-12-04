@@ -20,6 +20,7 @@ import static cz.cvut.fel.pm2.timely_be.utils.TestUtils.createEmployee;
 import static cz.cvut.fel.pm2.timely_be.utils.TestUtils.createEmployeeDto;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.*;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
@@ -27,6 +28,9 @@ public class EmployeeServiceTest {
 
     @Mock
     private EmployeeRepository employeeRepository;
+
+    @Mock
+    private UserService userService;
 
     @InjectMocks
     private EmployeeService employeeService;
@@ -301,5 +305,55 @@ public class EmployeeServiceTest {
         // When & Then
         assertThrows(IllegalArgumentException.class, 
             () -> employeeService.getEmployeeByEmail(email));
+    }
+
+    @Test
+    public void testCreateEmployee_CreatesUserAndEmployee() {
+        // Given
+        var employeeDto = createEmployeeDto(FULL_TIME);
+        when(employeeRepository.findByEmailIncludingDeleted(employeeDto.getEmail()))
+                .thenReturn(Optional.empty());
+        when(employeeRepository.save(any())).thenAnswer(i -> i.getArguments()[0]);
+        
+        // When
+        var result = employeeService.createEmployee(employeeDto);
+
+        // Then
+        assertNotNull(result);
+        assertEquals(employeeDto.getName(), result.getName());
+        assertEquals(employeeDto.getEmail(), result.getEmail());
+        assertEquals(FULL_TIME, result.getEmploymentType());
+        assertFalse(result.isDeleted());
+        
+        verify(userService).createUsers(argThat(users -> 
+            users.size() == 1 && 
+            users.get(0).getEmail().equals(employeeDto.getEmail()) &&
+            users.get(0).getEmployee() == result
+        ));
+    }
+
+    @Test
+    public void testDeleteEmployee() {
+        // Given
+        var employee = createEmployee(FULL_TIME);
+        when(employeeRepository.findById(anyLong())).thenReturn(Optional.of(employee));
+        when(employeeRepository.save(any())).thenAnswer(i -> i.getArguments()[0]);
+
+        // When
+        employeeService.deleteEmployee(1L);
+
+        // Then
+        assertTrue(employee.isDeleted());
+        verify(employeeRepository).save(employee);
+    }
+
+    @Test
+    public void testDeleteEmployee_NotFound() {
+        // Given
+        when(employeeRepository.findById(anyLong())).thenReturn(Optional.empty());
+
+        // When & Then
+        assertThrows(IllegalArgumentException.class, 
+            () -> employeeService.deleteEmployee(1L));
     }
 }

@@ -42,7 +42,6 @@ public class Employee {
     private String internationalBankAccountNumber;
 
     @ManyToMany(fetch = FetchType.LAZY)
-
     private List<Project> currentProjects;
 
     @ManyToOne(fetch = FetchType.LAZY)

@@ -5,6 +5,7 @@ import cz.cvut.fel.pm2.timely_be.dto.EmployeeNameWithIdDto;
 import cz.cvut.fel.pm2.timely_be.mapper.MapperUtils;
 import cz.cvut.fel.pm2.timely_be.model.Employee;
 import cz.cvut.fel.pm2.timely_be.service.EmployeeService;
+import cz.cvut.fel.pm2.timely_be.service.UserService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -30,10 +31,12 @@ import static cz.cvut.fel.pm2.timely_be.mapper.MapperUtils.toEmployeeDto;
 public class EmployeeController {
 
     private final EmployeeService employeeService;
+    private final UserService userService;
 
     @Autowired
-    public EmployeeController(EmployeeService employeeService) {
+    public EmployeeController(EmployeeService employeeService, UserService userService) {
         this.employeeService = employeeService;
+        this.userService = userService;
     }
 
     @GetMapping
@@ -112,6 +115,28 @@ public class EmployeeController {
             return ResponseEntity.ok(toEmployeeDto(employee));
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
+    }
+
+    @PostMapping
+    @Operation(summary = "Create employee", description = "Create a new employee and associated user account")
+    public ResponseEntity<EmployeeDto> createEmployee(@RequestBody EmployeeDto employeeDto) {
+        try {
+            var employee = employeeService.createEmployee(employeeDto);
+            return ResponseEntity.status(HttpStatus.CREATED).body(toEmployeeDto(employee));
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.badRequest().build();
+        }
+    }
+
+    @DeleteMapping("/{id}")
+    @Operation(summary = "Delete employee", description = "Soft delete employee and associated user account")
+    public ResponseEntity<Void> deleteEmployee(@PathVariable Long id) {
+        try {
+            employeeService.deleteEmployee(id);
+            return ResponseEntity.noContent().build();
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.notFound().build();
         }
     }
 

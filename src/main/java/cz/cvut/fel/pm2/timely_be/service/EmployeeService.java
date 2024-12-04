@@ -12,14 +12,18 @@ import org.springframework.stereotype.Service;
 import java.util.List;
 import java.util.Collections;
 import static cz.cvut.fel.pm2.timely_be.enums.EmploymentType.fromString;
+import org.springframework.transaction.annotation.Transactional;
+import cz.cvut.fel.pm2.timely_be.model.User;
 
 @Service
 public class EmployeeService {
     private final EmployeeRepository employeeRepository;
+    private final UserService userService;
 
     @Autowired
-    public EmployeeService(EmployeeRepository employeeRepository) {
+    public EmployeeService(EmployeeRepository employeeRepository, UserService userService) {
         this.employeeRepository = employeeRepository;
+        this.userService = userService;
     }
 
     public Page<Employee> getEmployeesByTeam(Pageable pageable, long teamId) {
@@ -87,5 +91,64 @@ public class EmployeeService {
     public Employee getEmployeeByEmail(String email) {
         return employeeRepository.findByEmail(email)
                 .orElseThrow(() -> new IllegalArgumentException("Employee not found"));
+    }
+
+    @Transactional
+    public Employee createEmployee(EmployeeDto employeeDto) {
+        // Check if employee with this email exists
+        var existingEmployee = employeeRepository.findByEmailIncludingDeleted(employeeDto.getEmail());
+        
+        if (existingEmployee.isPresent()) {
+            if (existingEmployee.get().isDeleted()) {
+                // Reactivate deleted employee and create new user
+                var employee = existingEmployee.get();
+                createEmployeeFromDto(employee, employeeDto);
+                employee.setDeleted(false);
+                employee = employeeRepository.save(employee);
+                createUserForEmployee(employee);
+                return employee;
+            }
+            throw new IllegalArgumentException("Employee with this email already exists");
+        }
+
+        // Create new employee and user
+        var employee = new Employee();
+        createEmployeeFromDto(employee, employeeDto);
+        employee = employeeRepository.save(employee);
+        createUserForEmployee(employee);
+        return employee;
+    }
+
+    private void createUserForEmployee(Employee employee) {
+        var user = new User();
+        user.setEmail(employee.getEmail());
+        user.setPassword("changeme"); // You might want to generate a random password
+        user.setEmployee(employee);
+        userService.createUsers(List.of(user));
+    }
+
+    public void deleteEmployee(Long id) {
+        var employee = employeeRepository.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("Employee not found"));
+        
+        employee.setDeleted(true);
+        employeeRepository.save(employee);
+    }
+
+    private void createEmployeeFromDto(Employee employee, EmployeeDto dto) {
+        employee.setName(dto.getName());
+        employee.setEmail(dto.getEmail());
+        employee.setEmploymentType(fromString(dto.getEmploymentStatus()));
+        employee.setJobTitle(dto.getJobTitle());
+        employee.setPhoneNumber(dto.getPhoneNumber());
+        employee.setAnnualSalary(dto.getAnnualSalary());
+        employee.setAnnualLearningBudget(dto.getAnnualLearningBudget());
+        employee.setAnnualBusinessPerformanceBonusMax(dto.getAnnualBusinessPerformanceBonusMax());
+        employee.setAnnualPersonalPerformanceBonusMax(dto.getAnnualPersonalPerformanceBonusMax());
+        employee.setDateOfBirth(dto.getDateOfBirth());
+        employee.setInternationalBankAccountNumber(dto.getInternationalBankAccountNumber());
+        employee.setHR(dto.isHR());
+        employee.setCurrentProjects(Collections.emptyList());
+        employee.setTeam(null);
     }
 }

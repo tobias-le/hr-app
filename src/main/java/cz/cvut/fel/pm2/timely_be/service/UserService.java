@@ -27,6 +27,12 @@ public class UserService implements UserDetailsService {
     public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
         User user = userRepository.findByEmail(email)
                 .orElseThrow(() -> new UsernameNotFoundException("User not found"));
+                
+        // Check if the associated employee is deleted
+        if (user.getEmployee() != null && user.getEmployee().isDeleted()) {
+            throw new UsernameNotFoundException("User account has been deleted");
+        }
+
         return new org.springframework.security.core.userdetails.User(
                 user.getEmail(), user.getPassword(), new ArrayList<>());
     }

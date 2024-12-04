@@ -12,7 +12,10 @@ import java.util.Optional;
 
 @Repository
 public interface ProjectRepository extends JpaRepository<Project, Long> {
-    @Query("SELECT p FROM projects p LEFT JOIN FETCH p.members WHERE p.projectId = :projectId AND p.deleted = false")
+    @Query("SELECT p FROM projects p " +
+           "LEFT JOIN FETCH p.members m " +
+           "WHERE p.projectId = :projectId AND p.deleted = false " +
+           "AND (m IS NULL OR m.deleted = false)")
     Optional<Project> findProjectWithMembers(@Param("projectId") Long projectId);
 
     @Override

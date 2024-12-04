@@ -22,13 +22,23 @@ public interface TeamRepository extends JpaRepository<Team, Long> {
     List<Team> findAll();
 
     @Query("SELECT t FROM teams t " +
-           "LEFT JOIN FETCH t.members " +
-           "WHERE t.id = :teamId AND t.deleted = false")
+           "LEFT JOIN FETCH t.members m " +
+           "WHERE t.id = :teamId AND t.deleted = false " +
+           "AND (m IS NULL OR m.deleted = false)")
     Optional<Team> findTeamWithMembers(@Param("teamId") Long teamId);
     
     @Query("SELECT t FROM teams t " +
+           "LEFT JOIN FETCH t.members m " +
            "LEFT JOIN FETCH t.parentTeam " +
-           "WHERE t.id = :teamId AND t.deleted = false")
+           "WHERE t.id = :teamId AND t.deleted = false " +
+           "AND (m IS NULL OR m.deleted = false)")
+    Optional<Team> findTeamWithMembersAndParent(@Param("teamId") Long teamId);
+
+    @Query("SELECT t FROM teams t " +
+           "LEFT JOIN FETCH t.members m " +
+           "LEFT JOIN FETCH t.parentTeam " +
+           "WHERE t.id = :teamId AND t.deleted = false " +
+           "AND (m IS NULL OR m.deleted = false)")
     Optional<Team> findTeamWithParent(@Param("teamId") Long teamId);
 
     @Query("SELECT new cz.cvut.fel.pm2.timely_be.dto.TeamNameWithIdDto(t.id, t.name) " +
@@ -55,27 +65,19 @@ public interface TeamRepository extends JpaRepository<Team, Long> {
     List<Team> findTeamWithCompleteHierarchy(@Param("teamId") Long teamId);
 
     @Query("SELECT t FROM teams t " +
-           "LEFT JOIN FETCH t.members " +
+           "LEFT JOIN FETCH t.members m " +
            "LEFT JOIN FETCH t.parentTeam " +
-           "WHERE t.id = :teamId AND t.deleted = false")
-    Optional<Team> findTeamWithMembersAndParent(@Param("teamId") Long teamId);
-
-    @Query("SELECT CASE WHEN COUNT(t) > 0 THEN true ELSE false END FROM teams t " +
-           "JOIN t.members m WHERE m.employeeId = :employeeId AND t.deleted = false")
-    boolean isEmployeeInAnyTeam(@Param("employeeId") Long employeeId);
-
-    @Query("SELECT t FROM teams t " +
-           "LEFT JOIN FETCH t.members " +
-           "LEFT JOIN FETCH t.parentTeam " +
-           "WHERE :employeeId IN (SELECT m.employeeId FROM t.members m) " +
-           "AND t.deleted = false")
+           "WHERE :employeeId IN (SELECT m2.employeeId FROM t.members m2 WHERE m2.deleted = false) " +
+           "AND t.deleted = false " +
+           "AND (m IS NULL OR m.deleted = false)")
     Optional<Team> findTeamByEmployeeId(@Param("employeeId") Long employeeId);
 
     @Query("SELECT t FROM teams t " +
-           "LEFT JOIN FETCH t.members " +
+           "LEFT JOIN FETCH t.members m " +
            "LEFT JOIN FETCH t.parentTeam " +
            "WHERE t.manager.employeeId = :managerId " +
-           "AND t.deleted = false")
+           "AND t.deleted = false " +
+           "AND (m IS NULL OR m.deleted = false)")
     Optional<Team> findTeamByManagerId(@Param("managerId") Long managerId);
 
     @Query("SELECT t FROM teams t WHERE t.name = :name AND t.deleted = false")
@@ -83,4 +85,11 @@ public interface TeamRepository extends JpaRepository<Team, Long> {
 
     @Query("SELECT t FROM teams t WHERE t.name = :name AND t.deleted = true")
     Optional<Team> findByNameAndDeletedTrue(@Param("name") String name);
+
+    @Query("SELECT CASE WHEN COUNT(t) > 0 THEN true ELSE false END FROM teams t " +
+           "JOIN t.members m " +
+           "WHERE m.employeeId = :employeeId " +
+           "AND t.deleted = false " +
+           "AND m.deleted = false")
+    boolean isEmployeeInAnyTeam(@Param("employeeId") Long employeeId);
 }

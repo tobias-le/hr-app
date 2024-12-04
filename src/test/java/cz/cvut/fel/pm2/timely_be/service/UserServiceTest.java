@@ -1,5 +1,6 @@
 package cz.cvut.fel.pm2.timely_be.service;
 
+import cz.cvut.fel.pm2.timely_be.model.Employee;
 import cz.cvut.fel.pm2.timely_be.model.User;
 import cz.cvut.fel.pm2.timely_be.repository.UserRepository;
 import org.junit.jupiter.api.BeforeEach;
@@ -146,5 +147,47 @@ class UserServiceTest {
         // Assert
         verify(userRepository).findByEmailIn(Arrays.asList("user1@example.com", "user2@example.com"));
         verify(userRepository, never()).saveAll(anyList());
+    }
+
+    @Test
+    void loadUserByUsername_WhenUserIsDeleted_ThrowsException() {
+        // Arrange
+        User user = new User();
+        user.setEmail("deleted@example.com");
+        user.setPassword("encoded_password");
+        
+        Employee deletedEmployee = new Employee();
+        deletedEmployee.setDeleted(true);
+        user.setEmployee(deletedEmployee);
+        
+        when(userRepository.findByEmail("deleted@example.com")).thenReturn(Optional.of(user));
+
+        // Act & Assert
+        assertThrows(UsernameNotFoundException.class,
+                () -> userService.loadUserByUsername("deleted@example.com"));
+        verify(userRepository).findByEmail("deleted@example.com");
+    }
+
+    @Test
+    void loadUserByUsername_WhenUserExistsAndNotDeleted_ReturnsUserDetails() {
+        // Arrange
+        User user = new User();
+        user.setEmail("active@example.com");
+        user.setPassword("encoded_password");
+        
+        Employee activeEmployee = new Employee();
+        activeEmployee.setDeleted(false);
+        user.setEmployee(activeEmployee);
+        
+        when(userRepository.findByEmail("active@example.com")).thenReturn(Optional.of(user));
+
+        // Act
+        UserDetails userDetails = userService.loadUserByUsername("active@example.com");
+
+        // Assert
+        assertNotNull(userDetails);
+        assertEquals("active@example.com", userDetails.getUsername());
+        assertEquals("encoded_password", userDetails.getPassword());
+        verify(userRepository).findByEmail("active@example.com");
     }
 } 
