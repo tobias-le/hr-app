@@ -1,13 +1,12 @@
-package cz.cvut.fel.pm2.hrapp;
+package cz.cvut.fel.pm2.timely_be;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 
 @SpringBootApplication
-public class HrAppApplication {
+public class TimelyBeApplication {
 
     public static void main(String[] args) {
-        SpringApplication.run(HrAppApplication.class, args);
+        SpringApplication.run(TimelyBeApplication.class, args);
     }
-
 }
